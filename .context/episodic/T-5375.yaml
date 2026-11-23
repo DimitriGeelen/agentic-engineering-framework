@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5375: Vote checker marks a claude-code seat not-checkable when it cites its per-seat screenshot copy by bare name
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T14:49:38Z
+# ============================================================================
+
+task_id: T-5375
+task_name: "Vote checker marks a claude-code seat not-checkable when it cites its per-seat screenshot copy by bare name"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-23T12:45:43Z
+completed: 2026-11-23T14:48:52Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-23T13:45:50+01:00
+last_commit: 2026-11-23T15:48:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — vote checker misses bare-named per-seat screenshot copies. spec — bare-named per-seat screenshot copies resolve in the task evidence dir. vote checker resolves a seat's bare-named per-seat screenshot copy in the task evidence dir. criteria verified (before/after 428/428 on 30 reviewer test files; new test 20/20), RCA
+
+# Key outcomes
+outcomes:
+  - 'lib/vote_checker.py resolves a bare image name (no "/") in Evidence and in a bare `image region` Location to `.context/reviews/evidence/<task>/<name>` when that file exists; one resolution function used by check_image, cited_image_path and the Location check (no second copy).'
+  - 'A bare name that does not exist there, or a name with `..`/a path outside the evidence directory, is still refused exactly as today.'
+  - 'Hermetic test tests/unit/test_t5375_bare_seat_image.py reproduces the T-5376 claude-code evidence lines (bare Evidence + bare Location with region) and shows not-checkable before / checked after; plus the refusal cases.'
+  - 'Existing vote-checker / judge / verdict tests (test_t5352*, test_t5353*, test_t5357*, test_t5358*, test_t5360*, *vote*, *judge*, *verdict*) keep their results.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/vote_checker.py'
+  - '.fabric/components/tests-unit-test_t5375_bare_seat_image.yaml'
+  - '.tasks/active/T-5375-vote-checker-marks-a-claude-code-seat-no.md'
+  - 'lib/vote_checker.py'
+  - 'tests/unit/test_t5375_bare_seat_image.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-23T13:45:50'
+    action: 'T-5375: capture — vote checker misses bare-named per-seat screenshot copies'
+  - time: '2026-11-23T14:54:44'
+    action: 'T-5375: spec — bare-named per-seat screenshot copies resolve in the task evidence dir'
+  - time: '2026-11-23T15:11:27'
+    action: 'T-5375: vote checker resolves a seat''s bare-named per-seat screenshot copy in the task evidence dir'
+  - time: '2026-11-23T15:48:49'
+    action: 'T-5375: criteria verified (before/after 428/428 on 30 reviewer test files; new test 20/20), RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 123 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, reviewer, evidence]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 123
+  commits: 5
+  files_changed: 8
+  lines_added: 919
+  lines_removed: 41
+  footprint_refreshed_at: '2026-11-23T14:49:51Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5375-vote-checker-marks-a-claude-code-seat-no.md
+generated_by: context-agent-hybrid

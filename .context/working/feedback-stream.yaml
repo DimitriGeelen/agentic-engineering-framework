@@ -58858,3 +58858,21 @@ scan_id: R-0706cab8
 task_id: T-5376
 payload:
   task_file: .tasks/active/T-5376-vector-index-covers-every-git-tracked-pr.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T14:49:21Z'
+scan_id: R-e61ba582
+task_id: T-5375
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T14:49:21Z'
+scan_id: R-e61ba582
+task_id: T-5375
+payload:
+  task_file: .tasks/active/T-5375-vote-checker-marks-a-claude-code-seat-no.md

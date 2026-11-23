@@ -8,12 +8,12 @@ description: >
   but lib/vote_checker.py _resolve_image only resolves bare names through a Location
   path, so the vote was graded not-checkable (images missing). Same class as T-5353/T-5357/T-5360.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, reviewer, evidence]
-components: []
+components: [lib/vote_checker.py, tests/unit/test_t5375_bare_seat_image.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T12:45:43Z
-last_update: 2026-11-23T13:54:36Z
-date_finished:
+last_update: 2026-11-23T14:48:52Z
+date_finished: 2026-11-23T14:48:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -400,3 +400,21 @@ bin/fw vendor self --check --task T-5375
 
 ### 2026-11-23T13:54:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-23T14:48:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e61ba582
+- **Timestamp:** 2026-11-23T14:49:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — lib/vote_checker.py resolves a bare image name (no "/") in Evidence and in a bare `image region` Location to `.context/reviews/evidence/<task>/<name>` when that file exists; one resolution function us
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/vote_checker.py in: lib/vote_checker.py resolves a bare image name (no "/") in Evidence and in a bare `image region` Location to `.context/reviews/evidence/<task>/<name>``
