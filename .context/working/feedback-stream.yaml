@@ -58930,3 +58930,39 @@ scan_id: R-06e64939
 task_id: T-3940
 payload:
   task_file: .tasks/active/T-3940-urgent-concurrent-reviewer-workers-commi.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T18:12:44Z'
+scan_id: R-a2a07c95
+task_id: T-4127
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T18:12:44Z'
+scan_id: R-a2a07c95
+task_id: T-4127
+payload:
+  task_file: .tasks/active/T-4127-watchtower-decision-commit-races-ordinar.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T18:13:50Z'
+scan_id: R-daa9f976
+task_id: T-3862
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T18:13:50Z'
+scan_id: R-daa9f976
+task_id: T-3862
+payload:
+  task_file: .tasks/active/T-3862-fw-upgrade-completes-without-checking-th.md

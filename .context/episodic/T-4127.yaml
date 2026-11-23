@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4127: Watchtower decision commit races ordinary commits (codex round 2 DO-NOT-SHIP): commit through git's own index under git's lock (git commit --only) instead of a scratch GIT_INDEX_FILE + refresh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T18:13:02Z
+# ============================================================================
+
+task_id: T-4127
+task_name: "Watchtower decision commit races ordinary commits (codex round 2 DO-NOT-SHIP): commit through git's own index under git's lock (git commit --only) instead of a scratch GIT_INDEX_FILE + refresh"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T19:32:42Z
+completed: 2026-11-23T18:12:13Z
+duration_days: 42
+updates_count: 4
+first_commit: 2026-10-12T21:34:19+02:00
+last_commit: 2026-11-23T18:48:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — root fix for the Watchtower decision commit race (operator chose option 1); codex round-2 verdict saved. Watchtower decision commits via git commit --only on the real index (no window); drop scratch-index + refresh. follow-up — commit pathspec rebuilt after staging (codex round 3 finding 2). four-part Context + Evolution backfilled from the record (T-4907, T-1718 gates)
+
+# Key outcomes
+outcomes:
+  - 'Watchtower''s decision commit has no window in which an ordinary commit can revert it (committed through git''s real index under git''s lock, or the closest alternative with the residual stated exactly in ## Decisions)'
+  - 'Regression test reproduces codex round-2 finding 1 (competing commit between Watchtower''s commit and its refresh) and fails on the pre-fix code; passes after'
+  - 'Other staged changes in the real index are neither swept into the decision commit nor lost; plain move and git mv both work (codex finding 2); a held index.lock makes the decision fail visibly, never silently'
+  - 'test_t4081, test_t4113, t4075 and every test importing web.blueprints.inception green; `bin/fw vendor self --check` clean; Watchtower restarted and `bin/fw watchtower current` passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file — root fix for the Watchtower decision commit race (operator chose option 1); codex round-2 verdict saved'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.tasks/active/T-4127-watchtower-decision-commit-races-ordinar.md'
+  - 'docs/reports/T-4092-codex-review-round2.md'
+  - 'tests/unit/test_decide_commit.py'
+  - 'tests/unit/test_t4081_watchtower_commit_keeps_real_index.py'
+  - 'tests/unit/test_t4127_decision_commit_no_window.py'
+  - 'web/blueprints/inception.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T21:34:19'
+    action: 'T-4127: file — root fix for the Watchtower decision commit race (operator chose option 1); codex round-2 verdict saved'
+  - time: '2026-10-12T21:47:08'
+    action: 'T-4127: Watchtower decision commits via git commit --only on the real index (no window); drop scratch-index + refresh'
+  - time: '2026-10-13T00:09:00'
+    action: 'T-4127: follow-up — commit pathspec rebuilt after staging (codex round 3 finding 2)'
+  - time: '2026-11-23T18:48:44'
+    action: 'T-4127: four-part Context + Evolution backfilled from the record (T-4907, T-1718 gates)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 60399 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, g-114, hotfix, arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 60399
+  commits: 5
+  files_changed: 10
+  lines_added: 959
+  lines_removed: 310
+  footprint_refreshed_at: '2026-11-23T18:14:20Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4127-watchtower-decision-commit-races-ordinar.md
+generated_by: context-agent-hybrid
