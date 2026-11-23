@@ -3113,7 +3113,7 @@ PY
         _del_facts=$(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" \
                      PYTHONPATH="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" \
                      FW_DELEGATION_SURFACE_WARN="$_del_thr" \
-                     python3 -m lib.delegation_cli surface --facts 2>/dev/null || true)
+                     python3 "${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/run_module.py" lib.delegation_cli surface --facts 2>/dev/null || true)
         if [ -n "$_del_facts" ]; then
             IFS=$'\t' read -r _del_level _del_rc _del_rj _del_as _del_oo _del_tasks _del_thr _del_list <<< "$_del_facts"
             if [ "${_del_level:-}" = "WARN" ]; then
@@ -3140,7 +3140,7 @@ PY
     if [ -f "$_um_cli" ] && [ -d "$PROJECT_ROOT/.tasks/active" ]; then
         local _um_facts _um_count
         _um_facts=$(PROJECT_ROOT="$PROJECT_ROOT" PYTHONPATH="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" \
-                    python3 -m lib.unclosable_misfiled scan --facts 2>/dev/null || true)
+                    python3 "${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/run_module.py" lib.unclosable_misfiled scan --facts 2>/dev/null || true)
         if [ -n "$_um_facts" ]; then
             IFS=$'\t' read -r _um_count _ <<< "$_um_facts"
             if [ "${_um_count:-0}" -gt 0 ] 2>/dev/null; then
@@ -3337,7 +3337,7 @@ PY
     local _pp_src="$PROJECT_ROOT/policy/proxy-policy.yaml"
     if [ -f "$_pp_src" ]; then
         local _pp_state
-        _pp_state=$(PYTHONPATH="$FRAMEWORK_ROOT" python3 -c "import lib.govd_policy as p; print(p.drift_status('$_pp_src')['state'])" 2>/dev/null || echo "err")
+        _pp_state=$(PYTHONPATH="$FRAMEWORK_ROOT" python3 -c "import sys; sys.path.insert(0, '$FRAMEWORK_ROOT'); import lib.govd_policy as p; print(p.drift_status('$_pp_src')['state'])" 2>/dev/null || echo "err")
         case "$_pp_state" in
             ok)            echo -e "  ${GREEN}OK${NC}  proxy-policy deployed copy matches source" ;;
             drift)         echo -e "  ${YELLOW}WARN${NC}  proxy-policy.yaml edited but not installed"
@@ -3355,7 +3355,7 @@ PY
     local _sb_src="$PROJECT_ROOT/policy/sandbox-profile.yaml"
     if [ -f "$_sb_src" ]; then
         local _sb_state
-        _sb_state=$(PYTHONPATH="$FRAMEWORK_ROOT" python3 -c "import lib.govd_sandbox as s; print(s.status('$_sb_src', '$PROJECT_ROOT', '$PROJECT_ROOT/policy/sandbox-profile.d')['state'])" 2>/dev/null || echo "err")
+        _sb_state=$(PYTHONPATH="$FRAMEWORK_ROOT" python3 -c "import sys; sys.path.insert(0, '$FRAMEWORK_ROOT'); import lib.govd_sandbox as s; print(s.status('$_sb_src', '$PROJECT_ROOT', '$PROJECT_ROOT/policy/sandbox-profile.d')['state'])" 2>/dev/null || echo "err")
         case "$_sb_state" in
             ok)             echo -e "  ${GREEN}OK${NC}  sandbox profile emitted and deployed copies match" ;;
             stale)          echo -e "  ${YELLOW}WARN${NC}  sandbox-profile.yaml edited but not re-emitted"
@@ -6558,7 +6558,7 @@ PYTASK_VERIFY
             fi
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.delegation_cli delegate "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.delegation_cli delegate "$@"
             ;;
         accept-miss)
             # T-5181 (T-5152 GO): operator-only — resolve an honestly missed Agent
@@ -6576,7 +6576,7 @@ PYTASK_VERIFY
             # call this instead of re-implementing the ruleset.
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.delegation_cli classify "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.delegation_cli classify "$@"
             ;;
         review-batch)
             # T-2182 / T-2181 Slice 1: emit a markdown table of full Watchtower URLs
@@ -7236,7 +7236,7 @@ case "$cmd" in
             done
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.reviewer.dispatch_cli "${_dispatch_args[@]}"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.reviewer.dispatch_cli "${_dispatch_args[@]}"
         fi
         # T-3445 (D-626): corpus delegation surface — how many open Human criteria
         # are reviewer-closeable / agent-self / operator-only. 832's ask (a).
@@ -7248,35 +7248,35 @@ case "$cmd" in
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
                 FW_DELEGATION_SURFACE_WARN="$(fw_config_int DELEGATION_SURFACE_WARN)" \
-                python3 -m lib.delegation_cli surface "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.delegation_cli surface "$@"
         fi
         # T-5176: can a harness review seat read a supplied screenshot? (T-4944 probe, scripted)
         if [ "${1:-}" = "probe-vision" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.reviewer.probe_vision "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.reviewer.probe_vision "$@"
         fi
         # T-3580 (T-3557 slice 3): dispatch independent reviewer on REVIEWER_JUDGES criteria
         if [ "${1:-}" = "judge" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.reviewer.judge_cli "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.reviewer.judge_cli "$@"
         fi
         # T-4930: the operator accepts or rejects a reviewer's PROPOSED RESTATEMENT.
         if [ "${1:-}" = "restatement" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.reviewer.restatement_cli "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.reviewer.restatement_cli "$@"
         fi
         # T-5235: the operator records a ruling that lifts an operator-only criterion.
         if [ "${1:-}" = "ruling" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.recorded_ruling "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.recorded_ruling "$@"
         fi
         # T-3579 (T-3557 slice 2): an independent reviewer's recorded verdict — the
         # writer slice 3 (`fw reviewer judge`) calls. record | apply | check-render | list.
@@ -7284,35 +7284,35 @@ case "$cmd" in
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.verdict_ledger "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.verdict_ledger "$@"
         fi
         if [ "${1:-}" = "audit" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.reviewer.audit "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.reviewer.audit "$@"
         fi
         if [ "${1:-}" = "override" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.reviewer.override_cli "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.reviewer.override_cli "$@"
         fi
         if [ "${1:-}" = "drift" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.reviewer.drift_cli "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.reviewer.drift_cli "$@"
         fi
         if [ "${1:-}" = "reverify" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.reviewer.reverify_cli "$@"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.reviewer.reverify_cli "$@"
         fi
         exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
             PYTHONPATH="$FRAMEWORK_ROOT" \
-            python3 -m lib.reviewer.static_scan "$@"
+            python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.reviewer.static_scan "$@"
         ;;
     ux)
         # T-4212: `fw ux shots` — screenshot each state at every configured width
@@ -11471,6 +11471,8 @@ for area_path, area_label in search_areas:
         parts = line.split(':', 2)
         if len(parts) >= 3:
             fname = parts[0]
+            if fname.startswith(_excluded):
+                continue
             if fname not in by_file:
                 by_file[fname] = []
             by_file[fname].append(line)

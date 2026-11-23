@@ -5571,7 +5571,7 @@ check_delegation_surface() {
     _threshold="${FW_DELEGATION_SURFACE_WARN:-50}"
     _facts=$(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
              PYTHONPATH="$FRAMEWORK_ROOT" FW_DELEGATION_SURFACE_WARN="$_threshold" \
-             python3 -m lib.delegation_cli surface --facts 2>/dev/null || true)
+             python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.delegation_cli surface --facts 2>/dev/null || true)
     [ -n "$_facts" ] || return 0
 
     local _level _rc _rj _as _oo _tasks _thr _delegable
@@ -8178,7 +8178,7 @@ PYEOF
     _um_cli="$FRAMEWORK_ROOT/lib/unclosable_misfiled.py"
     if [ -f "$_um_cli" ] && [ -d "$PROJECT_ROOT/.tasks/active" ]; then
         _um_facts=$(PROJECT_ROOT="$PROJECT_ROOT" PYTHONPATH="$FRAMEWORK_ROOT" \
-                    python3 -m lib.unclosable_misfiled scan --facts 2>/dev/null || true)
+                    python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.unclosable_misfiled scan --facts 2>/dev/null || true)
         if [ -n "$_um_facts" ]; then
             IFS=$'\t' read -r _um_count _um_ids <<< "$_um_facts"
             if [ "${_um_count:-0}" -gt 0 ] 2>/dev/null; then

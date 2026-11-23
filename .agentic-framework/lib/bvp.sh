@@ -2765,11 +2765,11 @@ EOF
             done
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
-                python3 -m lib.bvp_judge_dispatch_cli "${_jdispatch_args[@]}"
+                python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.bvp_judge_dispatch_cli "${_jdispatch_args[@]}"
         fi
         PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
             PYTHONPATH="$FRAMEWORK_ROOT" \
-            python3 -m lib.bvp_judge_cli "$@"
+            python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.bvp_judge_cli "$@"
         return $?
     fi
     _bvp_python_engine "$@"

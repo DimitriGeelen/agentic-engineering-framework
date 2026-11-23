@@ -41,8 +41,9 @@ export HOOK_INPUT
 # addressable sets FW_SIDECAR_AGENT_ID and keeps reading its own inbox.
 if [ -z "${FW_SIDECAR_AGENT_ID:-}" ] && PYTHONPATH="$SCRIPT_DIR/../..${PYTHONPATH:+:$PYTHONPATH}" python3 -c '
 import sys
+sys.path.insert(0, sys.argv[1])  # T-5373: ahead of the CWD, which may hold a consumer lib
 from lib.sidecar import adapter
-sys.exit(0 if adapter._is_headless(adapter._claude_ancestor_pid()) else 1)' 2>/dev/null; then
+sys.exit(0 if adapter._is_headless(adapter._claude_ancestor_pid()) else 1)' "$FRAMEWORK_ROOT" 2>/dev/null; then
     exit 0
 fi
 

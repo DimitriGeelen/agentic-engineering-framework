@@ -2434,11 +2434,11 @@ arc_judge_driver() {
     if [ "$want_all" = "true" ]; then
         PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
             PYTHONPATH="$FRAMEWORK_ROOT" \
-            python3 -m lib.arc_driver_judge_cli "$id" --all "${_jd_extra[@]}"
+            python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.arc_driver_judge_cli "$id" --all "${_jd_extra[@]}"
     else
         PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
             PYTHONPATH="$FRAMEWORK_ROOT" \
-            python3 -m lib.arc_driver_judge_cli "$id" "$name" "${_jd_extra[@]}"
+            python3 "$FRAMEWORK_ROOT/lib/run_module.py" lib.arc_driver_judge_cli "$id" "$name" "${_jd_extra[@]}"
     fi
 }
 
