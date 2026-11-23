@@ -18,7 +18,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [emergency, hotfix, release]
+tags: [emergency, hotfix, release, arc:parallel-execution-aef]
 components: []
 related_tasks: [T-4081, T-4035]
 origin: {kind: "operator"}
@@ -38,6 +38,7 @@ origin: {kind: "operator"}
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -49,7 +50,7 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T11:13:15Z
-last_update: '2026-11-23T15:00:47Z'
+last_update: 2026-11-23T17:35:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -426,3 +427,6 @@ git merge-base --is-ancestor b82294243 hotfix/v1.8.10
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4092-hotfix-v1810-emergency-lane-t-4035-t-408.md
 - **Context:** Initial task creation
+
+### 2026-11-23T17:35:23Z — status-update [task-update-agent]
+- **Change:** tags: +arc:parallel-execution-aef

@@ -15,7 +15,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, claude-fw, field-test]
+tags: [bug, claude-fw, field-test, arc:continuous-run]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -34,6 +34,7 @@ related_tasks: []
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: continuous-run
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -45,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T14:04:29Z
-last_update: '2026-11-23T15:00:47Z'
+last_update: 2026-11-23T17:36:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -447,3 +448,6 @@ once, after its next manual restart — T-4069's notice remains the route for th
 - `FW_TEST_WRAPPER=<HEAD bin/claude-fw> bats tests/unit/t4118_claude_fw_reexec_on_change.bats`:
   tests 1, 2, 3, 5, 6, 9 fail on HEAD (second launch ran gen=old; no re-exec/warn lines;
   resumed state ignored); 4, 7, 8 pass (they assert the no-re-exec paths). With the fix: 9/9 ok.
+
+### 2026-11-23T17:36:27Z — status-update [task-update-agent]
+- **Change:** tags: +arc:continuous-run

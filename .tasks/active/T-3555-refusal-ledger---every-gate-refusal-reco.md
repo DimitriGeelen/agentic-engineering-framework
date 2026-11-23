@@ -12,7 +12,7 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: []
+tags: [arc:ladder-trigger-producer]
 components: []
 related_tasks: [T-3549]
 write_set: ["lib/refusal-ledger.sh", "lib/inception.sh", "lib/worktree.sh", "lib/rail-identity.sh",
@@ -36,6 +36,7 @@ write_set: ["lib/refusal-ledger.sh", "lib/inception.sh", "lib/worktree.sh", "lib
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: ladder-trigger-producer
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -47,7 +48,7 @@ write_set: ["lib/refusal-ledger.sh", "lib/inception.sh", "lib/worktree.sh", "lib
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T09:51:54Z
-last_update: '2026-10-31T13:15:15Z'
+last_update: 2026-11-23T17:35:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -440,3 +441,6 @@ not to guess.
 
 ### 2026-10-02T03:05:00Z — input recorded for this ledger by T-3693 [w-t-3693b]
 - **Inherited:** the arc-011 direct send path (lib/sidecar/direct.py) appends every non-success outcome (UNDELIVERABLE, REJECTED, ESCALATED) to `.context/sidecar/refusals.jsonl` as `{"source": "sidecar-direct", "for": "T-3555", ...}`, per T-3561 AC9 ("recorded for it, if T-3555 has not shipped yet"). When this ledger ships it should ingest those rows (one file per project; consumer projects too).
+
+### 2026-11-23T17:35:17Z — status-update [task-update-agent]
+- **Change:** tags: +arc:ladder-trigger-producer

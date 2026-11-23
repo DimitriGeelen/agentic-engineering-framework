@@ -12,16 +12,16 @@ status: captured
 workflow_type: inception
 owner: human
 horizon: next
-tags: [config, high-value, arc-candidate, termlink, designer, litellm, 
-      version-monitoring]
+tags: [config, high-value, arc-candidate, termlink, designer, litellm, version-monitoring, arc:project-shape-resilience]
 components: []
 related_tasks: []
+arc_id: project-shape-resilience
 step_entered_at: '2026-11-18T22:21:41Z'
 revisit_at: 2026-11-25
 waiting_on: agent
 origin: {kind: "operator", source: "", ref: "operator request 2026-10-02"}
 created: 2026-10-02T14:55:03Z
-last_update: 2026-11-18T22:21:41Z
+last_update: 2026-11-23T17:35:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -195,3 +195,6 @@ Operator request 2026-10-02, high value. Today: a hand-maintained registry (lib/
 ### 2026-11-18T22:21:41Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: agent → agent
 - **Revisit:** 2026-11-25
+
+### 2026-11-23T17:35:06Z — status-update [task-update-agent]
+- **Change:** tags: +arc:project-shape-resilience

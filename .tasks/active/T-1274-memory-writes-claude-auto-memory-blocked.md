@@ -11,11 +11,12 @@ status: started-work
 workflow_type: build
 owner: human
 horizon: now
-tags: []
+tags: [arc:onboarding-curriculum]
 components: []
 related_tasks: []
+arc_id: onboarding-curriculum
 created: 2026-04-16T05:29:24Z
-last_update: '2026-11-23T15:00:12Z'
+last_update: 2026-11-23T17:36:26Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -242,3 +243,6 @@ bin/fw test unit -- tests/unit/check_active_task_memory_exempt.bats >/tmp/T-1274
 
 ### 2026-04-28T18:51:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-23T17:36:26Z — status-update [task-update-agent]
+- **Change:** tags: +arc:onboarding-curriculum

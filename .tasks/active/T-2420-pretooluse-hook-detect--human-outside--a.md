@@ -13,9 +13,10 @@ status: started-work
 workflow_type: build
 owner: human
 horizon: now
-tags: []
+tags: [arc:payload-mediation]
 components: []
 related_tasks: []
+arc_id: payload-mediation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -27,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-16T12:01:29Z
-last_update: '2026-11-23T15:00:26Z'
+last_update: 2026-11-23T17:35:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -308,6 +309,9 @@ out=$(bats tests/unit/check_task_ac_structure.bats 2>&1); echo "$out" | grep -q 
 
 ### 2026-06-16T12:19:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-23T17:35:12Z — status-update [task-update-agent]
+- **Change:** tags: +arc:payload-mediation
 
 ## Reviewer Verdict (v1.5)
 

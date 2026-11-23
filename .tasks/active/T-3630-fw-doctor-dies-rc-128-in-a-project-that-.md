@@ -19,7 +19,7 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [bug, OBS-587]
+tags: [bug, OBS-587, arc:project-shape-resilience]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -38,6 +38,7 @@ related_tasks: []
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: project-shape-resilience
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -49,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T08:49:17Z
-last_update: '2026-11-23T15:00:38Z'
+last_update: 2026-11-23T17:36:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -401,3 +402,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3630-fw-doctor-dies-rc-128-in-a-project-that-.md
 - **Context:** Initial task creation
+
+### 2026-11-23T17:36:18Z — status-update [task-update-agent]
+- **Change:** tags: +arc:project-shape-resilience

@@ -8,15 +8,16 @@ status: started-work
 workflow_type: build
 owner: human
 horizon: now
-tags: []
+tags: [arc:project-shape-resilience]
 components: []
 related_tasks: []
+arc_id: project-shape-resilience
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-04T07:26:05Z
-last_update: '2026-11-23T15:00:23Z'
+last_update: 2026-11-23T17:36:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -363,6 +364,9 @@ Monitor archive: `termlink pty output fan-dashboard-aef-setup --lines 50` (sessi
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2200-dispatch-aef-setup-worker-on-optfan-dash.md
 - **Context:** Initial task creation
+
+### 2026-11-23T17:36:24Z — status-update [task-update-agent]
+- **Change:** tags: +arc:project-shape-resilience
 
 ## Reviewer Verdict (v1.5)
 

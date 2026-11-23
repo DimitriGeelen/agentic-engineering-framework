@@ -10,9 +10,10 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: later
-tags: []
+tags: [arc:test-suite-health]
 components: []
 related_tasks: []
+arc_id: test-suite-health
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -24,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-16T20:19:23Z
-last_update: '2026-11-23T15:00:35Z'
+last_update: 2026-11-23T17:35:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -470,3 +471,6 @@ Advisory: **close as a duplicate of T-3361**. That call is the operator's.
 ### 2026-09-17T16:44:42Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-11-23T17:35:46Z — status-update [task-update-agent]
+- **Change:** tags: +arc:test-suite-health

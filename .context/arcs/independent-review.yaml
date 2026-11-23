@@ -1,0 +1,21 @@
+id: arc-029
+slug: independent-review
+name: "Independent review: verdicts the operator can trust without re-checking"
+description: ""
+status: draft
+anchor_task: 
+# close_task: T-XXX  # T-3843: the arc's close-out task. Its ## Recommendation (CLOSE|KEEP-OPEN,
+#                    # Rationale, Evidence) is the close recommendation on /arcs/<slug>/close and
+#                    # gates fw arc review; anchor_task is the fallback when unset.
+headline_mechanic: "an agent's finished criterion is judged by an independent reviewer panel at the rung\
+  \ its risk requires, and the operator sees a recorded green or a named escalation\
+  \ instead of a Human box to tick"
+demo_evidence: null
+created: 2026-11-23T17:34:56Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.

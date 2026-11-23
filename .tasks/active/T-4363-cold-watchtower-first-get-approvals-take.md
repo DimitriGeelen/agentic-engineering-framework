@@ -18,7 +18,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [watchtower, performance, doctor]
+tags: [watchtower, performance, doctor, arc:watchtower-redesign]
 components: []
 related_tasks: []
 origin: {kind: "peer", source: "832"}
@@ -38,6 +38,7 @@ origin: {kind: "peer", source: "832"}
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -49,7 +50,7 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T23:59:30Z
-last_update: '2026-11-23T15:00:50Z'
+last_update: 2026-11-23T17:35:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -472,3 +473,6 @@ Host: this repo (~4,400 task files), load average 45–65 on 24 cores and severa
 - **A/B in-process, first request per page (run 2):** cold /approvals 48.8, / 69.8, /cron 6.8, /tasks 19.8 → after warm-up 16.3, 8.3, 0.3, 0.7 (that process's warm /approvals was 15.0).
 - **A/B controlled, HEAD unmoved during every timed request:** first /approvals 56.6 s → 16.9 s; first / 65.8 s → 1.6 s; then warm /approvals 8.6–9.0, / 1.1.
 - **After, live instance on :3077 with the fix:** warm-up done 134 s after start; then /approvals 11.9, / 6.6, /cron 0.27, /tasks 0.62. The later /approvals 26–31 s readings coincide with concurrent commits invalidating the readiness cache (see Decisions, Open).
+
+### 2026-11-23T17:35:56Z — status-update [task-update-agent]
+- **Change:** tags: +arc:watchtower-redesign

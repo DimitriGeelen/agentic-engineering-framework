@@ -13,9 +13,10 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: later
-tags: [designer-corpus, upstream-832, blocked]
+tags: [designer-corpus, upstream-832, blocked, arc:designer-corpus]
 components: []
 related_tasks: [T-2974, T-2976]
+arc_id: designer-corpus
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -27,7 +28,7 @@ related_tasks: [T-2974, T-2976]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T05:43:56Z
-last_update: '2026-11-23T15:00:30Z'
+last_update: 2026-11-23T17:36:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -366,3 +367,6 @@ owner and a close condition, not sit as folklore in a completed task's Evolution
 ### 2026-08-14T05:46:34Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-11-23T17:36:03Z — status-update [task-update-agent]
+- **Change:** tags: +arc:designer-corpus

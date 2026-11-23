@@ -9,11 +9,12 @@ status: started-work
 workflow_type: build
 owner: human
 horizon: now
-tags: [termlink, wezterm, usability]
+tags: [termlink, wezterm, usability, arc:arc-020]
 components: []
 related_tasks: [T-1061, T-1641]
+arc_id: arc-020
 created: 2026-04-08T05:32:02Z
-last_update: '2026-11-23T15:00:11Z'
+last_update: 2026-11-23T17:36:37Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -298,6 +299,9 @@ grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 
 ### 2026-04-20T07:17:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-23T17:36:37Z — status-update [task-update-agent]
+- **Change:** tags: +arc:arc-020
 
 ## Reviewer Verdict (v1.4)
 

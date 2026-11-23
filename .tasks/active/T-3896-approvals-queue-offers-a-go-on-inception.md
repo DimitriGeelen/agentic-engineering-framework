@@ -15,7 +15,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, approvals, inception, governance, rca]
+tags: [bug, approvals, inception, governance, rca, arc:inception-review-loop]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -34,6 +34,7 @@ related_tasks: []
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: inception-review-loop
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -45,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T19:00:57Z
-last_update: '2026-11-23T15:00:42Z'
+last_update: 2026-11-23T17:35:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -436,3 +437,6 @@ RCA: `docs/reports/T-3896-approvals-readiness-rca.md`. Concern: G-108.
 
 ### 2026-10-05T19:02:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-23T17:35:51Z — status-update [task-update-agent]
+- **Change:** tags: +arc:inception-review-loop

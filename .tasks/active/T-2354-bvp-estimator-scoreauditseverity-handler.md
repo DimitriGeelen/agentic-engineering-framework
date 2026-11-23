@@ -11,9 +11,10 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: later
-tags: []
+tags: [arc:value-prioritisation]
 components: []
 related_tasks: [T-2352, T-2353, T-2329]
+arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -25,7 +26,7 @@ related_tasks: [T-2352, T-2353, T-2329]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T12:24:41Z
-last_update: '2026-11-23T15:00:25Z'
+last_update: 2026-11-23T17:36:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -327,3 +328,6 @@ when S1 fixes the driver's scale.
 ### 2026-07-21T07:03:38Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-11-23T17:36:40Z — status-update [task-update-agent]
+- **Change:** tags: +arc:value-prioritisation

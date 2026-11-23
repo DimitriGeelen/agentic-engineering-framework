@@ -10,7 +10,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc:watchtower-redesign]
 components: []
 related_tasks: []
 origin: {kind: "operator", ref: "2026-10-06 loading is ridiculously slow again"}
@@ -30,6 +30,7 @@ origin: {kind: "operator", ref: "2026-10-06 loading is ridiculously slow again"}
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -41,7 +42,7 @@ origin: {kind: "operator", ref: "2026-10-06 loading is ridiculously slow again"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T07:47:16Z
-last_update: '2026-11-23T15:00:43Z'
+last_update: 2026-11-23T17:35:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -395,3 +396,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3920-approvals-takes-27-s-on-every-load-opera.md
 - **Context:** Initial task creation
+
+### 2026-11-23T17:35:57Z — status-update [task-update-agent]
+- **Change:** tags: +arc:watchtower-redesign

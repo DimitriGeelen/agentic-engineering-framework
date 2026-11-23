@@ -1,0 +1,92 @@
+task	arc	reason
+T-3731	project-shape-resilience	config engine for framework + external modules in consumer projects
+T-3580	independent-review	reviewer judge: independent interpreting reviewer per criterion
+T-4490	independent-review	rung-5 panel closes green-degraded on unavailable seats
+T-3773	independent-review	review backends not estate-scoped in vendored registry
+T-3695	payload-mediation	Bash write can tick a Human criterion (self-authorisation)
+T-4788	payload-mediation	python3 -c write skips the task gate (self-authorisation)
+T-2420	payload-mediation	detect ### Human outside Acceptance Criteria (self-tick route)
+T-3593	payload-mediation	Tier 0 approvals keyed to the action
+T-3594	payload-mediation	pre-push refuses forced update without Tier 0 approval
+T-4783	payload-mediation	destructive-command gate: tmux kill-server reaches shared host
+T-2410	payload-mediation	check-active-task hook false positives block legitimate fw commands
+T-3299	payload-mediation	G-020 scope gate blocks both escape routes it prescribes
+T-3555	ladder-trigger-producer	refusal ledger: recurring refusals promoted to an RCA task
+T-2353	ladder-trigger-producer	audit WARN/FAIL converted to bugfix tasks
+T-4786	ladder-trigger-producer	worker closed task, died before commit, nothing detects it
+T-3264	ladder-trigger-producer	budget-gate fabricates ok/0 cache on scan crash (silent failure)
+T-3940	parallel-execution-aef	concurrent reviewer workers commit each other's verdict rows
+T-4127	parallel-execution-aef	Watchtower decision commit races ordinary commits
+T-4112	parallel-execution-aef	held index.lock lets next commit revert a Watchtower decision
+T-4092	parallel-execution-aef	Watchtower decision commits reverted by the next commit
+T-3298	parallel-execution-aef	audit.sh unlinks the flock'd lock file, breaking mutual exclusion
+T-3302	test-suite-health	nothing runs tests/unit on a schedule
+T-3328	test-suite-health	audit.bats conflates audit exit 2 with crash
+T-3297	test-suite-health	pre-push audit gate deadlocks against cron audit pileup
+T-3734	test-suite-health	pushes landed while the pre-push unit ratchet refused
+T-3610	test-suite-health	a test writes to filesystem root /.git
+T-4220	test-suite-health	pre-push blocked by 9 new unit reds
+T-3604	test-suite-health	OBS-587 triage B: red unit suites
+T-3623	test-suite-health	OBS-587 triage C: baselined red bats files
+T-3624	test-suite-health	OBS-587 triage D: baselined red bats files
+T-4574	test-suite-health	triage Playwright failures from clean-room runs
+T-3811	test-suite-health	metrics quality cache test red in parallel, green alone
+T-3933	test-suite-health	doctor tests sweep the live Watchtower
+T-3556	test-suite-health	handover_push_timeout tests pin implementation wording
+T-3300	test-suite-health	sed-range bats asserts an exact count
+T-3301	test-suite-health	inception decide post-move bats assertion
+T-3316	test-suite-health	create_task.bats test 3 red
+T-3747	test-suite-health	audit.bats structure/compliance sections red
+T-4295	test-suite-health	fixtures with bare FRAMEWORK_ROOT re-resolved by T-4248
+T-4407	test-suite-health	operator-facing stderr test flags approvals.py raw stderr
+T-4526	test-suite-health	tests leave 1.7 GB of /tmp directories behind
+T-3214	test-suite-health	Verification lines piping curl into grep: safe vs latent
+T-3378	test-suite-health	config registry drift blocks push via the invariant suite
+T-3324	test-suite-health	fw doctor spends 79 s on bats --count
+T-3317	test-suite-health	worker rewrite dropped audit.sh executable bit
+T-3749	inception-review-loop	Watchtower inception decide times out at 30 s though it landed
+T-4190	inception-review-loop	inception decide: name the filtered-refusal case
+T-3896	inception-review-loop	approvals offers a GO the decide gate will refuse
+T-2309	inception-review-loop	decide returns opaque 403 on stale CSRF
+T-4527	inception-review-loop	task review and inception decide judge hypothesis clauses differently
+T-2219	inception-review-loop	widen decide side-effect-warning truncation
+T-3609	inception-review-loop	FW_ALLOW_EMPTY_RECOMMENDATION no longer bypasses review for inceptions
+T-4590	inception-review-loop	Human-AC tick audit FAILs operator's Watchtower inception GO decisions
+T-4363	watchtower-redesign	cold Watchtower: first /approvals takes 13 s
+T-3920	watchtower-redesign	/approvals takes 27 s on every load
+T-4096	watchtower-redesign	/approvals and review-queue classify 'ready' differently
+T-3183	watchtower-redesign	Human AC markdown double-escapes on /approvals and /tasks
+T-3893	watchtower-redesign	arc close button greyed out with no reason
+T-4607	designer-corpus	designer shows no map thumbnails
+T-2977	designer-corpus	designer inspector shows no per-node note
+T-4402	designer-corpus	one lens definition for corpus maps
+T-4163	embeddings-strategy	estate ingest worker: embed with one pinned model
+T-4475	embeddings-strategy	concurrent embed batches
+T-3862	embeddings-strategy	upgrade does not check vector index prerequisites
+T-4458	embeddings-strategy	semantic/hybrid search takes 30-90 s and 500s under load
+T-4468	embeddings-strategy	/ask streaming fails with ImportError
+T-4657	embeddings-strategy	health/search/ask return 500 when the optional search stack is missing
+T-2801	project-shape-resilience	fw init is not atomic; debris not recoverable
+T-3156	project-shape-resilience	vendored bin/fw committed non-executable in consumers
+T-3630	project-shape-resilience	fw doctor dies in a non-git project
+T-3874	project-shape-resilience	clone's fw upgrade run inside a consumer resolves the vendored framework
+T-3128	project-shape-resilience	canonical list of self-churning paths used by a consumer
+T-2768	project-shape-resilience	not-synced guidance names a source and LAN precondition
+T-2202	project-shape-resilience	dispatch AEF setup worker on 832 project
+T-2200	project-shape-resilience	dispatch AEF setup worker on fan-dashboard
+T-1274	onboarding-curriculum	memory writes blocked by the onboarding task gate in a consumer
+T-4118	continuous-run	claude-fw wrapper keeps old functions across its restart loop
+T-3358	continuous-run	claude-fw --termlink exit detection orphans sessions
+T-4119	continuous-run	terminator's 180 s handover limit kills slow handovers
+T-3306	horizon-axis-hardening	close gate re-enters itself and hangs
+T-4632	horizon-axis-hardening	make 11 finished tasks closable
+T-3541	arc-020	swap project id into the five-part address
+T-3335	arc-020	termlink wiring for the identity substrate
+T-4124	arc-020	sidecar send to a local peer fails 401 after reboot
+T-1062	arc-020	task-aware terminal chrome via TermLink RPC
+T-4114	risk	project-boundary hook misses tee with leading options (security)
+T-4516	risk	LAN addresses shipped in framework files and consumer repos
+T-2354	value-prioritisation	BVP estimator audit_severity handler
+T-2306	value-prioritisation	implement three GO'd BVP drivers
+T-100201	github-contributions	master-merge-only vs session-on-master contradiction (release train)
+T-3785	github-contributions	release lag: master far behind consumers

@@ -14,7 +14,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, g-114, hotfix]
+tags: [bug, g-114, hotfix, arc:parallel-execution-aef]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -33,6 +33,7 @@ related_tasks: []
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -44,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T13:56:38Z
-last_update: '2026-11-23T15:00:47Z'
+last_update: 2026-11-23T17:35:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -421,3 +422,6 @@ bin/fw vendor self --check
 - **Pre-fix proof:** bleeding-edge commit 1a7eae801 with web/blueprints/inception.py reverted to 1a7eae801^ (scratch clone `.context/scratch/hotfix/proof`, deleted after): `test_t4081_watchtower_commit_keeps_real_index.py` 2 failed / 3 passed — `test_held_index_lock_is_surfaced_not_a_silent_success` and `test_lock_released_during_retries_keeps_the_decision` (the decision is reverted by the next commit).
 - **With the fix:** same file 5 passed on bleeding-edge and on the hotfix rebuild.
 - **Hotfix rebuild:** master b82294243 → T-4081 (ff82b31b0 cherry-picked) → T-4112 (1a7eae801 cherry-picked, applied clean) → VERSION (4cb700f99 cherry-picked, same content 1.8.10). Full report: docs/reports/T-4092-hotfix-v1810.md.
+
+### 2026-11-23T17:35:22Z — status-update [task-update-agent]
+- **Change:** tags: +arc:parallel-execution-aef

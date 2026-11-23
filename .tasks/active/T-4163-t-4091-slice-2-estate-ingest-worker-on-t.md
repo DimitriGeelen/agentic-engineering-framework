@@ -18,7 +18,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc:embeddings-strategy]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -37,6 +37,7 @@ related_tasks: []
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: embeddings-strategy
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -48,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:32:26Z
-last_update: '2026-11-23T15:00:48Z'
+last_update: 2026-11-23T17:36:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -474,3 +475,6 @@ python3 -m py_compile lib/estate_ingest.py
 ### 2026-10-13 — manifest read-only follow-up (ring20 msg f963ca58) [dispatch t4163b-manifest]
 - Removed `QdrantStore.set_manifest_active` and its call in `drain`; added `check_manifest` (missing / state not candidate|active / dims != 768 / pinned digest != host digest → Refused; `sha256:` prefix tolerated both sides; an apply with no host digest is refused when the entry pins one).
 - Pre-fix failure: with HEAD's `lib/estate_ingest.py`, 20 of the updated tests fail (the drain attempts the `_manifest` write, which the fake now rejects as the real 403 would; retired/dims are not refused). With the change: 54 passed (test_estate_ingest + test_estate_push). Not run against the live store.
+
+### 2026-11-23T17:36:07Z — status-update [task-update-agent]
+- **Change:** tags: +arc:embeddings-strategy

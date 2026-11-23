@@ -19,7 +19,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc:test-suite-health]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -38,6 +38,7 @@ related_tasks: []
 #                                 # An EMPTY list is a real declaration ("writes nothing"),
 #                                 # which is not the same as omitting the field. Omitted
 #                                 # means unknown, and unknown must never score as cheap.
+arc_id: test-suite-health
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -49,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T00:09:04Z
-last_update: '2026-11-23T15:00:49Z'
+last_update: 2026-11-23T17:35:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -442,3 +443,6 @@ out=$(python3 -m pytest -q tests/unit/test_sidecar_watcher_t3684.py::test_start_
 - RED (15): approvals_close_ready_arcs, atomic_yaml_write_lint, audit_inception_recommendation, audit_split_root_asset_lint, context_safe_commands, doctor_hook_counters, handover_push_timeout, hook_producer_site_parity (now green, see above), lib_review, no_root_framework_markers, review_pipefail, t2298_audit_structure_no_perfile_fork, test_bin_fw_no_heredoc_cmd_sub, test_cron_registry_generated_drift, test_operator_facing_stderr.py
 - TIMEOUT (3, no verdict): t2244_audit_self_vendor_drift, test_doctor_litellm_ollama, test_index_doctor_rail
 - Baseline not touched. Red causes for the 15 were not investigated (out of scope).
+
+### 2026-11-23T17:35:29Z — status-update [task-update-agent]
+- **Change:** tags: +arc:test-suite-health
