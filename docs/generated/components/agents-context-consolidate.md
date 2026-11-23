@@ -6,6 +6,10 @@
 
 ## What It Does
 
+T-5373: framework root at sys.path[0] BEFORE any `lib` import. This script's
+own directory (sys.path[0] under `python3 <script>`) has a lib/ subdirectory,
+which would otherwise bind `lib` to a namespace portion first.
+
 ## Dependencies (2)
 
 | Component | Relationship | Description |
