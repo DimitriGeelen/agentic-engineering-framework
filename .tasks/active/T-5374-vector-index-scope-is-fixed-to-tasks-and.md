@@ -9,7 +9,7 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: [consumer, peer-request, recall]
 components: [bin/fw, lib/authored_scope.py, lib/config.sh, lib/vector_index_health.py, tests/unit/test_t5374_authored_scope.py, web/blueprints/config.py, web/search_utils.py]
@@ -167,13 +167,14 @@ bvp_scores_proposed:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
 
-- [ ] [REVIEW] The new INDEX_EXTRA_DIRS row on the Watchtower config page reads like its neighbours
+- [x] [REVIEW] The new INDEX_EXTRA_DIRS row on the Watchtower config page reads like its neighbours
   **Steps:**
   1. Open http://192.168.10.107:3000/config
   2. Find the row `INDEX_EXTRA_DIRS` (use the browser's find, Ctrl+F)
   3. Compare it with the rows above and below it
   **Expected:** same columns and wrapping as the other rows; the description is readable and does not push the table wider; no overlap at your window width.
   **If not:** note which column clips or overlaps; screenshots at 1024/1440/1920 are in .context/visual/T-5374/.
+  **Reviewer verdict:** green V-20261123-38a0b3d9 — reviewer-judge-t-5374-r5-antigravity-bca26e618a4c:antigravity (rung rung-5-panel:antigravity), digest a5f4ee19d668; dispatch judge-t-5374-r5-antigravity-bca26e618a4c; evidence: .context/reviews/evidence/T-5374/AC1-judge-t-5374-r5-antigravity-bca26e618a4c.md, .context/reviews/evidence/T-5374/01-config-judge-t-5374-r5-antigravity-bca26e618a4c.png, .context/reviews/evidence/T-5374/config@1024-judge-t-5374-r5-antigravity-bca26e618a4c.png, .context/reviews/evidence/T-5374/config@1440-judge-t-5374-r5-antigravity-bca26e618a4c.png, .context/reviews/evidence/T-5374/config@1920-judge-t-5374-r5-antigravity-bca26e618a4c.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
