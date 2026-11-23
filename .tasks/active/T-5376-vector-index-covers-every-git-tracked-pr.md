@@ -11,7 +11,7 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: [consumer, recall, index, operator-request]
 components: [bin/fw, lib/authored_scope.py, lib/config.sh, lib/vector_index_health.py, tests/unit/test_t5376_index_all_documents.py, web/blueprints/config.py, web/search_utils.py]
@@ -153,13 +153,14 @@ cost_estimate_proposed:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
 
-- [ ] [REVIEW] The new INDEX_EXCLUDE_DIRS row on the Watchtower config page reads like its neighbours
+- [x] [REVIEW] The new INDEX_EXCLUDE_DIRS row on the Watchtower config page reads like its neighbours
   **Steps:**
   1. Open http://192.168.10.107:3000/config
   2. Find the row `INDEX_EXCLUDE_DIRS` (browser find, Ctrl+F)
   3. Compare it with the rows above and below it
   **Expected:** same columns and wrapping as the other rows; the description is readable and does not push the table wider; no overlap at your window width.
   **If not:** note which column clips or overlaps; screenshots at 1024/1440/1920 are in .context/visual/T-5376/.
+  **Reviewer verdict:** green V-20261123-b3543789 — reviewer-judge-t-5376-r5-antigravity-db2e33e86c46:antigravity (rung rung-5-panel:antigravity), digest 07d72b1f4f24; dispatch judge-t-5376-r5-antigravity-db2e33e86c46; evidence: .context/reviews/evidence/T-5376/AC1-judge-t-5376-r5-antigravity-db2e33e86c46.md, .context/reviews/evidence/T-5376/01-config-judge-t-5376-r5-antigravity-db2e33e86c46.png, .context/reviews/evidence/T-5376/config@1024-judge-t-5376-r5-antigravity-db2e33e86c46.png, .context/reviews/evidence/T-5376/config@1440-judge-t-5376-r5-antigravity-db2e33e86c46.png, .context/reviews/evidence/T-5376/config@1920-judge-t-5376-r5-antigravity-db2e33e86c46.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
