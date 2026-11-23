@@ -172,3 +172,66 @@ def test_no_shell_runs_python_dash_m_lib_from_the_caller_cwd():
                 continue
             bad.append(f"{p.relative_to(ROOT)}:{i + 1}")
     assert not bad, "python3 -m lib.* from caller CWD:\n" + "\n".join(bad)
+
+
+# --- T-5373 follow-up: scripts whose own directory has a `lib/` subdirectory ---
+# `python3 <script>` puts the script's directory at sys.path[0]. When that
+# directory holds a `lib/` (agents/context/lib, agents/git/lib, ...), the first
+# `import lib` binds `lib` to that namespace portion and caches it, and a later
+# sys.path insert of the framework root cannot merge the (now regular) framework
+# package into it: ModuleNotFoundError: No module named 'lib.fw_command'.
+
+_SCAN_DIRS = ("agents", "bin", "web", "lib", "tests")
+_LIB_IMPORT = re.compile(r"^\s*(?:from|import)\s+(lib(?:\.\w+)+)", re.M)
+
+
+def _exposed_scripts():
+    out = []
+    for d in _SCAN_DIRS:
+        for libdir in (ROOT / d).rglob("lib"):
+            if not libdir.is_dir() or "node_modules" in libdir.parts:
+                continue
+            if libdir.resolve() == (ROOT / "lib").resolve():
+                continue
+            for py in sorted(libdir.parent.glob("*.py")):
+                mods = sorted(set(_LIB_IMPORT.findall(py.read_text())))
+                if mods:
+                    out.append((py, mods))
+    return out
+
+
+EXPOSED = _exposed_scripts()
+
+_PROBE = r"""
+import importlib, runpy, sys
+script, root, mods = sys.argv[1], sys.argv[2], sys.argv[3:]
+# Mimic `python3 <script>`: script dir first, no CWD / framework root entry.
+sys.path[:] = [p for p in sys.path if p not in ("", root)]
+sys.path.insert(0, __import__("os").path.dirname(script))
+sys.argv = [script]
+runpy.run_path(script, run_name="__t5373_probe__")
+for m in mods:
+    importlib.import_module(m)
+mod = sys.modules["lib"]
+assert getattr(mod, "__file__", None) and mod.__file__.startswith(root), mod
+"""
+
+
+def test_exposed_script_list_is_not_empty():
+    names = {p.name for p, _ in EXPOSED}
+    assert "inject-next-directive.py" in names, names
+
+
+@pytest.mark.parametrize("script,mods", EXPOSED,
+                         ids=[str(p.relative_to(ROOT)) for p, _ in EXPOSED])
+def test_script_with_sibling_lib_dir_imports_framework_lib(script, mods, consumer):
+    """Run as `python3 <script>` from a decoy consumer with its regular lib on
+    PYTHONPATH: every `lib.X` the script names must resolve to the framework."""
+    env = _env(consumer)
+    env["PYTHONPATH"] = str(consumer)
+    r = subprocess.run(
+        ["python3", "-c", _PROBE, str(script), str(ROOT), *mods],
+        text=True, capture_output=True, cwd=consumer, env=env, timeout=60,
+        stdin=subprocess.DEVNULL,
+    )
+    assert r.returncode == 0, r.stderr[-1500:]

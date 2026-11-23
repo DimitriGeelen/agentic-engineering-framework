@@ -27,6 +27,14 @@ from datetime import datetime, timezone
 import yaml
 
 
+# T-5373: framework root at sys.path[0] BEFORE any `lib` import. This script's
+# own directory (sys.path[0] under `python3 <script>`) has a lib/ subdirectory,
+# which would otherwise bind `lib` to a namespace portion first.
+_FW_ROOT_T5373 = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if sys.path[:1] != [_FW_ROOT_T5373]:
+    sys.path.insert(0, _FW_ROOT_T5373)
+
+
 def _fwc(args, root=None):
     """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
     try:
@@ -38,6 +46,10 @@ def _fwc(args, root=None):
         for _ in range(3):
             _base = _os.path.dirname(_base)
         _sys.path.insert(0, _base)
+        # T-5373: a cached namespace `lib` (from this dir's lib/) cannot merge
+        # the regular framework package; drop it before retrying.
+        for _m in [m for m in _sys.modules if m == "lib" or m.startswith("lib.")]:
+            del _sys.modules[_m]
         from lib.fw_command import user_command
     return user_command(args, root)
 

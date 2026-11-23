@@ -42,7 +42,7 @@ from pathlib import Path
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _FRAMEWORK_ROOT = _SCRIPT_DIR.parent.parent
-if str(_FRAMEWORK_ROOT) not in sys.path:
+if sys.path[:1] != [str(_FRAMEWORK_ROOT)]:  # T-5373: root first, always
     sys.path.insert(0, str(_FRAMEWORK_ROOT))
 
 from lib.hook_paths import reanchor_project_root  # noqa: E402
@@ -59,6 +59,10 @@ def _fwc(args, root=None):
         for _ in range(3):
             _base = _os.path.dirname(_base)
         _sys.path.insert(0, _base)
+        # T-5373: a cached namespace `lib` (from this dir's lib/) cannot merge
+        # the regular framework package; drop it before retrying.
+        for _m in [m for m in _sys.modules if m == "lib" or m.startswith("lib.")]:
+            del _sys.modules[_m]
         from lib.fw_command import user_command
     return user_command(args, root)
 

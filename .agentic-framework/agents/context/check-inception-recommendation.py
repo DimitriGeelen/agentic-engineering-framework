@@ -53,7 +53,7 @@ from pathlib import Path
 # T-2468: resolve lib/ to import the shared hook project-root resolver
 # (parity with lib/paths.sh:fw_reanchor_from_cwd — re-anchor to the worktree).
 _FW_T2468 = Path(__file__).resolve().parent.parent.parent
-if str(_FW_T2468) not in sys.path:
+if sys.path[:1] != [str(_FW_T2468)]:  # T-5373: root first, always
     sys.path.insert(0, str(_FW_T2468))
 from lib.hook_paths import reanchor_project_root  # noqa: E402
 
@@ -69,6 +69,10 @@ def _fwc(args, root=None):
         for _ in range(3):
             _base = _os.path.dirname(_base)
         _sys.path.insert(0, _base)
+        # T-5373: a cached namespace `lib` (from this dir's lib/) cannot merge
+        # the regular framework package; drop it before retrying.
+        for _m in [m for m in _sys.modules if m == "lib" or m.startswith("lib.")]:
+            del _sys.modules[_m]
         from lib.fw_command import user_command
     return user_command(args, root)
 

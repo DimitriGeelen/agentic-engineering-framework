@@ -46,7 +46,7 @@ from pathlib import Path
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _FRAMEWORK_ROOT = _SCRIPT_DIR.parent.parent
-if str(_FRAMEWORK_ROOT) not in sys.path:
+if sys.path[:1] != [str(_FRAMEWORK_ROOT)]:  # T-5373: root first, always
     sys.path.insert(0, str(_FRAMEWORK_ROOT))
 
 from lib.hook_paths import reanchor_project_root  # noqa: E402  (T-2468)

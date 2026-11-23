@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 _FW = Path(__file__).resolve().parent.parent.parent
-if str(_FW) not in sys.path:
+if sys.path[:1] != [str(_FW)]:  # T-5373: root first, always
     sys.path.insert(0, str(_FW))
 if str(_FW / "lib") not in sys.path:
     sys.path.insert(0, str(_FW / "lib"))
