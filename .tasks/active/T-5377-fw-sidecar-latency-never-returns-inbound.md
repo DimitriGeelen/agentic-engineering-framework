@@ -8,10 +8,10 @@ description: >
   and receipts.read_sent() inside the per-message loop; events.jsonl is 16k lines
   / 3.5 MB.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [bug, sidecar, O-5]
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T15:27:53Z
-last_update: 2026-11-23T15:28:52Z
+last_update: 2026-11-23T18:14:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,10 +102,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/sidecar/latency.py reads receiver events and the receipts ledger ONCE per report (indexed by msg_id / client_msg_id), not inside the per-message loop; same for any other per-message full-ledger read on the report path (outbound included).
-- [ ] Equivalence: on a hermetic fixture (a few messages, events, receipts, direct-ack rows) the new `report()` returns exactly the old `report()` output (compare against the pre-change function kept in the test or a recorded expected JSON).
-- [ ] Test tests/unit/test_t5377_latency_single_read.py (pytest, hermetic, no skips): equivalence plus a counter/monkeypatch asserting read_events and read_sent are each called at most once per report.
-- [ ] Live: `timeout 60 bin/fw sidecar latency` and `timeout 60 bin/fw sidecar latency --json` both exit 0 on this repo; wall time recorded in Updates; existing sidecar latency/receipts tests keep their results.
+- [x] lib/sidecar/latency.py reads receiver events and the receipts ledger ONCE per report (indexed by msg_id / client_msg_id), not inside the per-message loop; same for any other per-message full-ledger read on the report path (outbound included).
+- [x] Equivalence: on a hermetic fixture (a few messages, events, receipts, direct-ack rows) the new `report()` returns exactly the old `report()` output (compare against the pre-change function kept in the test or a recorded expected JSON).
+- [x] Test tests/unit/test_t5377_latency_single_read.py (pytest, hermetic, no skips): equivalence plus a counter/monkeypatch asserting read_events and read_sent are each called at most once per report.
+- [x] Live: `timeout 60 bin/fw sidecar latency` and `timeout 60 bin/fw sidecar latency --json` both exit 0 on this repo; wall time recorded in Updates; existing sidecar latency/receipts tests keep their results.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -344,6 +344,11 @@ bin/fw vendor self --check --task T-5377
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-23 — fixed (e154c1e48), worked on operator override
+- **What changed:** scored low value by the estimator (BVP 23) and parked by the run mandate; the operator overrode ("do T-5377"). Measured: >300 s (killed) → 0.79 s plain / 0.83 s --json on 2,316 inbound messages; sidecar receipt/watcher tests 37/37 before and after (parent ran both); new single-read test 2/2.
+- **Plan impact:** outbound() already read each ledger once, so only inbound() changed.
+- **Triggered:** cosmetic: rows with no reply render `replied=Nones` (None + unit); not fixed here.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -403,3 +408,7 @@ bin/fw vendor self --check --task T-5377
 
 ### 2026-11-23T15:28:52Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-11-23T18:14:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
