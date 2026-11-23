@@ -102,10 +102,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/authored_scope.py decides inclusion by rule: git-tracked (`git ls-files`) + document suffix, anywhere in the project, minus the exclusion list; non-git project falls back to the existing AUTHORED_DIRS walk. One function used by web/search_utils.collect_files, keyword `fw search`, and vector_index_health's freshness scope.
-- [ ] Exclusions configurable through one config key (INDEX_EXCLUDE_DIRS, colon-separated, added to the built-in exclusions); INDEX_EXTRA_DIRS keeps working (adds untracked or non-suffix dirs); config parity lint green.
-- [ ] Hermetic tests (tests/unit/test_t5376_index_all_documents.py): a temp git project with design/x.md, README.md, notes/y.rst, .agentic-framework/z.md, docs/generated/g.md, an untracked scratch.md — first three included, last three excluded; exclusion key works; non-git project falls back.
-- [ ] Live, this repo: the collector now includes README.md, docs/research/*, docs/plans/* and still excludes .context/scratch and .agentic-framework; report file count before/after and the time `fw index reindex` takes; `fw doctor` vector index stays OK after reindex.
+- [x] lib/authored_scope.py decides inclusion by rule: git-tracked (`git ls-files`) + document suffix, anywhere in the project, minus the exclusion list; non-git project falls back to the existing AUTHORED_DIRS walk. One function used by web/search_utils.collect_files, keyword `fw search`, and vector_index_health's freshness scope.
+- [x] Exclusions configurable through one config key (INDEX_EXCLUDE_DIRS, colon-separated, added to the built-in exclusions); INDEX_EXTRA_DIRS keeps working (adds untracked or non-suffix dirs); config parity lint green.
+- [x] Hermetic tests (tests/unit/test_t5376_index_all_documents.py): a temp git project with design/x.md, README.md, notes/y.rst, .agentic-framework/z.md, docs/generated/g.md, an untracked scratch.md — first three included, last three excluded; exclusion key works; non-git project falls back.
+- [x] Live, this repo: the collector now includes README.md, docs/research/*, docs/plans/* and still excludes .context/scratch and .agentic-framework; report file count before/after and the time `fw index reindex` takes; `fw doctor` vector index stays OK after reindex.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -152,6 +152,14 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+
+- [ ] [REVIEW] The new INDEX_EXCLUDE_DIRS row on the Watchtower config page reads like its neighbours
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row `INDEX_EXCLUDE_DIRS` (browser find, Ctrl+F)
+  3. Compare it with the rows above and below it
+  **Expected:** same columns and wrapping as the other rows; the description is readable and does not push the table wider; no overlap at your window width.
+  **If not:** note which column clips or overlaps; screenshots at 1024/1440/1920 are in .context/visual/T-5376/.
 
 ## Verification
 
@@ -296,6 +304,14 @@ python3 -m pytest -q tests/unit/test_t5376_index_all_documents.py
 python3 -c "import sys; sys.path.insert(0,'.'); from web.search_utils import collect_files; s={str(p) for p in collect_files()}; assert any(x.endswith('README.md') for x in s) and any('docs/research/' in x for x in s) and not any('.context/scratch/' in x or '.agentic-framework/' in x for x in s)"
 bats tests/lint/config-registry-parity.bats
 bin/fw vendor self --check --task T-5376
+bin/fw watchtower current
+curl -sf "$(bin/fw watchtower url)/config" | grep -q "INDEX_EXCLUDE_DIRS"
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | INDEX_EXCLUDE_DIRS row | ok | ok | ok | one new table row; same template as every other config key |
 
 ## RCA
 
@@ -312,6 +328,14 @@ bin/fw vendor self --check --task T-5376
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** project documents outside a fixed set of framework-shaped folders (root README, docs/research, docs/plans, a consumer's design/ or architecture/) were never in the vector index; the operator: "we're missing out on key important information".
+
+**Root cause:** inclusion was an allowlist (AUTHORED_DIRS, T-3024): a folder had to be named in framework code to be indexed, so every project layout the framework did not anticipate was silently invisible.
+
+**Why structurally allowed:** the allowlist was designed against the framework repo's own layout; no test used a consumer-shaped project, and an unindexed document produces no error anywhere.
+
+**Prevention:** inclusion is now a rule (git-tracked document anywhere, minus an exclusion list); tests/unit/test_t5376_index_all_documents.py builds a project with design/, README.md and notes/ and asserts they are indexed.
 
 ## Evolution
 
@@ -365,6 +389,14 @@ bin/fw vendor self --check --task T-5376
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** The visible change is one new row (INDEX_EXCLUDE_DIRS) in the existing config table, same template as every key. Behind it, every git-tracked project document is now indexed by default; verified live.
+**Evidence:**
+- collect_files 15,950 -> 16,135 files here, none dropped; README.md, docs/research, docs/plans included; .context/scratch and .agentic-framework excluded.
+- `fw index reindex` 266 s, no errors; `fw doctor` vector index OK; `fw search --semantic "deployment runbook"` now returns docs/deployment-runbook.md (previously unindexed) as top hit.
+- tests/unit/test_t5376_index_all_documents.py + T-5374 tests 18/18; related suites 236 passed; config parity 3/3.
+- Row served at http://192.168.10.107:3000/config; screenshots in .context/visual/T-5376/.
 
 ## Decisions
 
