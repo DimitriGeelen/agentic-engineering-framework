@@ -233,6 +233,24 @@ _sv_is_withheld() {
 }
 
 # T-4419: scoped detection for `fw vendor self --check --task T-XXXX | --paths p…`.
+# T-3156: the copy decision used to be content-only (`diff -q` / `cmp -s`), so a
+# source whose ONLY change was its exec bit never re-copied: T-3051 chmod'ed
+# agents/handover/discard-manifest.sh 644 -> 755 and the vendored copy stayed 644
+# for three months behind a clean --check and a clean `git status` (the wrong mode
+# was the recorded mode). Every helper that propagates the exec bit now also
+# treats an exec-bit mismatch as drift, and syncs the bit in both directions.
+# 0 = exec bits differ (dst exists), 1 = same.
+_sv_mode_differs() {
+    [ -f "$2" ] || return 1
+    if [ -x "$1" ]; then [ ! -x "$2" ]; else [ -x "$2" ]; fi
+}
+
+# Make dst's exec bit match src's. Always returns 0.
+_sv_sync_mode() {
+    if [ -x "$1" ]; then chmod +x "$2"; else chmod a-x "$2"; fi
+    return 0
+}
+
 # The whole-tree --check answers "is every vendored class in sync", which is right for
 # audit and pre-push but wrong at a task close: with parallel workers in one checkout,
 # another worker's uncommitted edit is drift for everyone. When _SV_SCOPE_ACTIVE=1,
@@ -245,7 +263,7 @@ _sv_scope_skip() {
     [ "${_SV_SCOPE_ACTIVE:-0}" = "1" ] || return 1
     rel="${src#$FRAMEWORK_ROOT/}"
     printf '%s\n' "${_SV_SCOPE:-}" | grep -qxF -- "$rel" && return 1
-    if [ ! -f "$dst" ] || ! cmp -s "$src" "$dst"; then
+    if [ ! -f "$dst" ] || ! cmp -s "$src" "$dst" || _sv_mode_differs "$src" "$dst"; then
         echo "  Self-vendor: in flight, not this task: $rel"
     fi
     return 0
@@ -283,12 +301,12 @@ _self_vendor_libs() {
         _sv_rel="${_sv_src#$FRAMEWORK_ROOT/lib/}"
         _sv_dst="$_self_vendor/lib/$_sv_rel"
         _sv_scope_skip "$_sv_src" "$_sv_dst" && continue   # T-4419
-        if [ ! -f "$_sv_dst" ] || ! diff -q "$_sv_src" "$_sv_dst" > /dev/null 2>&1; then
+        if [ ! -f "$_sv_dst" ] || ! diff -q "$_sv_src" "$_sv_dst" > /dev/null 2>&1 || _sv_mode_differs "$_sv_src" "$_sv_dst"; then
             if [ "$dry_run" != true ]; then
                 _sv_dst_dir=$(dirname "$_sv_dst")
                 [ -d "$_sv_dst_dir" ] || mkdir -p "$_sv_dst_dir"
                 cp "$_sv_src" "$_sv_dst"
-                [ -x "$_sv_src" ] && chmod +x "$_sv_dst"
+                _sv_sync_mode "$_sv_src" "$_sv_dst"
             fi
             _sv_updated=$((_sv_updated + 1))
         fi
@@ -520,11 +538,11 @@ _self_vendor_shim() {
         _svs_rel="${_svs_src#$FRAMEWORK_ROOT/bin/}"
         _svs_dst="$_self_vendor/bin/$_svs_rel"
         _sv_scope_skip "$_svs_src" "$_svs_dst" && continue   # T-4419
-        if [ ! -f "$_svs_dst" ] || ! diff -q "$_svs_src" "$_svs_dst" > /dev/null 2>&1; then
+        if [ ! -f "$_svs_dst" ] || ! diff -q "$_svs_src" "$_svs_dst" > /dev/null 2>&1 || _sv_mode_differs "$_svs_src" "$_svs_dst"; then
             if [ "$dry_run" != true ]; then
                 mkdir -p "$(dirname "$_svs_dst")"
                 cp "$_svs_src" "$_svs_dst"
-                [ -x "$_svs_src" ] && chmod +x "$_svs_dst"
+                _sv_sync_mode "$_svs_src" "$_svs_dst"
             fi
             _svs_updated=$((_svs_updated + 1))
         fi
@@ -606,12 +624,12 @@ _self_vendor_agents() {
         _sva_rel="${_sva_src#$FRAMEWORK_ROOT/agents/}"
         _sva_dst="$_self_vendor/agents/$_sva_rel"
         _sv_scope_skip "$_sva_src" "$_sva_dst" && continue   # T-4419
-        if [ ! -f "$_sva_dst" ] || ! diff -q "$_sva_src" "$_sva_dst" > /dev/null 2>&1; then
+        if [ ! -f "$_sva_dst" ] || ! diff -q "$_sva_src" "$_sva_dst" > /dev/null 2>&1 || _sv_mode_differs "$_sva_src" "$_sva_dst"; then
             if [ "$dry_run" != true ]; then
                 _sva_dst_dir=$(dirname "$_sva_dst")
                 [ -d "$_sva_dst_dir" ] || mkdir -p "$_sva_dst_dir"
                 cp "$_sva_src" "$_sva_dst"
-                [ -x "$_sva_src" ] && chmod +x "$_sva_dst"
+                _sv_sync_mode "$_sva_src" "$_sva_dst"
             fi
             _sva_updated=$((_sva_updated + 1))
         fi
@@ -672,12 +690,12 @@ _self_vendor_web() {
         _svw_rel="${_svw_src#$FRAMEWORK_ROOT/web/}"
         _svw_dst="$_self_vendor/web/$_svw_rel"
         _sv_scope_skip "$_svw_src" "$_svw_dst" && continue   # T-4419
-        if [ ! -f "$_svw_dst" ] || ! diff -q "$_svw_src" "$_svw_dst" > /dev/null 2>&1; then
+        if [ ! -f "$_svw_dst" ] || ! diff -q "$_svw_src" "$_svw_dst" > /dev/null 2>&1 || _sv_mode_differs "$_svw_src" "$_svw_dst"; then
             if [ "$dry_run" != true ]; then
                 _svw_dst_dir=$(dirname "$_svw_dst")
                 [ -d "$_svw_dst_dir" ] || mkdir -p "$_svw_dst_dir"
                 cp "$_svw_src" "$_svw_dst"
-                [ -x "$_svw_src" ] && chmod +x "$_svw_dst"
+                _sv_sync_mode "$_svw_src" "$_svw_dst"
             fi
             _svw_updated=$((_svw_updated + 1))
         fi
@@ -725,12 +743,12 @@ _self_vendor_tools() {
         _svx_rel="${_svx_src#$FRAMEWORK_ROOT/tools/}"
         _svx_dst="$_self_vendor/tools/$_svx_rel"
         _sv_scope_skip "$_svx_src" "$_svx_dst" && continue   # T-4419
-        if [ ! -f "$_svx_dst" ] || ! diff -q "$_svx_src" "$_svx_dst" > /dev/null 2>&1; then
+        if [ ! -f "$_svx_dst" ] || ! diff -q "$_svx_src" "$_svx_dst" > /dev/null 2>&1 || _sv_mode_differs "$_svx_src" "$_svx_dst"; then
             if [ "$dry_run" != true ]; then
                 _svx_dst_dir=$(dirname "$_svx_dst")
                 [ -d "$_svx_dst_dir" ] || mkdir -p "$_svx_dst_dir"
                 cp "$_svx_src" "$_svx_dst"
-                [ -x "$_svx_src" ] && chmod +x "$_svx_dst"
+                _sv_sync_mode "$_svx_src" "$_svx_dst"
             fi
             _svx_updated=$((_svx_updated + 1))
         fi
@@ -773,10 +791,10 @@ _self_vendor_root_data() {
         # T-3165: real runs withhold a concurrent task's uncommitted files.
         [ "$dry_run" = true ] || ! _sv_is_withheld "$_svr_src" || continue
         _sv_scope_skip "$_svr_src" "$_svr_dst" && continue   # T-4419
-        if [ ! -f "$_svr_dst" ] || ! cmp -s "$_svr_src" "$_svr_dst"; then
+        if [ ! -f "$_svr_dst" ] || ! cmp -s "$_svr_src" "$_svr_dst" || _sv_mode_differs "$_svr_src" "$_svr_dst"; then
             if [ "$dry_run" != true ]; then
                 cp "$_svr_src" "$_svr_dst"
-                [ -x "$_svr_src" ] && chmod +x "$_svr_dst"
+                _sv_sync_mode "$_svr_src" "$_svr_dst"
             fi
             _svr_updated=$((_svr_updated + 1))
         fi

@@ -1,0 +1,21 @@
+id: tests/unit/test_t3156_vendored_modes.py
+name: test_t3156_vendored_modes
+type: script
+subsystem: tests
+location: tests/unit/test_t3156_vendored_modes.py
+tags: []
+
+purpose: "T-3156: vendored executables must stay executable."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-23
+created_by: unknown
