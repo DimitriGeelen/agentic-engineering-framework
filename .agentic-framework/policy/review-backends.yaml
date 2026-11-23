@@ -138,6 +138,34 @@ backends:
       - '^\s*[|│]\s+(Read|Glob|Grep|List|Bash|Edit|Write|Patch|WebFetch|Webfetch|Task|Skill|Todo\w*)\b'
       - '"type"\s*:\s*"tool_use"'
 
+  - id: mistral-vibe
+    name: "Mistral Vibe (subscription)"
+    harness_class: subscription
+    cost_class: internal      # T-5370: operator 2026-11-23 — "a true subscription"
+    approval_required: false
+    cost_estimate_method: unmetered
+    description: "Mistral Vibe CLI via the operator's Mistral subscription"
+    worker_kind: vibe
+    vendor: mistral
+    vision: false  # T-5370: not probed for image input; no image attachment path in the seat
+    credential:
+      source: cli-login
+      note: "vibe's own login (vibe --setup; auth state under its VIBE_HOME) — the CLI authenticates itself"
+    binary: /root/.local/bin/vibe
+    match:
+      - '(^|[;&|]\s*|/)vibe\s'
+      - '--worker-kind[= ]vibe\b'
+    isolation:   # T-5370: headless, every tool denied, one turn, workdir untrusted, stdin closed
+      # vibe has no --model flag (the model is vibe's own config). `--enabled-tools <a name
+      # that matches no tool>` in headless mode disables every tool: the model may still ASK
+      # for one, and each ask is refused ("Tool execution denied by approval policy", probed
+      # 2026-11-23). --output streaming: JSONL events, so an attempted tool call is visible.
+      argv: ["{binary}", "--workdir", "{seat_dir}", "--agent", "plan", "--enabled-tools", "__no_tool__", "--max-turns", "1", "--output", "streaming", "-p", "{prompt}"]
+      stdin: closed
+      tool_markers:
+      - '"type"\s*:\s*"effect"'
+      - '"toolName"\s*:'
+
   - id: local-gpu
     name: "Local GPU (operator's machine)"
     harness_class: local

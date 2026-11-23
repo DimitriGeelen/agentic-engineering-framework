@@ -1329,7 +1329,7 @@ def vision_shortfall_message(vision_kinds: list[str], vendors: int) -> str:
             f"({', '.join(vision_kinds) or 'none'}; {vendors} vendor{'' if vendors == 1 else 's'} "
             f"dispatchable): an image-evidence criterion at rung 5 needs "
             f"{vl.MIN_EVALUATING_SEATS} vendors that can see images. To add one, run "
-            f"`fw reviewer probe-vision <kind>` (codex, opencode or antigravity) and, if it "
+            f"`fw reviewer probe-vision <kind>` (codex, opencode, antigravity or vibe) and, if it "
             f"answers from the image, the operator sets `vision: true` for that kind in "
             f"policy/review-backends.yaml. The criterion stays open until then.")
 
