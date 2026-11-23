@@ -394,6 +394,11 @@ for t in T-4566 T-4231 T-4567 T-4290 T-4240 T-4568 T-4571 T-4575 T-4198 T-4269 T
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-23 — closed out in the autonomous run (arc-009)
+- **What changed:** worker w-t4632 retried every close: 7 of 11 had already been closed by later sessions (the log was stale); the other 4 (T-4290, T-4571, T-4198, T-4269) are refused only by an unticked Human [REVIEW] criterion. Parent verified: 7 files in .tasks/completed/, 4 in active/.
+- **Plan impact:** nothing left for an agent to fix in this batch; the 4 wait for the operator's review.
+- **Triggered:** none.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
