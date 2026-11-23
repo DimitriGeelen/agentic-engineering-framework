@@ -11444,13 +11444,27 @@ import importlib.util
 _spec = importlib.util.spec_from_file_location(
     'fw_authored_scope', os.path.join(os.environ['FRAMEWORK_ROOT'], 'lib', 'authored_scope.py'))
 _scope = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_scope)
-_covered = [a for a, _ in search_areas]
-for _parts in _scope.authored_dirs(project_root):
-    _d = os.path.join(project_root, *_parts)
-    if not any(_d == c or _d.startswith(c + os.sep) for c in _covered):
-        search_areas.append((_d, os.path.join(*_parts)))
-        _covered.append(_d)
-_excluded = tuple(os.path.join(project_root, *x) + os.sep for x in _scope.EXCLUDED_DIRS)
+# T-5376: the rule is now every git-tracked project document (plus that walk),
+# minus the exclusion list; files outside .tasks/.context are grepped by list,
+# grouped by their first two path components.
+_root_abs = os.path.abspath(project_root)
+_covered = [os.path.abspath(a) for a, _ in search_areas]
+_groups = {}
+for _f in _scope.indexable_files(_root_abs, include_handovers=False):
+    _s = str(_f)
+    if any(_s.startswith(c + os.sep) for c in _covered):
+        continue
+    _rel = os.path.relpath(_s, _root_abs)
+    _dir = _rel.split(os.sep)[:-1]
+    if not _dir and _rel.startswith('0'):
+        continue  # the Spec Documents section below
+    _groups.setdefault(os.path.join(*_dir[:2]) if _dir else '(project root)', []).append(_s)
+for _label in sorted(_groups):
+    search_areas.append((_groups[_label], _label))
+_excluded = tuple(os.path.join(project_root, *x) + os.sep for x in
+                  _scope.EXCLUDED_DIRS + _scope.exclude_dirs(project_root))
+_excluded += tuple(os.path.join(_root_abs, *x) + os.sep for x in
+                   _scope.EXCLUDED_DIRS + _scope.exclude_dirs(project_root))
 
 spec_docs = []
 for fn in os.listdir(project_root):
@@ -11465,13 +11479,14 @@ max_total = 50
 max_per_file = 5
 
 for area_path, area_label in search_areas:
-    if not os.path.isdir(area_path):
+    if isinstance(area_path, list):  # T-5376: an explicit file list
+        cmd = ['grep', '-n', '-H', '-i', '-e', term, '--'] + area_path
+    elif os.path.isdir(area_path):
+        cmd = ['grep', '-rn', '--include=*.yaml', '--include=*.md', '-i', term, area_path]
+    else:
         continue
     try:
-        result = subprocess.run(
-            ['grep', '-rn', '--include=*.yaml', '--include=*.md', '-i', term, area_path],
-            capture_output=True, text=True, timeout=10
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
         lines = result.stdout.strip().split('\n') if result.stdout.strip() else []
     except:
         continue

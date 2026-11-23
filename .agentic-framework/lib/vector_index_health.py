@@ -262,7 +262,7 @@ def _load_authored_scope():
 
 
 _SCOPE = _load_authored_scope()
-DRIFT_DIRS = _SCOPE.AUTHORED_DIRS  # without the project's extras; see drift_dirs()
+DRIFT_DIRS = _SCOPE.AUTHORED_DIRS  # the walked part; the rule is _SCOPE.indexable_files (T-5376)
 DRIFT_SUFFIXES = _SCOPE.INDEXED_SUFFIXES
 
 
@@ -282,35 +282,27 @@ def _source_drift(project_root: Path, state: dict) -> int:
     """
     n = 0
     root_prefix = len(str(project_root).rstrip("/")) + 1
-    dirs = drift_dirs(project_root)
-    excluded = tuple(str(project_root.joinpath(*x)) + "/" for x in _SCOPE.EXCLUDED_DIRS)
-    for parts in dirs:
-        d = project_root.joinpath(*parts)
-        if not d.is_dir():
+    # T-5376: the same rule the reindex embeds (handovers aside) — every
+    # git-tracked project document plus the authored-dir walk.
+    for f in _SCOPE.indexable_files(project_root, include_handovers=False):
+        # == f.relative_to(project_root).as_posix() (T-4386 — pathlib cost ~2 s).
+        seen = state.get(str(f)[root_prefix:])
+        if seen is None:
+            n += 1
             continue
-        for f in d.rglob("*"):
-            if f.suffix not in DRIFT_SUFFIXES or not f.is_file():
-                continue
-            if str(f).startswith(excluded):
-                continue
-            # == f.relative_to(project_root).as_posix(): f comes from rglob under
-            # project_root (T-4386 — pathlib's relative_to cost ~2 s here).
-            seen = state.get(str(f)[root_prefix:])
-            if seen is None:
-                n += 1
-                continue
-            try:
-                h = hashlib.sha256(f.read_text(errors="replace")
-                                   .encode("utf-8", errors="replace")).hexdigest()
-            except (OSError, ValueError, TypeError):
-                n += 1
-                continue
-            n += h != seen[0]
+        try:
+            h = hashlib.sha256(f.read_text(errors="replace")
+                               .encode("utf-8", errors="replace")).hexdigest()
+        except (OSError, ValueError, TypeError):
+            n += 1
+            continue
+        n += h != seen[0]
     # Deleted sources the index still serves are drift too (review round 3):
     # recall would keep answering from content that no longer exists.
-    prefixes = tuple("/".join(parts) + "/" for parts in dirs)
+    excl = _SCOPE.excluded_parts(project_root)
     for rel in state:
-        if (rel.startswith(prefixes) and rel.endswith(DRIFT_SUFFIXES)
+        if (not rel.startswith("__fwcanary__/")
+                and _SCOPE.in_scope(rel, project_root, False, excl)
                 and not (project_root / rel).is_file()):
             n += 1
     return n

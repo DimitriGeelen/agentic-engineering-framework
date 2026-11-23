@@ -350,6 +350,7 @@ FW_CONFIG_REGISTRY=(
     # deleted in either state — git retains every handover regardless.
     "INDEX_HANDOVERS|1|Include .context/handovers/ in the semantic index (web/search_utils.py:collect_files). 0 excludes them: ~90MB / 1,710 files leave fw ask, fw recall, /search and the RAG path. Reversible; deletes nothing. T-3024."
     "INDEX_EXTRA_DIRS||Extra project-relative directories (colon- or comma-separated) treated as authored content, added to lib/authored_scope.py AUTHORED_DIRS for all three retrieval paths: the semantic index (web/search_utils.py:collect_files), keyword fw search, and the vector-index freshness check (lib/vector_index_health.py). Empty = built-in set only. Absolute paths, .., .git and docs/generated are ignored. T-5374."
+    "INDEX_EXCLUDE_DIRS||Project-relative directories (colon- or comma-separated) kept out of the semantic index, keyword fw search and the vector-index freshness check, on top of the built-in exclusions (lib/authored_scope.py NON_PROJECT_DIRS: .agentic-framework, docs/generated, .context/{scratch,working,dispatch,audits,visual,runme,reviews}, vendor, tests/fixtures, node_modules). By default every git-tracked document is indexed. Empty = built-in exclusions only; absolute paths and .. are ignored. T-5376."
     # T-3013 (T-3005 slice 4). The vector index had no doctor coverage at all
     # before this — which is why T-3004 sat for five months. 7 days is chosen
     # against the corpus's own churn: tasks, handovers and episodics change

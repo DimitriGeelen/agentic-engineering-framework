@@ -152,35 +152,12 @@ def collect_files() -> list[Path]:
     See the AUTHORED_AND_DURABLE / GENERATED_OR_RESTATED commentary above: this is a
     rule, not a list, and a new directory has to declare which class it belongs to.
     """
-    files: list[Path] = []
-
-    # T-5374: plus the project's INDEX_EXTRA_DIRS (lib/authored_scope.py).
-    dirs = list(_scope.authored_dirs(PROJECT_ROOT))
-    if _index_handovers():
-        dirs.append(HANDOVER_DIR)
-
-    excluded = tuple(PROJECT_ROOT.joinpath(*parts) for parts in EXCLUDED_DIRS)
-
-    for parts in dirs:
-        d = PROJECT_ROOT.joinpath(*parts)
-        if not d.exists():
-            continue
-        for f in d.rglob("*"):
-            if not f.is_file() or f.suffix not in INDEXED_SUFFIXES:
-                continue
-            if any(f.is_relative_to(x) for x in excluded):
-                continue
-            files.append(f)
-
-    # Top-level specs (CLAUDE.md, FRAMEWORK.md, README.md …) — authored by definition.
-    for f in PROJECT_ROOT.glob("*.md"):
-        files.append(f)
-
-    # Agent docs — the intelligence half of each agent, authored.
-    for f in PROJECT_ROOT.glob("agents/*/AGENT.md"):
-        files.append(f)
-
-    return files
+    # T-5376: every git-tracked project document by default, minus the exclusion
+    # list (built-in + INDEX_EXCLUDE_DIRS); plus the T-5374 authored-dir walk,
+    # INDEX_EXTRA_DIRS and handovers. Non-git: the walk plus top-level *.md and
+    # agents/*/AGENT.md (unchanged T-5374 behaviour).
+    # One rule, shared with keyword `fw search` and the freshness check.
+    return _scope.indexable_files(PROJECT_ROOT, include_handovers=_index_handovers())
 
 
 # T-1235: TTL cache for tag aggregation (was reading 1166 episodic files per /search load)

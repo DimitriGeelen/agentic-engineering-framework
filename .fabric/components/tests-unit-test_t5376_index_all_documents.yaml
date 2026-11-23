@@ -1,0 +1,21 @@
+id: tests/unit/test_t5376_index_all_documents.py
+name: test_t5376_index_all_documents
+type: script
+subsystem: tests
+location: tests/unit/test_t5376_index_all_documents.py
+tags: []
+
+purpose: "T-5376: every git-tracked project document is indexable by default, wherever it lives; exclusion is the exception (built-in list + INDEX_EXCLUDE_DIRS)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-23
+created_by: unknown
