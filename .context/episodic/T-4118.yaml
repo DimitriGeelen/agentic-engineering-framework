@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4118: claude-fw wrapper started before an upgrade keeps old functions in memory across its restart loop, so fixes like T-4032 never reach it (832 T-1140: killed mid-turn at budget-critical)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T18:54:28Z
+# ============================================================================
+
+task_id: T-4118
+task_name: "claude-fw wrapper started before an upgrade keeps old functions in memory across its restart loop, so fixes like T-4032 never reach it (832 T-1140: killed mid-turn at budget-critical)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T14:04:29Z
+completed: 2026-11-23T18:51:39Z
+duration_days: 42
+updates_count: 5
+first_commit: 2026-10-12T17:07:57+02:00
+last_commit: 2026-11-23T19:51:36+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw re-execs its on-disk copy at the restart boundary when it changed. vendor sync bin/claude-fw. last criterion checked (vendor clean, structure audit 0 FAIL, no lint warning in T-4118 files); Context + Evolution
+
+# Key outcomes
+outcomes:
+  - 'At the restart boundary (top of every iteration after the first), if `bin/claude-fw` on disk differs from the copy the wrapper started with, the wrapper re-execs the new file with its ORIGINAL arguments, and the next claude launch runs under the new code (test: marker env set by the modified script is seen by the 2nd claude invocation)'
+  - 'Restart state survives the re-exec: restart counter, sliding-window restart times, the next iteration''s claude arguments, TermLink session name/enabled flag (same PID, so the session is reused); first-launch-only steps (tmux wrap, termlink spawn, sidecar start, banner, `start armed` event) are skipped on the resumed run'
+  - 'One line naming old/new hash goes to `.context/working/.compact-log`, and a `reexec` event to `continuous-run.jsonl`'
+  - 'No re-exec when the script is unchanged; never re-exec mid-turn (check only runs between claude runs, after the old terminator has been reaped)'
+  - 'Script missing/unreadable or new script failing `bash -n` → loud WARNING on stderr + `.compact-log`, loop continues on the in-memory code'
+  - 'New `tests/unit/t4118_claude_fw_reexec_on_change.bats` passes and fails on HEAD''s `bin/claude-fw`; existing claude-fw / terminator suites stay green'
+  - '`bin/fw vendor self --check` clean; `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failures'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.tasks/active/T-4118-claude-fw-wrapper-started-before-an-upgr.md'
+  - 'bin/claude-fw'
+  - 'tests/unit/t4118_claude_fw_reexec_on_change.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T17:07:57'
+    action: 'T-4118: claude-fw re-execs its on-disk copy at the restart boundary when it changed'
+  - time: '2026-10-12T17:08:04'
+    action: 'T-4118: vendor sync bin/claude-fw'
+  - time: '2026-11-23T19:51:36'
+    action: 'T-4118: last criterion checked (vendor clean, structure audit 0 FAIL, no lint warning in T-4118 files); Context + Evolution'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 60767 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, claude-fw, field-test, arc:continuous-run]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 60767
+  commits: 4
+  files_changed: 7
+  lines_added: 631
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-23T18:54:39Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4118-claude-fw-wrapper-started-before-an-upgr.md
+generated_by: context-agent-hybrid
