@@ -1,8 +1,15 @@
 ---
 id: T-5379
-name: "Prompt-origin classifier labels task-notification prompts human: transcript_mark matches by text with one unretried read"
+name: "Prompt-origin classifier labels task-notification prompts human: transcript_mark
+  matches by text with one unretried read"
 description: >
-  010-termlink msg 03b9b550 (2026-11-23): a task-notification prompt (transcript record origin.kind task-notification, promptSource system, 21:41:00.367Z) reached their sidecar as origin human/inferred at 21:41:00.710Z. lib/sidecar/adapter2.py transcript_mark (~174) matches the record by exact prompt TEXT and reads once; None (record not yet written, or text differs) with interactive=True falls to human. The hook payload carries prompt_id = the record's promptId. Fix: match by prompt_id, bounded wait-and-reread when absent, log which branch (none/unmarked/generated).
+  010-termlink msg 03b9b550 (2026-11-23): a task-notification prompt (transcript record
+  origin.kind task-notification, promptSource system, 21:41:00.367Z) reached their
+  sidecar as origin human/inferred at 21:41:00.710Z. lib/sidecar/adapter2.py transcript_mark
+  (~174) matches the record by exact prompt TEXT and reads once; None (record not
+  yet written, or text differs) with interactive=True falls to human. The hook payload
+  carries prompt_id = the record's promptId. Fix: match by prompt_id, bounded wait-and-reread
+  when absent, log which branch (none/unmarked/generated).
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T21:44:17Z
-last_update: 2026-11-23T21:44:17Z
-date_finished: null
+last_update: '2026-11-23T21:45:35Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-23T21:45:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5379: Prompt-origin classifier labels task-notification prompts human: transcript_mark matches by text with one unretried read
