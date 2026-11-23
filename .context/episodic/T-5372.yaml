@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5372: fw upgrade in a project installed at a be-tag pulls from master (v1.8.15) and would downgrade it — designer 0.46.0 -> 0.31.0 and every be-tag fix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T03:17:07Z
+# ============================================================================
+
+task_id: T-5372
+task_name: "fw upgrade in a project installed at a be-tag pulls from master (v1.8.15) and would downgrade it — designer 0.46.0 -> 0.31.0 and every be-tag fix"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T22:27:50Z
+completed: 2026-11-23T03:16:41Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-22T23:28:02+01:00
+last_commit: 2026-11-23T03:48:11+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — fw upgrade from a be-tag install pulls master and would downgrade (designer 0.31 seen by operator). correction — no rollback happened; the dry run reads the pin from the executing framework, not the real source. localised — equal VERSION strings skip the commit check; spec, criteria, RCA. equal VERSION strings decided by commit ancestry; direct precheck no longer skipped on equal strings. tick verified criteria (T-5370, T-5373, T-5374 ticked alongside)
+
+# Key outcomes
+outcomes:
+  - '`fw_version_relation` with equal version strings and a resolvable consumer `version_sha` decides by ancestry: sha == HEAD -> same; sha ancestor of HEAD -> behind; HEAD ancestor of sha -> ahead; neither -> diverged. With no sha, or a sha the source cannot resolve, equal strings still return `same` (no new refusals for old consumers).'
+  - 'The direct-path precheck in `lib/upgrade.sh` runs when the version strings are equal (the `project_version != fw_version` condition no longer skips it), so the ahead/diverged refusal fires on both the direct and auto-clone paths, dry run included.'
+  - 'New hermetic test `tests/unit/test_t5372_equal_version_downgrade.bats` (temp git repos, no network) covers: the five relation cases above, and a direct `fw upgrade --dry-run` from an older same-VERSION source that is REFUSED with `--force-downgrade` named, plus the same source with `--force-downgrade` proceeding.'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` and the existing version-relation / upgrade-guard tests keep their results.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/version-relation.sh'
+  - '.fabric/components/tests-unit-test_t5372_equal_version_downgrade.yaml'
+  - '.tasks/active/T-5370-add-mistral-vibe-installed-at-rootlocalb.md'
+  - '.tasks/active/T-5372-fw-upgrade-in-a-project-installed-at-a-b.md'
+  - '.tasks/active/T-5373-consumer-with-its-own-regular-lib-packag.md'
+  - '.tasks/active/T-5374-vector-index-scope-is-fixed-to-tasks-and.md'
+  - 'lib/upgrade.sh'
+  - 'lib/version-relation.sh'
+  - 'tests/unit/test_t5372_equal_version_downgrade.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T23:28:02'
+    action: 'T-5372: capture — fw upgrade from a be-tag install pulls master and would downgrade (designer 0.31 seen by operator)'
+  - time: '2026-11-22T23:29:46'
+    action: 'T-5372: correction — no rollback happened; the dry run reads the pin from the executing framework, not the real source'
+  - time: '2026-11-23T00:35:51'
+    action: 'T-5372: localised — equal VERSION strings skip the commit check; spec, criteria, RCA'
+  - time: '2026-11-23T01:09:26'
+    action: 'T-5372: equal VERSION strings decided by commit ancestry; direct precheck no longer skipped on equal strings'
+  - time: '2026-11-23T03:48:11'
+    action: 'T-5372: tick verified criteria (T-5370, T-5373, T-5374 ticked alongside)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 288 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 288
+  commits: 6
+  files_changed: 13
+  lines_added: 759
+  lines_removed: 41
+  footprint_refreshed_at: '2026-11-23T03:17:21Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5372-fw-upgrade-in-a-project-installed-at-a-b.md
+generated_by: context-agent-hybrid
