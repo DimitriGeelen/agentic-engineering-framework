@@ -379,6 +379,11 @@ regression test plus a control leg that reproduces the old sweep.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-23 — linked to arc-011 and closed out in the autonomous run
+- **What changed:** the build shipped in v1.8.10 (a18877b52, ae5c6babd); the only open criterion was the consumer hand-off. The task was linked to arc-011 (parallel execution, O-5: concurrent agents never corrupt governed state) by T-5378, which is why this entry exists.
+- **Plan impact:** none to the design; the historical rows stay invalid by construction (append-only ledger) and are handled by acknowledge, not repair.
+- **Triggered:** ring20 sent the acknowledge path (sidecar msg 01921787, conversation aef-t3940-swept-verdict-rows); no new task.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
