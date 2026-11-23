@@ -1,0 +1,177 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4490: Green-degraded closes: a rung-5 review panel that fails only on UNAVAILABLE seats closes green-degraded when >=2 distinct vendors judged green (T-4466 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T19:23:01Z
+# ============================================================================
+
+task_id: T-4490
+task_name: "Green-degraded closes: a rung-5 review panel that fails only on UNAVAILABLE seats closes green-degraded when >=2 distinct vendors judged green (T-4466 GO)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T15:32:44Z
+completed: 2026-11-23T19:19:23Z
+duration_days: 34
+updates_count: 4
+first_commit: 2026-10-20T17:50:57+02:00
+last_commit: 2026-11-23T20:19:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  green-degraded panel closes — a rung-5 panel whose only missing seats are provably UNAVAILABLE (signed start + completion, no verdict) closes on >=2 distinct-vendor greens with no dissent; never operator-only classes; GREEN-DEGRADED on the criterion, WARN + per-ISO-week count in audit; REVIEW_GREEN_DEGRADED opt-out (default on); judge continues past unavailable seats. Recommendation GO for the /config row review. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). REVIEW_GREEN_DEGRADED row sits next to the spend-ceiling row on /config (codex amber 2026-11-23); Context backfilled. panel green 3/3; Evolution
+
+# Key outcomes
+outcomes:
+  - 'C1: a missing seat counts as UNAVAILABLE only when its dispatch is registered (signed) for this run''s seat, task and pinned revision, has one signed runtime start and one signed runtime completion listing NO verdict, and left no ledger row; the reason recorded is the completion''s exit state. A seat never dispatched, never started, with no completion, or that left a not-evaluated (or any) row refuses green-degraded — tests per refusal'
+  - 'C2: green-degraded needs >=2 evaluating seats, all green, of >=2 distinct registry-derived vendors at the run''s pinned revision; any amber/red/escalate seat refuses; a single green refuses; two greens of one vendor refuse — tests per refusal'
+  - 'C3: the ticked criterion''s reviewer annotation carries `GREEN-DEGRADED: ...` (seats green, seats unavailable with reasons); `applied.jsonl` records it; `python3 lib/verdict_ledger.py audit` emits `WARN green-degraded:` and `fw audit` WARNs on it'
+  - 'C4: never for a tier-0-or-bypass, act-in-the-world or sovereignty criterion (explicit class check in the degraded path) — test'
+  - 'C5: `REVIEW_GREEN_DEGRADED` (default 1) in both `lib/config.sh` and `web/blueprints/config.py`; set to 0, the same panel refuses with the old `panel-incomplete` reason — test; config-registry parity lint green'
+  - 'C6: `lib/verdict_ledger.py audit` prints a per-ISO-week count of green-degraded closes (`WARN green-degraded weekly: <YYYY-Www> N`) — test'
+  - 'C7: the judge (`lib/reviewer/judge_cli.py`) continues a panel past an UNAVAILABLE seat when the key is on, and `_final` reports such a panel green when the ledger accepts it — test; the T-3580/T-3986/T-3852 suites stay green'
+  - '[REVIEW] The new REVIEW_GREEN_DEGRADED row on /config reads clearly next to the spend-ceiling row'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-4490/01-config-0_10603_1280_1048-crop.png'
+  - '.context/reviews/evidence/T-4490/01-config-40_10880_1200_346-crop.png'
+  - '.context/reviews/evidence/T-4490/01-config-40_10880_1200_710-crop.png'
+  - '.context/reviews/evidence/T-4490/01-config-judge-t-4490-r5-antigravity-b4ad077ac38f.png'
+  - '.context/reviews/evidence/T-4490/01-config-judge-t-4490-r5-claude-code-06165a4daa53.png'
+  - '.context/reviews/evidence/T-4490/01-config-judge-t-4490-r5-claude-code-5ffbaada0de9.png'
+  - '.context/reviews/evidence/T-4490/01-config-judge-t-4490-r5-claude-code-dcda7a0167a7.png'
+  - '.context/reviews/evidence/T-4490/01-config-judge-t-4490-r5-claude-code-f40e8ac7806c.png'
+  - '.context/reviews/evidence/T-4490/01-config-judge-t-4490-r5-codex-a91db04b56f7.png'
+  - '.context/reviews/evidence/T-4490/01-config.png'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-antigravity-4ff2e308e566.md'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-antigravity-b4ad077ac38f.md'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-claude-code-06165a4daa53.md'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-claude-code-5ffbaada0de9.md'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-claude-code-76608b11475b.md'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-claude-code-dcda7a0167a7.md'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-claude-code-f40e8ac7806c.md'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-codex-60f8b352ae1e.md'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-codex-a91db04b56f7.md'
+  - '.context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-codex-acb751ad2b80.md'
+  - '.context/reviews/evidence/T-4490/config@1024-0_16859_1024_1666-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1024-37_17626_950_1238-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1024-37_17626_950_634-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1024-judge-t-4490-r5-antigravity-b4ad077ac38f.png'
+  - '.context/reviews/evidence/T-4490/config@1024-judge-t-4490-r5-claude-code-06165a4daa53.png'
+  - '.context/reviews/evidence/T-4490/config@1024-judge-t-4490-r5-claude-code-5ffbaada0de9-0_18500_1024_300-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1024-judge-t-4490-r5-claude-code-5ffbaada0de9.png'
+  - '.context/reviews/evidence/T-4490/config@1024-judge-t-4490-r5-claude-code-f40e8ac7806c.png'
+  - '.context/reviews/evidence/T-4490/config@1024-judge-t-4490-r5-codex-a91db04b56f7.png'
+  - '.context/reviews/evidence/T-4490/config@1024.png'
+  - '.context/reviews/evidence/T-4490/config@1440-0_10603_1440_1048-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1440-120_10880_1200_346-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1440-120_10880_1200_710-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1440-judge-t-4490-r5-antigravity-b4ad077ac38f.png'
+  - '.context/reviews/evidence/T-4490/config@1440-judge-t-4490-r5-claude-code-06165a4daa53.png'
+  - '.context/reviews/evidence/T-4490/config@1440-judge-t-4490-r5-claude-code-5ffbaada0de9.png'
+  - '.context/reviews/evidence/T-4490/config@1440-judge-t-4490-r5-claude-code-f40e8ac7806c.png'
+  - '.context/reviews/evidence/T-4490/config@1440-judge-t-4490-r5-codex-a91db04b56f7.png'
+  - '.context/reviews/evidence/T-4490/config@1440.png'
+  - '.context/reviews/evidence/T-4490/config@1920-0_8357_1920_826-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1920-235_8460_1450_250-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1920-235_8551_1450_427-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1920-judge-t-4490-r5-antigravity-b4ad077ac38f.png'
+  - '.context/reviews/evidence/T-4490/config@1920-judge-t-4490-r5-claude-code-06165a4daa53.png'
+  - '.context/reviews/evidence/T-4490/config@1920-judge-t-4490-r5-claude-code-5ffbaada0de9-0_8600_1920_300-crop.png'
+  - '.context/reviews/evidence/T-4490/config@1920-judge-t-4490-r5-claude-code-5ffbaada0de9.png'
+  - '.context/reviews/evidence/T-4490/config@1920-judge-t-4490-r5-claude-code-f40e8ac7806c.png'
+  - '.context/reviews/evidence/T-4490/config@1920-judge-t-4490-r5-codex-a91db04b56f7.png'
+  - '.context/reviews/evidence/T-4490/config@1920.png'
+  - '.context/reviews/evidence/T-4490/crop-1920-spend-vs-degraded-judge-t-4490-r5-claude-code-f40e8ac7806c.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4490-green-degraded-closes-a-rung-5-review-pa.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/config.sh'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/t4490_green_degraded_test.py'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:50:57'
+    action: 'T-4490: green-degraded panel closes — a rung-5 panel whose only missing seats are provably UNAVAILABLE (signed start + completion, no verdict) closes on >=2 distinct-vendor greens with no dissent; never operator-only classes; GREEN-DEGRADED on the criterion, WARN + per-ISO-week count in audit; REVIEW_GREEN_DEGRADED opt-out (default on); judge continues past unavailable seats'
+  - time: '2026-10-20T20:06:46'
+    action: 'T-4490: Recommendation GO for the /config row review'
+  - time: '2026-10-20T20:10:46'
+    action: 'T-4490: reviewer verdict'
+  - time: '2026-10-20T20:11:45'
+    action: 'T-4490: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-20T20:14:51'
+    action: 'T-4490: reviewer verdict'
+  - time: '2026-10-20T20:18:27'
+    action: 'T-4490: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-10-20T20:20:20'
+    action: 'T-4490: reviewer verdict'
+  - time: '2026-11-23T20:08:41'
+    action: 'T-4490: reviewer verdict'
+  - time: '2026-11-23T20:10:07'
+    action: 'T-4490: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-23T20:11:45'
+    action: 'T-4490: REVIEW_GREEN_DEGRADED row sits next to the spend-ceiling row on /config (codex amber 2026-11-23); Context backfilled'
+  - time: '2026-11-23T20:14:17'
+    action: 'T-4490: reviewer verdict'
+  - time: '2026-11-23T20:15:32'
+    action: 'T-4490: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-23T20:18:28'
+    action: 'T-4490: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-23T20:19:20'
+    action: 'T-4490: panel green 3/3; Evolution'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 14 commit(s), 49186 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:independent-review]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 49186
+  commits: 15
+  files_changed: 72
+  lines_added: 1466
+  lines_removed: 76
+  footprint_refreshed_at: '2026-11-23T19:23:11Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4490-green-degraded-closes-a-rung-5-review-pa.md
+generated_by: context-agent-hybrid

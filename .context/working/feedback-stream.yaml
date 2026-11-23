@@ -59038,3 +59038,21 @@ scan_id: R-e990c8ca
 task_id: T-4632
 payload:
   task_file: .tasks/active/T-4632-make-11-finished-tasks-closable-gates-re.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T19:22:46Z'
+scan_id: R-dff16efc
+task_id: T-4490
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T19:22:46Z'
+scan_id: R-dff16efc
+task_id: T-4490
+payload:
+  task_file: .tasks/active/T-4490-green-degraded-closes-a-rung-5-review-pa.md
