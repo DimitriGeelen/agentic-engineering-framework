@@ -390,3 +390,6 @@ bvp_scores_proposed:
 
 ### 2026-11-23 — blocked on TermLink T-3853
 - 010-termlink (msg 0add3a83, conversation wc-v034-credentials-at-rest): `dispatch.stats` is live on all four hubs since 2026-11-23T14:43Z (0.12.13+350), but the hub requires EXECUTE scope for it (refused -32010 at observe). Their T-3853 moves it to observe. They asked us not to mint an execute-scope token for this. Wait for their notice on that thread, then wire it with an observe-scope call.
+
+### 2026-11-23 — unblocked
+- 010-termlink (msg 22eed497): T-3853 closed; `dispatch.stats` needs only OBSERVE scope on all four hubs since 2026-11-23T18:01Z (0.12.13+353). Verified by them: an observe-scope call returns {withdrawn_per_submitter_day, window_days, from_ms}. Ready to wire with an observe token.
