@@ -13,10 +13,10 @@ description: >
   invented zeros at the cheapest end of the cost axis, i.e. the most attractive quadrant.
   Rejected on measurement, recorded here so it is not re-proposed.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bvp, cost-axis, fabric]
 components: []
 related_tasks: [T-3471, T-3512, T-3068]
@@ -26,6 +26,7 @@ related_tasks: [T-3471, T-3512, T-3068]
 write_set:
   - agents/termlink/bvp-estimator/estimator.py
   - tests/unit/t3513_fabric_blast_radius.bats
+arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -37,7 +38,7 @@ write_set:
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-26T22:33:50Z
-last_update: '2026-10-31T13:15:15Z'
+last_update: 2026-11-23T14:53:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -125,14 +126,22 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** T-3471 (fw bvp cost axis is unknown for open tasks), leg B, operator-ruled 2026-09-27. Measured 2026-11-23 in the autonomous run: `fw bvp --quadrant` reports 507 of 571 tasks (89%) have no known cost, so only 9 tasks get a quadrant and Q1/Q2 selection is blind for almost the whole backlog. Leg A (T-3512, completed) added the declared `write_set:` fallback; almost no task declares one.
+
+**Problem / hypothesis:** agents/termlink/bvp-estimator/estimator.py `score_blast_radius` (~3165) knows only `components:` (filled at work-completed) and `write_set:` (rarely declared). Most open tasks already NAME the files they will touch in their body, criteria or Verification lines; the fabric (.fabric/components, ~1800 cards with depended_by edges) can turn those paths into a measured blast radius. Nothing reads them.
+
+**Goal:** a third fallback, ordered after components and write_set: paths named in the task body/criteria/Verification, resolved to fabric cards, blast radius = count of those cards plus their transitive depended_by, mapped onto the existing 1/3/5/7/9 ladder; when no path resolves, the result stays unknown (None), never 0 (T-3068 hard rule).
+
+**Expected outcome:** `fw bvp estimate-cost` gives a blast radius to open tasks that name real files, with an evidence token naming the source (`fabric-paths`); tasks naming nothing stay unknown; existing scores from components/write_set are unchanged. Measured effect: the count of open tasks with a known cost rises from the 2026-11-23 baseline (64 of 571).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `score_blast_radius` gains a fabric-paths fallback, reached ONLY when components and write_set both give nothing: extract repo-relative paths named in the task body (Context, criteria, Verification), keep those that exist and have a fabric card, count cards + transitive `depended_by` (each card once, cycles safe), map to the 1/3/5/7/9 ladder; evidence token `→N (K-fabric-paths, M-dependents)`.
+- [ ] No path resolves to a card → returns None with evidence `→? (no-fabric-paths-UNMEASURED-not-zero)`; never 0. Tasks that already score via components or write_set score exactly as before.
+- [ ] Hermetic test tests/unit/t3513_fabric_blast_radius.bats (or .py): fixture fabric with a small depended_by graph incl. a cycle; cases: named path with dependents, named path without card → None, no paths → None, components present → unchanged, write_set present → unchanged.
+- [ ] Live measurement: `bin/fw bvp estimate-cost all --dry-run` (or the sweep) on this repo; report how many open tasks gain a known blast radius, before/after; existing estimator tests keep their results.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,6 +301,8 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bats tests/unit/t3513_fabric_blast_radius.bats
+bin/fw vendor self --check --task T-3513
 
 ## RCA
 
@@ -332,6 +343,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-23 — selected in the autonomous run as the instrument fix
+- **What changed:** the run's top-down selection (objective → arc → BVP quadrant) found that 89% of open tasks have no cost and therefore no quadrant; the two top-BVP arcs (arc-013, arc-011) had no task with a quadrant at all. The cost axis, not the backlog, is the binding constraint on selection.
+- **Plan impact:** filed under arc-006 (value-prioritisation, supports O-3) instead of unassigned; the leg-B design ruled 2026-09-27 is unchanged.
+- **Triggered:** none yet; the before/after count of tasks with a known cost is the measure.
 
 ## Recommendation
 
@@ -389,3 +405,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3513-derive-blastradius-from-the-fabric-when-.md
 - **Context:** Initial task creation
+
+### 2026-11-23T14:53:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
