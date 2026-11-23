@@ -157,10 +157,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `score_blast_radius` gains a fabric-paths fallback, reached ONLY when components and write_set both give nothing: extract repo-relative paths named in the task body (Context, criteria, Verification), keep those that exist and have a fabric card, count cards + transitive `depended_by` (each card once, cycles safe), map to the 1/3/5/7/9 ladder; evidence token `→N (K-fabric-paths, M-dependents)`.
-- [ ] No path resolves to a card → returns None with evidence `→? (no-fabric-paths-UNMEASURED-not-zero)`; never 0. Tasks that already score via components or write_set score exactly as before.
-- [ ] Hermetic test tests/unit/t3513_fabric_blast_radius.bats (or .py): fixture fabric with a small depended_by graph incl. a cycle; cases: named path with dependents, named path without card → None, no paths → None, components present → unchanged, write_set present → unchanged.
-- [ ] Live measurement: `bin/fw bvp estimate-cost all --dry-run` (or the sweep) on this repo; report how many open tasks gain a known blast radius, before/after; existing estimator tests keep their results.
+- [x] `score_blast_radius` gains a fabric-paths fallback, reached ONLY when components and write_set both give nothing: extract repo-relative paths named in the task body (Context, criteria, Verification), keep those that exist and have a fabric card, count cards + transitive `depended_by` (each card once, cycles safe), map to the 1/3/5/7/9 ladder; evidence token `→N (K-fabric-paths, M-dependents)`.
+- [x] No path resolves to a card → returns None with evidence `→? (no-components-no-fabric-paths-UNMEASURED-not-zero)`; never 0. Tasks that already score via components or write_set score exactly as before. (Token restated 2026-11-23: the build keeps the `no-components-` prefix because three existing tests assert on it; the rule is unchanged.)
+- [x] Hermetic test tests/unit/t3513_fabric_blast_radius.bats (or .py): fixture fabric with a small depended_by graph incl. a cycle; cases: named path with dependents, named path without card → None, no paths → None, components present → unchanged, write_set present → unchanged.
+- [x] Live measurement: `bin/fw bvp estimate-cost all --dry-run` (or the sweep) on this repo; report how many open tasks gain a known blast radius, before/after; existing estimator tests keep their results.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -367,6 +367,11 @@ bin/fw vendor self --check --task T-3513
 - **What changed:** the run's top-down selection (objective → arc → BVP quadrant) found that 89% of open tasks have no cost and therefore no quadrant; the two top-BVP arcs (arc-013, arc-011) had no task with a quadrant at all. The cost axis, not the backlog, is the binding constraint on selection.
 - **Plan impact:** filed under arc-006 (value-prioritisation, supports O-3) instead of unassigned; the leg-B design ruled 2026-09-27 is unchanged.
 - **Triggered:** none yet; the before/after count of tasks with a known cost is the measure.
+
+### 2026-11-23 — built (f420b5977), measured; the transitive count saturates
+- **What changed:** open tasks with a known blast_radius 64 → 185 of 590 (121 from the new leg; independent count by the parent, scratchpad count_br.py). But the transitive depended_by closure of a commonly named file reaches ~730 of ~1,800 cards, so the new leg's ladder is 108 at 9, 2 at 7, 2 at 5, 60 at 3 (all sources), i.e. most newly scored tasks read "maximum cost" and are barely distinguished.
+- **Plan impact:** the build follows the 2026-09-27 ruling (transitive). Whether to count direct dependents only, or cap the depth, changes that ruling — left OPEN as a Sovereign question for the operator, not decided here. Erring expensive is the safe side of "unknown never zero".
+- **Triggered:** Sovereign question SQ (autonomous run 2026-11-23): "T-3513 blast radius: keep transitive depended_by (most named-file tasks score 9), or use direct dependents / a depth cap?"
 
 ## Recommendation
 
