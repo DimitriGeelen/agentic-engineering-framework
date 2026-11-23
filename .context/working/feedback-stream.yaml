@@ -59074,3 +59074,21 @@ scan_id: R-1be35bc8
 task_id: T-3156
 payload:
   task_file: .tasks/active/T-3156-vendored-agentic-frameworkbinfw-is-commi.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T19:35:24Z'
+scan_id: R-bc13aa8e
+task_id: T-3630
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T19:35:24Z'
+scan_id: R-bc13aa8e
+task_id: T-3630
+payload:
+  task_file: .tasks/active/T-3630-fw-doctor-dies-rc-128-in-a-project-that-.md

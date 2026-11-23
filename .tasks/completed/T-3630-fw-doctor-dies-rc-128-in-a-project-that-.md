@@ -15,10 +15,10 @@ description: >
   fixture> GIT_CEILING_DIRECTORIES=/tmp bin/fw doctor -> rc=128, bash -x ends at the
   hooks_dir line. Report: docs/reports/T-3624-triage.md
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [bug, OBS-587, arc:project-shape-resilience]
 components: []
 related_tasks: []
@@ -50,8 +50,8 @@ arc_id: project-shape-resilience
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T08:49:17Z
-last_update: 2026-11-23T17:36:18Z
-date_finished:
+last_update: 2026-11-23T19:34:36Z
+date_finished: 2026-11-23T19:34:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -429,3 +429,20 @@ timeout 900 bats tests/unit/test_cron_registry_generated_drift.bats > /tmp/.t363
 
 ### 2026-11-23T17:36:18Z — status-update [task-update-agent]
 - **Change:** tags: +arc:project-shape-resilience
+
+### 2026-11-23T19:34:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-23T19:34:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bc13aa8e
+- **Timestamp:** 2026-11-23T19:35:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
