@@ -112,7 +112,7 @@ cost_estimate_proposed:
 - [x] Nothing ring20- or node1-specific is in a vendored path: the runner, its settings and the exclusion list live under `scripts/node1/` (not shipped by `fw vendor`); `agents/audit/node1*` and their `.agentic-framework/` copies are gone; `grep -rIl "node1\|ring20\|aef2\.\|aef-unit-2\|pool-client" agents lib bin web policy` names no file of this feature.
 - [x] `lib/test-bundle.sh` / `fw test bundle` is provider-neutral: generic default output path, size cap only when the caller passes one, no node1/relay/task references in code or help; the node1 runner passes its own path and 64 MB cap.
 - [x] An incomplete run is never green: any `not_sent` or `not_collected` file gives the run status `incomplete` and a non-zero exit, shown in the report; the report names the exclusion file actually used and its sha256; pinned by tests.
-- [ ] The generic "remote test pool" capability is filed as its own inception (one question: what adapter contract would a framework-level, off-by-default runner need), not built here.
+- [x] The generic "remote test pool" capability is filed as its own inception (one question: what adapter contract would a framework-level, off-by-default runner need), not built here. (T-5400)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
