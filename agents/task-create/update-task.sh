@@ -3060,6 +3060,13 @@ tags: $tag_yaml" "$TASK_FILE"
     fi
 fi
 
+# T-5391: tags changed — a task now tagged outside-contributor links the PR
+# workflow map (idempotent; untagged tasks are not touched).
+if [ -n "$NEW_TAGS" ] || [ -n "$ADD_TAGS" ]; then
+    source "$FRAMEWORK_ROOT/lib/workflow-map-link.sh"
+    fw_link_workflow_map "$TASK_FILE"
+fi
+
 # Update last_update timestamp
 _sed_i "s/^last_update:.*/last_update: $TIMESTAMP/" "$TASK_FILE"
 

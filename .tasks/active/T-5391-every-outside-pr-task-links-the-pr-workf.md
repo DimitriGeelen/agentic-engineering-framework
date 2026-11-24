@@ -2,9 +2,12 @@
 id: T-5391
 name: "Every outside-PR task links the PR workflow map by default (aef-github-pr-intake)"
 description: >
-  Operator 2026-11-24: 'I mean from every PR task to the map.' A task tagged outside-contributor (the T-5364 tag that already raises the review rung) gets, at creation, frontmatter workflow_map: aef-github-pr-intake and a Context line with the designer link, so whoever handles a PR sees the workflow and its 8 steps. Backfill T-5301.
+  Operator 2026-11-24: 'I mean from every PR task to the map.' A task tagged outside-contributor
+  (the T-5364 tag that already raises the review rung) gets, at creation, frontmatter
+  workflow_map: aef-github-pr-intake and a Context line with the designer link, so
+  whoever handles a PR sees the workflow and its 8 steps. Backfill T-5301.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T12:06:15Z
-last_update: 2026-11-24T12:06:15Z
-date_finished: null
+last_update: '2026-11-24T12:06:49Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-24T12:06:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 1
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=1 
+      (body:hard-coded-removed); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5391: Every outside-PR task links the PR workflow map by default (aef-github-pr-intake)
@@ -69,10 +89,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw task create` (agents/task-create/create-task.sh, and `fw task update --add-tag outside-contributor` on an existing task) writes `workflow_map: aef-github-pr-intake` into frontmatter and appends one line under `## Context`: `**Workflow:** outside-PR process map aef-github-pr-intake — <watchtower url>/designer/app` (URL built with the existing watchtower-url helper, never a hard-coded port); idempotent (a second run adds nothing); tasks without the tag are byte-unchanged.
-- [ ] The map id comes from one place (a config key or a constant next to the outside-contributor tag logic), not repeated.
-- [ ] T-5301 backfilled (it carries the outside-contributor tag or gets it, plus the link) through the verb, not a hand edit.
-- [ ] Hermetic test tests/unit/test_t5391_pr_task_links_map.py (pytest or bats, no skips): create with the tag → field + line present; add-tag later → present once; no tag → unchanged; second run idempotent.
+- [x] `fw task create` (agents/task-create/create-task.sh, and `fw task update --add-tag outside-contributor` on an existing task) writes `workflow_map: aef-github-pr-intake` into frontmatter and appends one line under `## Context`: `**Workflow:** outside-PR process map aef-github-pr-intake — <watchtower url>/designer/app` (URL built with the existing watchtower-url helper, never a hard-coded port); idempotent (a second run adds nothing); tasks without the tag are byte-unchanged.
+- [x] The map id comes from one place (a config key or a constant next to the outside-contributor tag logic), not repeated.
+- [x] T-5301 backfilled (it carries the outside-contributor tag or gets it, plus the link) through the verb, not a hand edit.
+- [x] Hermetic test tests/unit/test_t5391_pr_task_links_map.py (pytest or bats, no skips): create with the tag → field + line present; add-tag later → present once; no tag → unchanged; second run idempotent.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +280,7 @@ date_finished: null
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
 grep -q "^workflow_map: aef-github-pr-intake" .tasks/active/T-5301-gh-68-fw-doctors-watchtower-remedy-print.md
+python3 -m pytest tests/unit/test_t5391_pr_task_links_map.py -q > /tmp/.t5391.out 2>&1 && grep -q "5 passed" /tmp/.t5391.out && ! grep -qE "failed|skipped" /tmp/.t5391.out
 bin/fw vendor self --check --task T-5391
 
 ## RCA
@@ -301,6 +322,11 @@ bin/fw vendor self --check --task T-5391
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-24 — link target and third creation path
+- **What changed:** a bare `/designer/app` opens the gallery, not the map; the designer's own deep link is `/designer/app?load=/api/version?id=<map>` (web/blueprints/designer.py:149). Also `fw task create-batch` (T-5221) is a second creation path sharing render_task.py with create-task.
+- **Plan impact:** the Context line uses the deep link (still under `/designer/app`; live check: 302 to the map with a nonce). create-batch gets the same hook so both creation paths stay byte-equal.
+- **Triggered:** none.
 
 ## Recommendation
 
@@ -358,3 +384,6 @@ bin/fw vendor self --check --task T-5391
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5391-every-outside-pr-task-links-the-pr-workf.md
 - **Context:** Initial task creation
+
+### 2026-11-24T12:06:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

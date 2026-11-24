@@ -1,0 +1,21 @@
+id: lib/workflow-map-link.sh
+name: workflow-map-link
+type: script
+subsystem: framework-core
+location: lib/workflow-map-link.sh
+tags: []
+
+purpose: "lib/workflow-map-link.sh — T-5391: link a tagged task to its workflow map."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-24
+created_by: unknown

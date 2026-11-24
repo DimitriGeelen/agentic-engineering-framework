@@ -1,0 +1,21 @@
+id: lib/workflow_map_link.py
+name: workflow_map_link
+type: script
+subsystem: framework-core
+location: lib/workflow_map_link.py
+tags: []
+
+purpose: "T-5391: a task tagged `outside-contributor` links the PR workflow map."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-24
+created_by: unknown
