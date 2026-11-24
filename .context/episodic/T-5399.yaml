@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5399: Two fw-init tests race git's detached auto-gc in teardown (T-5343 class): t3861, t5271
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T16:37:41Z
+# ============================================================================
+
+task_id: T-5399
+task_name: "Two fw-init tests race git's detached auto-gc in teardown (T-5343 class): t3861, t5271"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-24T16:28:16Z
+completed: 2026-11-24T16:33:23Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-24T17:33:21+01:00
+last_commit: 2026-11-24T17:33:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  two fw-init tests no longer race git's detached auto-gc; fw help lists egress (pre-push reds after T-5394)
+
+# Key outcomes
+outcomes:
+  - 't3861 and t5271 set `gc.auto 0` and `gc.autoDetach false` on the repo before `fw init` runs.'
+  - 'Both files pass with no `not ok` and no skip.'
+  - 'The same pre-push run''s other red, help-router-parity (`fw egress` shipped by T-5394 with no `fw help` line), is fixed: `bin/fw` show_help lists `egress`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.tasks/active/T-5399-two-fw-init-tests-race-gits-detached-aut.md'
+  - 'bin/fw'
+  - 'tests/unit/t3861_vec_index_gitignore.bats'
+  - 'tests/unit/t5271_inbox_files_gitignore.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T17:33:21'
+    action: 'T-5399: two fw-init tests no longer race git''s detached auto-gc; fw help lists egress (pre-push reds after T-5394)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [tests, flaky, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 8
+  lines_added: 519
+  lines_removed: 7
+  footprint_refreshed_at: '2026-11-24T16:37:52Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5399-two-fw-init-tests-race-gits-detached-aut.md
+generated_by: context-agent-hybrid
