@@ -59272,3 +59272,21 @@ scan_id: R-a40f794b
 task_id: T-5396
 payload:
   task_file: .tasks/active/T-5396-fw-issues-sync-posts-and-updates-one-pr-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-24T15:40:33Z'
+scan_id: R-8025c694
+task_id: T-5390
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-24T15:40:33Z'
+scan_id: R-8025c694
+task_id: T-5390
+payload:
+  task_file: .tasks/active/T-5390-pick-up-workflow-designer-0480-832-relea.md

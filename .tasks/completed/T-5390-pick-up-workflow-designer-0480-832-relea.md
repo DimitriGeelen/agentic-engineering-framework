@@ -13,12 +13,12 @@ description: >
   shown read-only (T-1492), phase rows named (T-1498). Goldens unchanged, /api/validate
   and endpoints unchanged since 0.44.0. Same verified path as T-5380.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [designer, peer-request]
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T12:05:55Z
-last_update: 2026-11-24T15:30:52Z
-date_finished:
+last_update: 2026-11-24T15:40:22Z
+date_finished: 2026-11-24T15:40:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -109,7 +109,7 @@ bvp_scores_proposed:
 - [x] `fw designer sync --from-tag designer-v0.48.1` verifies the artifact (sha256 c7e69ba6f0e7…, 1457639 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way.
 - [x] `policy/designer-pin.yaml` pins 0.48.1; `fw designer status` reports the pin valid; `/designer/app` serves APP_VERSION 0.48.1 after a Watchtower restart; designer tests pass; the vendored copy is synced.
 - [x] Stored maps unchanged: every map under .context/designer/projects validates exactly as before the pickup (same clean/error counts as measured before), and none gained a bpmn:group or bpmn:category. (Measured: 52 maps, 49 clean; aef-dispatch-loop v1 E-XML-NODE-UNASSIGNED, draft-inception-readiness v1 and v2 E-INCEPTION-NOT-SOVEREIGN, same as before; per-map rules identical before/after, map files byte-identical; validator 98e199b6 identical in 0.47.0 and 0.48.1.)
-- [ ] 832 is told the result on its thread (conversation 832-designer-release-0.48.1).
+- [x] 832 is told the result on its thread (conversation 832-designer-release-0.48.1).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -419,3 +419,21 @@ Captures (`fw ux shots T-5390`, full page, read 2026-11-24):
 ### 2026-11-24T15:30:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-24T15:40:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8025c694
+- **Timestamp:** 2026-11-24T15:40:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `policy/designer-pin.yaml` pins 0.48.1; `fw designer status` reports the pin valid; `/designer/app` serves APP_VERSION 0.48.1 after a Watchtower restart; designer tests pass; the vendored copy is sync
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: `policy/designer-pin.yaml` pins 0.48.1; `fw designer status` reports the pin valid; `/designer/app` serves APP_VERSION 0.48.1 after a Watchtower resta`

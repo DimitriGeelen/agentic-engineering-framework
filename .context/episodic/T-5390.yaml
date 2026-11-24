@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5390: Pick up Workflow Designer 0.48.1 (832 release; pin 0.47.0 -> 0.48.1, skipping 0.48.0)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T15:40:48Z
+# ============================================================================
+
+task_id: T-5390
+task_name: "Pick up Workflow Designer 0.48.1 (832 release; pin 0.47.0 -> 0.48.1, skipping 0.48.0)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-24T12:05:55Z
+completed: 2026-11-24T15:40:22Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-24T16:29:52+01:00
+last_commit: 2026-11-24T16:39:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  retarget to designer 0.48.1 (832 msg 8ce4853f). scoped for 0.48.1 (context, criteria, verification). re-pin Workflow Designer 0.47.0 -> 0.48.1 (832 msg 8ce4853f, tag designer-v0.48.1 c1a2af11) via pull-at-tag — artifact (sha256 c7e69ba6…, 1457639 B), validator and kit (546538e4…) verified against 832's MANIFEST at the tag; validator identical to 0.47.0; 0.48.0 skipped; visual verification recorded. vendor self — designer 0.48.1 pin, build and validator synced to .agentic-framework. agent criteria 1-3 done — 0.48.1 pinned and served, designer tests green, 52 stored maps validate as before (49 clean, same 3 pre-existing errors), no groups/categories
+
+# Key outcomes
+outcomes:
+  - '`fw designer sync --from-tag designer-v0.48.1` verifies the artifact (sha256 c7e69ba6f0e7…, 1457639 bytes) against 832''s MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way.'
+  - '`policy/designer-pin.yaml` pins 0.48.1; `fw designer status` reports the pin valid; `/designer/app` serves APP_VERSION 0.48.1 after a Watchtower restart; designer tests pass; the vendored copy is synced.'
+  - 'Stored maps unchanged: every map under .context/designer/projects validates exactly as before the pickup (same clean/error counts as measured before), and none gained a bpmn:group or bpmn:category. (Measured: 52 maps, 49 clean; aef-dispatch-loop v1 E-XML-NODE-UNASSIGNED, draft-inception-readiness v1 and v2 E-INCEPTION-NOT-SOVEREIGN, same as before; per-map rules identical before/after, map files byte-identical; validator 98e199b6 identical in 0.47.0 and 0.48.1.)'
+  - '832 is told the result on its thread (conversation 832-designer-release-0.48.1).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'agent criteria 1-3 done — 0.48.1 pinned and served, designer tests green, 52 stored maps validate as before (49 clean, same 3 pre-existing errors), no groups/categories'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.48.1.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.48.1.py'
+  - '.tasks/active/T-5390-pick-up-workflow-designer-0480-832-relea.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.48.1.html'
+  - 'vendor/designer/validate-workflow-0.48.1.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T16:29:52'
+    action: 'T-5390: retarget to designer 0.48.1 (832 msg 8ce4853f)'
+  - time: '2026-11-24T16:31:29'
+    action: 'T-5390: scoped for 0.48.1 (context, criteria, verification)'
+  - time: '2026-11-24T16:37:01'
+    action: 'T-5390: re-pin Workflow Designer 0.47.0 -> 0.48.1 (832 msg 8ce4853f, tag designer-v0.48.1 c1a2af11) via pull-at-tag — artifact (sha256 c7e69ba6…, 1457639 B), validator and kit (546538e4…) verified against 832''s MANIFEST at the tag; validator identical to 0.47.0; 0.48.0 skipped; visual verification recorded'
+  - time: '2026-11-24T16:37:19'
+    action: 'T-5390: vendor self — designer 0.48.1 pin, build and validator synced to .agentic-framework'
+  - time: '2026-11-24T16:39:37'
+    action: 'T-5390: agent criteria 1-3 done — 0.48.1 pinned and served, designer tests green, 52 stored maps validate as before (49 clean, same 3 pre-existing errors), no groups/categories'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 214 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, peer-request]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 214
+  commits: 6
+  files_changed: 10
+  lines_added: 412
+  lines_removed: 51
+  footprint_refreshed_at: '2026-11-24T15:41:13Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5390-pick-up-workflow-designer-0480-832-relea.md
+generated_by: context-agent-hybrid
