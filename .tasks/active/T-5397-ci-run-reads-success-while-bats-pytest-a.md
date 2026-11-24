@@ -1,8 +1,13 @@
 ---
 id: T-5397
-name: "CI run reads success while bats, pytest and Playwright jobs fail (continue-on-error on 3 jobs)"
+name: "CI run reads success while bats, pytest and Playwright jobs fail (continue-on-error
+  on 3 jobs)"
 description: >
-  Found 2026-11-24 checking T-5363 criterion 4: .github/workflows/test.yml has continue-on-error: true on three test jobs (lines 54, 150, 241), so the run conclusion is success with those jobs red. A green badge or run status is no evidence. Remove continue-on-error per job once its reds are fixed (T-5382..T-5386, T-5365), or surface per-job status where the run status is read.
+  Found 2026-11-24 checking T-5363 criterion 4: .github/workflows/test.yml has continue-on-error:
+  true on three test jobs (lines 54, 150, 241), so the run conclusion is success with
+  those jobs red. A green badge or run status is no evidence. Remove continue-on-error
+  per job once its reds are fixed (T-5382..T-5386, T-5365), or surface per-job status
+  where the run status is read.
 
 status: captured
 workflow_type: build
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T15:42:23Z
-last_update: 2026-11-24T15:42:23Z
-date_finished: null
+last_update: '2026-11-24T15:45:52Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T15:45:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5397: CI run reads success while bats, pytest and Playwright jobs fail (continue-on-error on 3 jobs)
