@@ -6,7 +6,7 @@
 
 ## What It Does
 
-Class: AUTHORED_AND_DURABLE.
+T-5376: document suffixes, indexed anywhere a git-tracked file carries one.
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-authored_scope.yaml`*
