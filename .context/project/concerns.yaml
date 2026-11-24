@@ -5916,6 +5916,20 @@ concerns:
   partial_fix: "T-5324 (3900dfbbf): suffix bound to the seat dispatch id; not_attached images never count. Reopened 2026-11-21: codex reviewer reproduced a same-basename collision across directories (21 PNGs); matching is by basename, not path. Follow-up T-5333."
   created: 2026-11-21
   last_reviewed: 2026-11-21
+- id: G-140
+  type: gap
+  title: "MCP tools that move data off-host are not gated (artifact publish, upload, db_write, post)"
+  description: "050-email-archive (msg 4dbb33e6, operator-ordered, 2026-11-24): an agent published operator personal data (a letter with a third party's name/address/phone, the operator's address, a tax matter, invoice amounts) to a claude.ai artifact via an MCP publish tool, when the operator had only asked for 'a link'; earlier a design mockup with real case names. The send lock (T-2548) and the Tier-0 text gate see Bash commands only; no PreToolUse hook covers MCP tools that move data off the host, and those tools' descriptions invite publishing unasked. Applies to every consumer, this project included (the same artifact tools are registered here)."
+  spec_reference: "T-5394; T-2548 (send lock); CLAUDE.md §Enforcement Tiers; 050-email-archive T-2570, G-MCP-EGRESS-UNGATED"
+  severity: high
+  trigger_fired: true
+  trigger_event: "2026-11-24: 050-email-archive published operator personal data to an external artifact without approval"
+  detection_lag_days: 0
+  what_works_now: "050 has a local hook (scripts/hooks/block-external-publish.sh, matcher mcp__.*). In this project nothing gates these tools."
+  what_remains: "T-5394: default-deny PreToolUse gate for egress-capable MCP tools (operator-only approval, no agent self-override), an audit of egress-capable MCP tools and their gates, delivered by fw init/fw upgrade."
+  status: watching
+  created: 2026-11-24
+  last_reviewed: 2026-11-24
 - id: G-139
   type: gap
   title: "Agents recommend handover or stop at 200-500K tokens while the budget gauge says Green"
