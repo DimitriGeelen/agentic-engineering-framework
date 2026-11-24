@@ -4,6 +4,8 @@
 # refused, and `fw hook-wiring propose` prepares the change as an operator runme.
 # Hermetic: every settings file is a fixture under a temp dir.
 
+load ../git_fence  # T-3610: fw init in a fixture must never reach a repo above the temp dir
+
 setup() {
     FRAMEWORK_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
     export FRAMEWORK_ROOT
