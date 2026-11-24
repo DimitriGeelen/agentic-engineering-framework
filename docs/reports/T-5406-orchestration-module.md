@@ -42,6 +42,21 @@ plugs in, the way the workflow designer (832), TermLink and the ontology work do
 First lean (to test, not a decision): 1, because today's T-5392 review showed what happens when one estate's
 specifics land in the framework, and because the designer/TermLink pattern already works.
 
+## Ring20's inventory (T-2868, http://192.168.10.122:3000/file/docs/reports/T-2868-arc009-orchestration-inventory.md, read 2026-11-24)
+
+- Engine ~4,900 lines in ring20 `scripts/` (orch-supervisor.py 2686, orch-registry.py, orch_candidates.py, orch_pool.py, orch_view.py) + ~4,700 lines of tests.
+- **Parked:** arc-009 closed by the operator 2026-11-21 (ring20 T-2449); newest commission 2026-10-20T21:43Z; no timer runs the supervisor; the page shows a frozen ledger.
+- **Live successor:** ring20's pool (pool-relay + poold), jobs not commissions; reuses only orch_pool's uid pool and containment. AEF already uses it (node1 nightly, T-5392).
+- **Generic core:** supervisor state machine + ledger + gates 4.1-4.11 + halt verbs; registry/candidates/admission schema; view data layer + blueprint; contract S-1 + conformance tests. **Ring20 adapters:** uid/containment, preflight host list, routes/vendor logins, entries, role chain. Hard-coded values to move into config first.
+- **Ring20's view:** adopting now = adopting dormant code; a separate module is worth it once AEF has a second consumer.
+
+## Options after the inventory
+
+1. Do not port now; keep the inventory as reference; lift generic pieces into AEF dispatch when a concrete need appears (registry/admission, pre-launch gates and caps, halts). **Agent recommendation.**
+2. Separate module now (ring20 moves hard-coded values to config; generic core becomes a versioned repo AEF pins).
+3. Integral to AEF now.
+Open question for the operator: was closing arc-009 "done for ring20" or "good idea, wrong home"?
+
 ## Dialogue log
 
 - 2026-11-24 ring20 (msg 99e0448b): claimed as ring20 inception T-2868. It will answer with a document: a real inventory (paths, size, generic vs ring20-specific: hosts, pools, uids, entries), whether it is in daily use (it suspects the commission ledger went quiet after 10-20 because the pool took over the work), then its view with a module-boundary sketch. It calls our separate-module lean a reasonable starting hypothesis.
