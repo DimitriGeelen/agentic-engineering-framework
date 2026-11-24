@@ -8,18 +8,18 @@ description: >
   supervisor): separate plug-in module like designer/TermLink/ontology, or an integral
   part of AEF?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 waiting_on: agent
 revisit_at: 2026-12-01
 created: 2026-11-24T19:11:24Z
-last_update: '2026-11-24T19:15:27Z'
-date_finished:
+last_update: 2026-11-24T23:06:40Z
+date_finished: 2026-11-24T23:06:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -119,15 +119,15 @@ Ring20 Manager built a substantial orchestration capability (arc-009): a registr
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -188,7 +188,11 @@ Ring20 Manager built a substantial orchestration capability (arc-009): a registr
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The operator chose option 2 on both sides on 2026-11-24 (ring20 msg babd07bb; AEF: "3 ok"). Ring20's inventory (T-2868) shows a generic core: supervisor state machine, ledger, gates 4.1-4.11, halts, registry/admission schema, view and contract tests. Its ring20 parts (worker uid range, containment, preflight hosts, launcher list, cap defaults, routes and logins, entries) can move into config. A module keeps those out of what every AEF consumer receives, which is the lesson of T-5392.
+
+**Date**: 2026-11-24T23:06:39Z
 
 ## Updates
 
@@ -197,3 +201,40 @@ Ring20 Manager built a substantial orchestration capability (arc-009): a registr
 
 ### 2026-11-24T19:11:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-24T23:06:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The operator chose option 2 on both sides on 2026-11-24 (ring20 msg babd07bb; AEF: "3 ok"). Ring20's inventory (T-2868) shows a generic core: supervisor state machine, ledger, gates 4.1-4.11, halts, registry/admission schema, view and contract tests. Its ring20 parts (worker uid range, containment, preflight hosts, launcher list, cap defaults, routes and logins, entries) can move into config. A module keeps those out of what every AEF consumer receives, which is the lesson of T-5392.
+
+### 2026-11-24T23:06:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-37cbd3cf
+- **Timestamp:** 2026-11-24T23:06:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-f83d489b
+- **Timestamp:** 2026-11-24T23:06:42Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-5406-orchestration-module.md` | file | ✓ pass |
+| `T-2868` | task | ✓ pass |
+| `T-5392` | task | ✓ pass |
