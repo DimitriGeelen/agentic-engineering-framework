@@ -1,8 +1,16 @@
 ---
 id: T-5381
-name: "Corpus tooling refuses bpmn:group and drops root bpmn:category: carry designer phases verbatim before 832 T-1491 ships"
+name: "Corpus tooling refuses bpmn:group and drops root bpmn:category: carry designer
+  phases verbatim before 832 T-1491 ships"
 description: >
-  832 msg 8dccabe1 (T-1491, phases editing; design docs/reports/T-1491-phases-editing.md IW-5): maps will carry a root <bpmn:category> with <bpmn:categoryValue>, process <bpmn:group categoryValueRef=...> with optional <bpmn:documentation>, and a group BPMNShape. Today tools/corpus_spec.py parse_map hard-refuses any process child not in TYPE_TO_TAG ('unsupported BPMN element <bpmn:group>', T-2614), so fw corpus explain/overlay/conformance/lint would refuse such maps; root bpmn:category is not read and is lost on fw corpus spec regenerate. 0 stored maps carry either today. Carry both verbatim (no aef extension) with a byte round-trip test, before phases reach the store.
+  832 msg 8dccabe1 (T-1491, phases editing; design docs/reports/T-1491-phases-editing.md
+  IW-5): maps will carry a root <bpmn:category> with <bpmn:categoryValue>, process
+  <bpmn:group categoryValueRef=...> with optional <bpmn:documentation>, and a group
+  BPMNShape. Today tools/corpus_spec.py parse_map hard-refuses any process child not
+  in TYPE_TO_TAG ('unsupported BPMN element <bpmn:group>', T-2614), so fw corpus explain/overlay/conformance/lint
+  would refuse such maps; root bpmn:category is not read and is lost on fw corpus
+  spec regenerate. 0 stored maps carry either today. Carry both verbatim (no aef extension)
+  with a byte round-trip test, before phases reach the store.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T09:43:55Z
-last_update: 2026-11-24T09:43:55Z
-date_finished: null
+last_update: '2026-11-24T09:45:31Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T09:45:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5381: Corpus tooling refuses bpmn:group and drops root bpmn:category: carry designer phases verbatim before 832 T-1491 ships
