@@ -1,10 +1,17 @@
 ---
 id: T-5392
-name: "Nightly unit suite on node1: build+stage bundle, submit node1-compatible files, collect into the nightly report"
+name: "Nightly unit suite on node1: build+stage bundle, submit node1-compatible files,
+  collect into the nightly report"
 description: >
-  Operator 2026-11-24: 'wire node1 into the nightly run'. ring20 (msg 6218a382) saw no AEF jobs since 2026-11-11. Contract: docs/reports/T-5069-node1-unit-suite-spec.md sec 7 (pool-client.py submit-cmd, entries aef.bats/aef.pytest, env aef-unit-2, ref repo.bundle, max 12 concurrent). Trial T-5073 sec 9: 29 files fail only on node1 (sandbox/tool/timing classes) -> exclude them as node1-incompatible by default. Hold submissions while ring20's feed.health is not healthy (their 2026-11-24 node1 canary notice).
+  Operator 2026-11-24: 'wire node1 into the nightly run'. ring20 (msg 6218a382) saw
+  no AEF jobs since 2026-11-11. Contract: docs/reports/T-5069-node1-unit-suite-spec.md
+  sec 7 (pool-client.py submit-cmd, entries aef.bats/aef.pytest, env aef-unit-2, ref
+  repo.bundle, max 12 concurrent). Trial T-5073 sec 9: 29 files fail only on node1
+  (sandbox/tool/timing classes) -> exclude them as node1-incompatible by default.
+  Hold submissions while ring20's feed.health is not healthy (their 2026-11-24 node1
+  canary notice).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T12:09:59Z
-last_update: 2026-11-24T12:09:59Z
-date_finished: null
+last_update: '2026-11-24T12:10:38Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-24T12:10:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5392: Nightly unit suite on node1: build+stage bundle, submit node1-compatible files, collect into the nightly report
@@ -358,3 +382,11 @@ bin/fw vendor self --check --task T-5392
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5392-nightly-unit-suite-on-node1-buildstage-b.md
 - **Context:** Initial task creation
+
+### 2026-11-24T12:10:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-11-24 — ring20 built a submit wrapper (msg 8d386759, T-2858)
+- `/var/lib/ring20-handoff/999/aef-pool-submit.py` on the AEF host (read-only for us), sha256 800985e5a1d899b49033b85021f470de193b71f952c654038421776cd89dbeb5, Python 3 stdlib.
+- Usage: `aef-pool-submit.py {bats|pytest|all} --repo-bundle FILE [--targets FILE] [--exclude-file FILE] [--out DIR] [--max-jobs N] [--timeout S] [--dry-run]`. One job per file (aef2.bats / aef2.pytest, env aef-unit-2); waits and retries when the 200-job window is full; writes --out/<name>/ {exit_code, unit.log, pool-result.json}, --out/targets.txt, --out/summary.tsv. Exit 0 all green, 1 a test failed and every job seen, 2 could not run/look (never 0 on could-not-look).
+- Plan: node1-nightly.sh calls this wrapper for submit+collect (keeps the feed.health hold and the result-file/NEW-failure report on our side) instead of our own pool-client calls. Trial per ring20: `all --repo-bundle <bundle> --exclude-file <list> --max-jobs 20 --dry-run`, then without --dry-run. Agent sessions cannot read /var/lib/ring20-handoff/ (project boundary); the operator decides on BOUNDARY_EXTRA_READ_PATHS, or the trial runs through an operator runme.
