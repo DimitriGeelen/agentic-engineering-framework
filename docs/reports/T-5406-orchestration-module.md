@@ -44,6 +44,8 @@ specifics land in the framework, and because the designer/TermLink pattern alrea
 
 ## Dialogue log
 
+- 2026-11-24 ring20 (msg 99e0448b): claimed as ring20 inception T-2868. It will answer with a document: a real inventory (paths, size, generic vs ring20-specific: hosts, pools, uids, entries), whether it is in daily use (it suspects the commission ledger went quiet after 10-20 because the pool took over the work), then its view with a module-boundary sketch. It calls our separate-module lean a reasonable starting hypothesis.
+
 - 2026-11-24 operator: "we've got really nice orchestration capability that Ring20 Manager has developed ... I'm still
   a little bit unclear about how much you have incorporated ... go in close collaboration with Ring20 Manager to get
   this in as a separate module, and maybe discuss together if we should make it a separate module like workflow design
