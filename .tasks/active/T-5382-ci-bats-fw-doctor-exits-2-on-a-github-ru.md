@@ -2,7 +2,16 @@
 id: T-5382
 name: "CI bats: fw doctor exits 2 on a GitHub runner (9 tests)"
 description: >
-  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674): tests that require fw doctor/audit exit <2 fail on the runner with no doctor output shown — fw_onboarding_greenfield.bats #352 (WARN No fw on PATH), bvp_auto_promote_enable.bats #1051 (cron registry in sync), fw_mode_detection.bats #1735, t2452_doctor_quick.bats #3616 (--quick status 2), t4259_init_cron_generated.bats #7463 (no 'Run: fw cron install'), t4813_doctor_hook_paths.bats #9005, test_doctor_litellm_ollama.bats #10022, test_doctor_scope_tags.bats #10028, t3062_prepush_runtime.bats #4343 (structure checks did not execute). All pass locally. Next: reproduce doctor on a clean non-root Ubuntu without termlink/claude (or add output on failure) and name the FAIL line; fix the check or the test's host assumption.
+  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674): tests
+  that require fw doctor/audit exit <2 fail on the runner with no doctor output shown
+  — fw_onboarding_greenfield.bats #352 (WARN No fw on PATH), bvp_auto_promote_enable.bats
+  #1051 (cron registry in sync), fw_mode_detection.bats #1735, t2452_doctor_quick.bats
+  #3616 (--quick status 2), t4259_init_cron_generated.bats #7463 (no 'Run: fw cron
+  install'), t4813_doctor_hook_paths.bats #9005, test_doctor_litellm_ollama.bats #10022,
+  test_doctor_scope_tags.bats #10028, t3062_prepush_runtime.bats #4343 (structure
+  checks did not execute). All pass locally. Next: reproduce doctor on a clean non-root
+  Ubuntu without termlink/claude (or add output on failure) and name the FAIL line;
+  fix the check or the test's host assumption.
 
 status: captured
 workflow_type: build
@@ -39,8 +48,8 @@ origin: {kind: "agent", source: "T-5363"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T10:21:22Z
-last_update: 2026-11-24T10:21:22Z
-date_finished: null
+last_update: '2026-11-24T10:30:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T10:30:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5382: CI bats: fw doctor exits 2 on a GitHub runner (9 tests)

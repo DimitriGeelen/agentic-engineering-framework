@@ -2,7 +2,18 @@
 id: T-5384
 name: "CI bats: tests need tools the runner lacks, without a probe-and-skip"
 description: >
-  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674): termlink absent — termlink.bats #9895 #9896, t4641_termlink_check_broken_binary.bats #8462, rail_identity_guard.bats #2940-2945 (host fingerprint does not resolve); framework MCP server — test_framework_mcp_server.bats #512 #513 #515 and t2459_mcp_server_root_split.bats #3634 (server prints nothing; check the python mcp dependency on 3.15); ollama — t1719_ask_routing.bats #3352, t1719_index_one_post_write.bats #3367; docker image pull rc=128 — upgrade_live_simulation.bats #563; tmux — t4426_claude_fw_tmux_redraw.bats #7996; wrappers that grep an exact pytest count when one inner test legitimately skips — t4844_opencode_seat_tmp.bats #9105 ('14 passed, 1 skipped', opencode not installed), t5008_seat_process_isolation.bats #9381 (host refuses unshare --pid). Decide per tool: install in CI or probe and skip with a named reason (T-3217 skip lint applies).
+  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674): termlink
+  absent — termlink.bats #9895 #9896, t4641_termlink_check_broken_binary.bats #8462,
+  rail_identity_guard.bats #2940-2945 (host fingerprint does not resolve); framework
+  MCP server — test_framework_mcp_server.bats #512 #513 #515 and t2459_mcp_server_root_split.bats
+  #3634 (server prints nothing; check the python mcp dependency on 3.15); ollama —
+  t1719_ask_routing.bats #3352, t1719_index_one_post_write.bats #3367; docker image
+  pull rc=128 — upgrade_live_simulation.bats #563; tmux — t4426_claude_fw_tmux_redraw.bats
+  #7996; wrappers that grep an exact pytest count when one inner test legitimately
+  skips — t4844_opencode_seat_tmp.bats #9105 ('14 passed, 1 skipped', opencode not
+  installed), t5008_seat_process_isolation.bats #9381 (host refuses unshare --pid).
+  Decide per tool: install in CI or probe and skip with a named reason (T-3217 skip
+  lint applies).
 
 status: captured
 workflow_type: build
@@ -39,8 +50,8 @@ origin: {kind: "agent", source: "T-5363"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T10:21:23Z
-last_update: 2026-11-24T10:21:23Z
-date_finished: null
+last_update: '2026-11-24T10:30:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +62,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T10:30:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5384: CI bats: tests need tools the runner lacks, without a probe-and-skip

@@ -1,8 +1,14 @@
 ---
 id: T-5386
-name: "CI bats: four CI-only reds needing diagnosis (branch -D mapping, partial run, onboarding T-007, pipe buffer)"
+name: "CI bats: four CI-only reds needing diagnosis (branch -D mapping, partial run,
+  onboarding T-007, pipe buffer)"
 description: >
-  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674), pass locally, cause not yet read: the T-3593 action-approvals bats test #6138 (missing "DELETE local branch 'gone'" — likely git 2.56 option parsing); t3602_unit_suite_partial_run.bats #6203 (killed run report, status != 0); t3636_objectives_seed.bats #6250 (gate exit != 2); verification_pipe_buffer.bats #10581 (expected 141 — pipe buffer size differs on the runner?). Split per cause once diagnosed.
+  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674), pass
+  locally, cause not yet read: the T-3593 action-approvals bats test #6138 (missing
+  "DELETE local branch 'gone'" — likely git 2.56 option parsing); t3602_unit_suite_partial_run.bats
+  #6203 (killed run report, status != 0); t3636_objectives_seed.bats #6250 (gate exit
+  != 2); verification_pipe_buffer.bats #10581 (expected 141 — pipe buffer size differs
+  on the runner?). Split per cause once diagnosed.
 
 status: captured
 workflow_type: build
@@ -39,8 +45,8 @@ origin: {kind: "agent", source: "T-5363"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T10:21:24Z
-last_update: 2026-11-24T10:21:24Z
-date_finished: null
+last_update: '2026-11-24T10:30:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T10:30:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5386: CI bats: four CI-only reds needing diagnosis (branch -D mapping, partial run, onboarding T-007, pipe buffer)

@@ -2,7 +2,13 @@
 id: T-5383
 name: "CI bats: tests assume a root runner (permission semantics)"
 description: >
-  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674): the runner is non-root (local runs are root, so root bypasses chmod). t4395_boundary_unknown_top_reads.bats #7842 setup_file: mkdir -p of a top-level dir, Permission denied; t4493_runme_batches.bats #8169: test overwrites a job.json the code made read-only (Permission denied at line 74); t4526_tmp_leftovers.bats #8246: expected 'cannot create directory' message not produced. Fix each test so it holds as root and non-root (chmod u+w before edit, tmp-dir instead of /, probe the permission instead of assuming).
+  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674): the runner
+  is non-root (local runs are root, so root bypasses chmod). t4395_boundary_unknown_top_reads.bats
+  #7842 setup_file: mkdir -p of a top-level dir, Permission denied; t4493_runme_batches.bats
+  #8169: test overwrites a job.json the code made read-only (Permission denied at
+  line 74); t4526_tmp_leftovers.bats #8246: expected 'cannot create directory' message
+  not produced. Fix each test so it holds as root and non-root (chmod u+w before edit,
+  tmp-dir instead of /, probe the permission instead of assuming).
 
 status: captured
 workflow_type: build
@@ -39,8 +45,8 @@ origin: {kind: "agent", source: "T-5363"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T10:21:23Z
-last_update: 2026-11-24T10:21:23Z
-date_finished: null
+last_update: '2026-11-24T10:30:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T10:30:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5383: CI bats: tests assume a root runner (permission semantics)

@@ -2,7 +2,11 @@
 id: T-5385
 name: "CI bats: git 2.56 verbs 'history' and 'repo' unclassified in safe-commands"
 description: >
-  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674): context_safe_commands.bats #1326 (T-2888): 'Unclassified git sub-verb(s) used by our own tooling: history repo'. The runner has git 2.56.1, which knows these verbs; local git does not, so it passes locally. Decide each: read-only case in safe-commands.sh or denylist if it mutates (the test says do not skip).
+  From GitHub run 45252098987 (bleeding-edge, bats job, 40 failed of 10674): context_safe_commands.bats
+  #1326 (T-2888): 'Unclassified git sub-verb(s) used by our own tooling: history repo'.
+  The runner has git 2.56.1, which knows these verbs; local git does not, so it passes
+  locally. Decide each: read-only case in safe-commands.sh or denylist if it mutates
+  (the test says do not skip).
 
 status: captured
 workflow_type: build
@@ -39,8 +43,8 @@ origin: {kind: "agent", source: "T-5363"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T10:21:24Z
-last_update: 2026-11-24T10:21:24Z
-date_finished: null
+last_update: '2026-11-24T10:30:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +55,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T10:30:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5385: CI bats: git 2.56 verbs 'history' and 'repo' unclassified in safe-commands
