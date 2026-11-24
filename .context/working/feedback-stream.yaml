@@ -59308,3 +59308,21 @@ scan_id: R-7767d19a
 task_id: T-5398
 payload:
   task_file: .tasks/active/T-5398-validator-refusal-mapping-still-names-va.md
+---
+kind: scan_emitted
+timestamp: '2026-11-24T15:53:13Z'
+scan_id: R-261b750f
+task_id: T-5363
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-24T15:53:13Z'
+scan_id: R-261b750f
+task_id: T-5363
+payload:
+  task_file: .tasks/active/T-5363-github-ci-red-on-bleeding-edge-pytest-jo.md

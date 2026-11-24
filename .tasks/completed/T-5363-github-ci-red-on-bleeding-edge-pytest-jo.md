@@ -11,12 +11,12 @@ description: >
   hits the 6h limit and is cancelled. Nobody watches GitHub CI; the local pre-push
   audit is the working gate.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/arc.sh, lib/working-gitignore.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T18:26:47Z
-last_update: '2026-11-24T15:15:23Z'
-date_finished:
+last_update: 2026-11-24T15:51:39Z
+date_finished: 2026-11-24T15:51:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -454,3 +454,16 @@ Run 45252098987 (bleeding-edge, head includes 757951d85). Run 45363251065 was st
 - Run 45404905833 (5c79ca259, 13:34Z): PR checks success; E2E success; **Pytest success** (the Pillow fix holds); Playwright failure (T-5365); Bats still running at check time.
 - Bats reds are the classes filed in T-5382..T-5386 (doctor on the runner, root assumptions, missing tools, git verbs, CI-only reds); count 42 vs 40 at the fix: new names include rail-identity (5), T-1719 ollama (2), review-seat isolation (2). Not fixed here; the filed tasks own them.
 - Note for the operator: the workflow's overall conclusion reads **success** while Pytest/Playwright/Bats jobs fail (jobs do not gate the run). A green run badge is therefore not evidence of green tests.
+
+### 2026-11-24T15:51:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-261b750f
+- **Timestamp:** 2026-11-24T15:53:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

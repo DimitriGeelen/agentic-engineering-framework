@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5363: GitHub CI red on bleeding-edge: Pytest job lacks Pillow; Playwright fails; bats job cancelled at 6h
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T15:53:39Z
+# ============================================================================
+
+task_id: T-5363
+task_name: "GitHub CI red on bleeding-edge: Pytest job lacks Pillow; Playwright fails; bats job cancelled at 6h"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T18:26:47Z
+completed: 2026-11-24T15:51:39Z
+duration_days: 2
+updates_count: 5
+first_commit: 2026-11-22T19:26:52+01:00
+last_commit: 2026-11-24T16:42:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — GitHub CI red on bleeding-edge (Pillow, Playwright, bats 6h). scope — CI Pillow, Playwright and bats diagnosis. CI — install pillow in all Python jobs; stop bats hang after a complete TAP plan. CI pytest 4 reds and 4 bats reds fixed. CI diagnosis recorded — pytest/bats fixes, Playwright left to T-5365, bats remainder filed as T-5382..T-5386. criterion 4 — bleeding-edge runs checked (pytest green, bats no hang, 42 reds filed, run status false-green noted)
+
+# Key outcomes
+outcomes:
+  - 'The Pytest job in `.github/workflows/test.yml` installs Pillow, and so does any other job that runs those tests. A local check shows the 8 files import and pass with the CI''s install set.'
+  - 'The Playwright job''s failure is diagnosed from a real run log (`gh run view <id> --log`), with the cause written here, and fixed or filed as its own task.'
+  - 'The bats job''s 6 h overrun is diagnosed (which file or test hangs, from the run log), with the cause written here, and fixed or filed as its own task.'
+  - 'After the change is pushed, a bleeding-edge run is checked and its job results are recorded here.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'CI diagnosis recorded — pytest/bats fixes, Playwright left to T-5365, bats remainder filed as T-5382..T-5386'
+    source: git-mined
+  - description: 'CI pytest 4 reds and 4 bats reds fixed'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/working-gitignore.sh'
+  - '.github/workflows/test.yml'
+  - '.tasks/active/T-5363-github-ci-red-on-bleeding-edge-pytest-jo.md'
+  - '.tasks/active/T-5382-ci-bats-fw-doctor-exits-2-on-a-github-ru.md'
+  - '.tasks/active/T-5383-ci-bats-tests-assume-a-root-runner-permi.md'
+  - '.tasks/active/T-5384-ci-bats-tests-need-tools-the-runner-lack.md'
+  - '.tasks/active/T-5385-ci-bats-git-256-verbs-history-and-repo-u.md'
+  - '.tasks/active/T-5386-ci-bats-four-ci-only-reds-needing-diagno.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.yaml'
+  - 'lib/arc.sh'
+  - 'lib/working-gitignore.sh'
+  - 'tests/unit/conftest.py'
+  - 'tests/unit/t3580_round8_test.py'
+  - 'tests/unit/t4706_watchtower_live_guard.bats'
+  - 'tests/unit/test_t5189_validator_refusal_mapping.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T19:26:52'
+    action: 'T-5363: capture — GitHub CI red on bleeding-edge (Pillow, Playwright, bats 6h)'
+  - time: '2026-11-22T19:46:07'
+    action: 'T-5363: scope — CI Pillow, Playwright and bats diagnosis'
+  - time: '2026-11-22T19:50:41'
+    action: 'T-5363: CI — install pillow in all Python jobs; stop bats hang after a complete TAP plan'
+  - time: '2026-11-24T11:20:21'
+    action: 'T-5363: CI pytest 4 reds and 4 bats reds fixed'
+  - time: '2026-11-24T11:23:05'
+    action: 'T-5363: CI diagnosis recorded — pytest/bats fixes, Playwright left to T-5365, bats remainder filed as T-5382..T-5386'
+  - time: '2026-11-24T16:42:23'
+    action: 'T-5363: criterion 4 — bleeding-edge runs checked (pytest green, bats no hang, 42 reds filed, run status false-green noted)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 2724 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2724
+  commits: 7
+  files_changed: 20
+  lines_added: 2418
+  lines_removed: 46
+  footprint_refreshed_at: '2026-11-24T15:54:21Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5363-github-ci-red-on-bleeding-edge-pytest-jo.md
+generated_by: context-agent-hybrid
