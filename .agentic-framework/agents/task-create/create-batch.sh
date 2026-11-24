@@ -173,6 +173,10 @@ for _p in "${_written[@]+"${_written[@]}"}"; do
 done
 [ "${#_created[@]}" -eq 0 ] || fw_id_ledger_created "${_created[@]}"
 
+# T-5391: same as create-task — an outside-contributor task links the PR workflow map.
+source "$FRAMEWORK_ROOT/lib/workflow-map-link.sh"
+for _p in "${_written[@]+"${_written[@]}"}"; do fw_link_workflow_map "$_p"; done
+
 if [ "$_wrc" != "0" ]; then
     echo "create-batch: write failed after ${#_written[@]} of $N file(s); the rest of the reservation is unused — fw task id reconcile reports it" >&2
     exit 1

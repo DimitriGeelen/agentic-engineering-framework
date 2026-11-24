@@ -442,6 +442,11 @@ ORIGINEOF
     fi
 fi
 
+# T-5391: a task tagged outside-contributor links the PR workflow map (frontmatter
+# workflow_map: + one Context line). Untagged tasks are not touched.
+source "$FRAMEWORK_ROOT/lib/workflow-map-link.sh"
+fw_link_workflow_map "$FILEPATH"
+
 # T-1263: Inception tasks must have ## Recommendation and ## Decision sections
 # Fail-fast at creation time rather than blocking late at fw inception decide
 if [ "$WORKFLOW_TYPE" = "inception" ]; then
