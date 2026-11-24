@@ -93,11 +93,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw init` writes `permissions.deny` entries for the publish tools (the seven above) into a new project's `.claude/settings.json`; `fw upgrade` adds the missing ones to an existing consumer, keeping every other deny/allow entry; idempotent.
-- [ ] Config key `PUBLISH_TO_ANTHROPIC` in `lib/config.sh` FW_CONFIG_REGISTRY (default `deny`), whose description cites the operator ruling; with `allow`, `fw upgrade` removes exactly these entries and init does not add them; setting it to `allow` is refused under agent control (operator-only, same detection as `fw egress approve`).
-- [ ] `policy/mcp-egress.yaml` classes these tools `forbidden` (a class above `egress`); the hook refuses them with a message that names the ban, how the operator switches it off, and the one-use bypass (operator-only, explicit flag naming the ban). Ordinary egress approvals do not open them.
-- [ ] `fw doctor` and `fw audit` report "publishing to Anthropic: blocked (default) / allowed by operator (date) / NOT blocked (rules missing)"; missing rules with the key at `deny` is a FAIL.
-- [ ] Hermetic tests for every leg above; `tests/unit/upgrade_fresh_machine_simulation.bats` green; vendored copies synced. This project's own `.claude/settings.json` is changed only through an operator runme (T-5403 rule); the worker prepares it.
+- [x] `fw init` writes `permissions.deny` entries for the publish tools (the seven above) into a new project's `.claude/settings.json`; `fw upgrade` adds the missing ones to an existing consumer, keeping every other deny/allow entry; idempotent.
+- [x] Config key `PUBLISH_TO_ANTHROPIC` in `lib/config.sh` FW_CONFIG_REGISTRY (default `deny`), whose description cites the operator ruling; with `allow`, `fw upgrade` removes exactly these entries and init does not add them; setting it to `allow` is refused under agent control (operator-only, same detection as `fw egress approve`).
+- [x] `policy/mcp-egress.yaml` classes these tools `forbidden` (a class above `egress`); the hook refuses them with a message that names the ban, how the operator switches it off, and the one-use bypass (operator-only, explicit flag naming the ban). Ordinary egress approvals do not open them.
+- [x] `fw doctor` and `fw audit` report "publishing to Anthropic: blocked (default) / allowed by operator (date) / NOT blocked (rules missing)"; missing rules with the key at `deny` is a FAIL.
+- [x] Hermetic tests for every leg above; `tests/unit/upgrade_fresh_machine_simulation.bats` green; vendored copies synced. This project's own `.claude/settings.json` is changed only through an operator runme (T-5403 rule); the worker prepares it.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
