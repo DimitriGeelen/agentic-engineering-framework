@@ -1,0 +1,24 @@
+{
+  "id": "aef-github-pr-intake",
+  "title": "aef-github-pr-intake",
+  "versions": [
+    {
+      "v": 1,
+      "note": "T-5389 as-is PR workflow from PR #116",
+      "ts": 1795519371
+    },
+    {
+      "v": 2,
+      "note": "T-5389 gateway default flows",
+      "ts": 1795519385
+    },
+    {
+      "v": 3,
+      "note": "T-5389 contributor steps as plain tasks (lane authority)",
+      "ts": 1795519410
+    }
+  ],
+  "uuid": "ccb01e5a-a8ce-42b8-8058-1d6c92ed31be",
+  "latest": 3,
+  "updated": 1795519410
+}

@@ -1,0 +1,445 @@
+spec_version: 1
+id: aef-github-pr-intake
+title: 'AEF outside pull request intake — as-is, from PR #116 (issue #68, T-5301)'
+schema_version: 2
+tier_default: 1
+pool_name: AEF outside PR intake
+doc: 'designer-corpus (T-5389): the outside-pull-request workflow AS-IS, drawn from what PR #116 (issue #68, task
+  T-5301) actually did, mapped onto CONTRIBUTING.md ''Pull Request Process'' steps 1-8. Baseline for arc-027''s
+  role chain (T-5021..T-5028) and a later fw pr verb. Failure points seen are in node notes (T-5367 URL-as-screenshot,
+  opencode citation refusals, red CI pre-existing on bleeding-edge). Lane authority: Contributor proposes (initiative),
+  GitHub CI and the review panel gate (authority), Operator posts, merges and tags (sovereignty).'
+lanes:
+- id: contributor
+  name: Contributor · outside
+  abbr: ctb
+  authority: initiative
+  height: 160
+- id: ci
+  name: GitHub CI · checks
+  abbr: ci
+  authority: authority
+  height: 160
+- id: agent
+  name: Agent · Initiative
+  abbr: agt
+  authority: initiative
+  height: 160
+- id: panel
+  name: Review panel · three vendors
+  abbr: pnl
+  authority: authority
+  height: 160
+- id: operator
+  name: Operator · Sovereignty
+  abbr: op
+  authority: sovereignty
+  height: 160
+nodes:
+- id: start
+  lane: contributor
+  type: start
+  name: contributor opens issue (#68)
+  uid: pr_start
+  pos:
+  - 80.0
+  - 80.0
+  meta:
+    note: 'Step 1 ''Issue first'' (CONTRIBUTING.md). PR #116 began as issue #68.'
+- id: sync
+  lane: agent
+  type: service
+  name: fw issues sync records + classifies; task created (T-5301)
+  uid: pr_sync
+  pos:
+  - 220.0
+  - 400.0
+  meta:
+    note: 'Step 1, maintainer side: the 2-hourly fw issues sync cron records the issue in .context/issues/intake.jsonl;
+      intake turns it into a framework task (#68 → T-5301), which must exist on bleeding-edge before the PR.'
+- id: fork
+  lane: contributor
+  type: manual
+  name: fork + branch from bleeding-edge
+  uid: pr_fork
+  pos:
+  - 360.0
+  - 80.0
+  meta:
+    note: Step 2. Suggested branch names fix/<issue>-<keyword> or feat/<issue>-<keyword>.
+- id: pr
+  lane: contributor
+  type: send
+  name: 'open PR ''Fixes #N'' against bleeding-edge (#116)'
+  uid: pr_pr
+  pos:
+  - 500.0
+  - 80.0
+  meta:
+    note: 'Step 3: one PR per issue, base bleeding-edge.'
+- id: tpl
+  lane: contributor
+  type: task
+  name: fill PR template (approach, failing-then-passing test, fw audit, fw doctor, not tested)
+  uid: pr_tpl
+  pos:
+  - 640.0
+  - 80.0
+  meta:
+    note: Step 4.
+- id: approve_run
+  lane: operator
+  type: user
+  name: approve CI run (first-time contributor)
+  uid: pr_approve_run
+  pos:
+  - 780.0
+  - 720.0
+  meta:
+    note: 'Step 5: GitHub holds workflow runs from first-time contributors until the maintainer approves with one
+      click.'
+- id: checks
+  lane: ci
+  type: service
+  name: PR checks run (structural invariants + touched tests)
+  uid: pr_checks
+  pos:
+  - 920.0
+  - 240.0
+  meta:
+    note: 'Step 5: the ''PR checks'' workflow.'
+- id: gw_ci
+  lane: ci
+  type: gateway
+  name: CI red?
+  uid: pr_gw_ci
+  pos:
+  - 1060.0
+  - 240.0
+  meta:
+    note: 'Failure point seen on PR #116: red CI that was pre-existing on bleeding-edge, not caused by the PR (T-5363
+      / T-5365). Has to be told apart before blaming the contributor.'
+  default: pr_f11
+- id: fix_pr
+  lane: contributor
+  type: task
+  name: fix the cause and push to the PR branch
+  uid: pr_fix_pr
+  pos:
+  - 1060.0
+  - 80.0
+- id: note_red
+  lane: agent
+  type: task
+  name: note red as pre-existing on bleeding-edge (T-5363 / T-5365), continue
+  uid: pr_note_red
+  pos:
+  - 1200.0
+  - 400.0
+- id: evidence
+  lane: agent
+  type: task
+  name: save PR description + diff as review evidence
+  uid: pr_evidence
+  pos:
+  - 1340.0
+  - 400.0
+  meta:
+    note: 'Step 6. Failure point seen: the GitHub PR URL was treated as a screenshot page rather than fetched as
+      text (T-5367); the evidence is saved as files instead.'
+- id: testhost
+  lane: agent
+  type: service
+  name: fw testhost run --pr N on an isolated host
+  uid: pr_testhost
+  pos:
+  - 1480.0
+  - 400.0
+  meta:
+    note: 'Step 6: deeper tests on isolated hosts.'
+- id: judge
+  lane: agent
+  type: service
+  name: fw reviewer judge T-X at rung 5 (outside = one level higher)
+  uid: pr_judge
+  pos:
+  - 1620.0
+  - 400.0
+  meta:
+    note: 'Step 6: ''a change from outside is reviewed one risk level higher''.'
+- id: vote
+  lane: panel
+  type: task
+  name: three vendors vote (three-seat panel)
+  uid: pr_vote
+  pos:
+  - 1760.0
+  - 560.0
+  meta:
+    note: 'Failure point seen: opencode seat refused on citation rules; antigravity was moved ahead of it in the
+      seat order (2026-11-24).'
+- id: gw_panel
+  lane: panel
+  type: gateway
+  name: panel green?
+  uid: pr_gw_panel
+  pos:
+  - 1900.0
+  - 560.0
+  default: pr_f21
+- id: fix_agent
+  lane: agent
+  type: task
+  name: fix the cause, then re-judge
+  uid: pr_fix_agent
+  pos:
+  - 1900.0
+  - 350.0
+- id: decide
+  lane: operator
+  type: user
+  name: operator decides on the escalated finding
+  uid: pr_decide
+  pos:
+  - 1900.0
+  - 720.0
+- id: reco
+  lane: agent
+  type: task
+  name: 'write one-screen recommendation (T-X ## Recommendation) + runme pr116-recommend'
+  uid: pr_reco
+  pos:
+  - 2040.0
+  - 400.0
+  meta:
+    note: 'Step 6 output: the recommendation and a runme the operator runs to post it.'
+- id: post
+  lane: operator
+  type: send
+  name: post recommendation on the PR (bash runme)
+  uid: pr_post
+  pos:
+  - 2180.0
+  - 720.0
+  meta:
+    note: 'Operator-only: comments on the PR go out under the operator''s account.'
+- id: gw_merge
+  lane: operator
+  type: gateway
+  name: merge?
+  uid: pr_gw_merge
+  pos:
+  - 2320.0
+  - 720.0
+  default: pr_f26
+- id: refuse
+  lane: operator
+  type: send
+  name: one-line refusal on the PR
+  uid: pr_refuse
+  pos:
+  - 2460.0
+  - 775.0
+- id: end_refused
+  lane: operator
+  type: end
+  name: PR refused
+  uid: pr_end_refused
+  pos:
+  - 2600.0
+  - 775.0
+  meta:
+    terminalKind: failure
+    state: refused
+- id: merge
+  lane: operator
+  type: user
+  name: merge into bleeding-edge (only the operator)
+  uid: pr_merge
+  pos:
+  - 2460.0
+  - 695.0
+  meta:
+    note: 'Step 7: nobody else can merge.'
+- id: postmerge
+  lane: agent
+  type: task
+  name: post-merge checks; close T-X; issue stage → fixed
+  uid: pr_postmerge
+  pos:
+  - 2600.0
+  - 400.0
+  meta:
+    note: Step 8, agent side.
+- id: betag
+  lane: operator
+  type: user
+  name: cut be-tag
+  uid: pr_betag
+  pos:
+  - 2740.0
+  - 720.0
+  meta:
+    note: 'Step 8: the change ships in the next be-tag.'
+- id: field
+  lane: operator
+  type: manual
+  name: field test the be-tag
+  uid: pr_field
+  pos:
+  - 2880.0
+  - 720.0
+  meta:
+    note: 'Step 8: field-tested before pre-release and stable.'
+- id: released
+  lane: agent
+  type: task
+  name: issue stage → released
+  uid: pr_released
+  pos:
+  - 3020.0
+  - 400.0
+- id: end
+  lane: agent
+  type: end
+  name: change released
+  uid: pr_end
+  pos:
+  - 3160.0
+  - 400.0
+  meta:
+    terminalKind: success
+    state: released
+flows:
+- id: pr_f1
+  from: start
+  to: sync
+  uid: pr_e1
+- id: pr_f2
+  from: sync
+  to: fork
+  uid: pr_e2
+- id: pr_f3
+  from: fork
+  to: pr
+  uid: pr_e3
+- id: pr_f4
+  from: pr
+  to: tpl
+  uid: pr_e4
+- id: pr_f5
+  from: tpl
+  to: approve_run
+  uid: pr_e5
+- id: pr_f6
+  from: approve_run
+  to: checks
+  uid: pr_e6
+- id: pr_f7
+  from: checks
+  to: gw_ci
+  uid: pr_e7
+- id: pr_f8
+  from: gw_ci
+  to: fix_pr
+  uid: pr_e8
+  name: red, PR-caused
+- id: pr_f9
+  from: fix_pr
+  to: checks
+  uid: pr_e9
+- id: pr_f10
+  from: gw_ci
+  to: note_red
+  uid: pr_e10
+  name: red, pre-existing on bleeding-edge
+- id: pr_f11
+  from: gw_ci
+  to: evidence
+  uid: pr_e11
+  name: green
+- id: pr_f12
+  from: note_red
+  to: evidence
+  uid: pr_e12
+- id: pr_f13
+  from: evidence
+  to: testhost
+  uid: pr_e13
+- id: pr_f14
+  from: testhost
+  to: judge
+  uid: pr_e14
+- id: pr_f15
+  from: judge
+  to: vote
+  uid: pr_e15
+- id: pr_f16
+  from: vote
+  to: gw_panel
+  uid: pr_e16
+- id: pr_f17
+  from: gw_panel
+  to: fix_agent
+  uid: pr_e17
+  name: 'no'
+- id: pr_f18
+  from: fix_agent
+  to: judge
+  uid: pr_e18
+- id: pr_f19
+  from: gw_panel
+  to: decide
+  uid: pr_e19
+  name: escalate
+- id: pr_f20
+  from: decide
+  to: reco
+  uid: pr_e20
+- id: pr_f21
+  from: gw_panel
+  to: reco
+  uid: pr_e21
+  name: 'yes'
+- id: pr_f22
+  from: reco
+  to: post
+  uid: pr_e22
+- id: pr_f23
+  from: post
+  to: gw_merge
+  uid: pr_e23
+- id: pr_f24
+  from: gw_merge
+  to: refuse
+  uid: pr_e24
+  name: 'no'
+- id: pr_f25
+  from: refuse
+  to: end_refused
+  uid: pr_e25
+- id: pr_f26
+  from: gw_merge
+  to: merge
+  uid: pr_e26
+  name: 'yes'
+- id: pr_f27
+  from: merge
+  to: postmerge
+  uid: pr_e27
+- id: pr_f28
+  from: postmerge
+  to: betag
+  uid: pr_e28
+- id: pr_f29
+  from: betag
+  to: field
+  uid: pr_e29
+- id: pr_f30
+  from: field
+  to: released
+  uid: pr_e30
+- id: pr_f31
+  from: released
+  to: end
+  uid: pr_e31

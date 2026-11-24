@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_aef-github-pr-intake"
+                  exporter="aef-corpus-spec"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- designer-corpus (T-5389): the outside-pull-request workflow AS-IS, drawn from what PR #116 (issue #68, task T-5301) actually did, mapped onto CONTRIBUTING.md 'Pull Request Process' steps 1-8. Baseline for arc-027's role chain (T-5021..T-5028) and a later fw pr verb. Failure points seen are in node notes (T-5367 URL-as-screenshot, opencode citation refusals, red CI pre-existing on bleeding-edge). Lane authority: Contributor proposes (initiative), GitHub CI and the review panel gate (authority), Operator posts, merges and tags (sovereignty). -->
+
+  <bpmn:collaboration id="Collaboration_aef-github-pr-intake">
+    <bpmn:participant id="Pool_github_pr_intake" name="AEF outside PR intake" processRef="Process_aef-github-pr-intake"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_aef-github-pr-intake" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="aef-github-pr-intake" version="1" schemaVersion="2" title="AEF outside pull request intake — as-is, from PR #116 (issue #68, T-5301)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_gp">
+      <bpmn:lane id="contributor" name="Contributor · outside">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="ctb" authority="initiative" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fork</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>pr</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>tpl</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fix_pr</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="ci" name="GitHub CI · checks">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="ci" authority="authority" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>checks</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gw_ci</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>sync</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>note_red</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>evidence</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>testhost</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>judge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fix_agent</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>reco</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>postmerge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>released</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="panel" name="Review panel · three vendors">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="pnl" authority="authority" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>vote</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gw_panel</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="operator" name="Operator · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="op" authority="sovereignty" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>approve_run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>decide</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>post</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gw_merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>refuse</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>end_refused</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>betag</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>field</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="start" name="contributor opens issue (#68)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_start"/>
+        <aef:position x="80.0" y="80.0"/>
+        <aef:meta note="Step 1 'Issue first' (CONTRIBUTING.md). PR #116 began as issue #68."/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>pr_f1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="sync" name="fw issues sync records + classifies; task created (T-5301)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_sync"/>
+        <aef:position x="220.0" y="400.0"/>
+        <aef:meta note="Step 1, maintainer side: the 2-hourly fw issues sync cron records the issue in .context/issues/intake.jsonl; intake turns it into a framework task (#68 → T-5301), which must exist on bleeding-edge before the PR."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f1</bpmn:incoming>
+      <bpmn:outgoing>pr_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:manualTask id="fork" name="fork + branch from bleeding-edge">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_fork"/>
+        <aef:position x="360.0" y="80.0"/>
+        <aef:meta note="Step 2. Suggested branch names fix/&lt;issue&gt;-&lt;keyword&gt; or feat/&lt;issue&gt;-&lt;keyword&gt;."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f2</bpmn:incoming>
+      <bpmn:outgoing>pr_f3</bpmn:outgoing>
+    </bpmn:manualTask>
+
+    <bpmn:sendTask id="pr" name="open PR 'Fixes #N' against bleeding-edge (#116)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_pr"/>
+        <aef:position x="500.0" y="80.0"/>
+        <aef:meta note="Step 3: one PR per issue, base bleeding-edge."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f3</bpmn:incoming>
+      <bpmn:outgoing>pr_f4</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:userTask id="tpl" name="fill PR template (approach, failing-then-passing test, fw audit, fw doctor, not tested)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_tpl"/>
+        <aef:position x="640.0" y="80.0"/>
+        <aef:meta note="Step 4."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f4</bpmn:incoming>
+      <bpmn:outgoing>pr_f5</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="approve_run" name="approve CI run (first-time contributor)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_approve_run"/>
+        <aef:position x="780.0" y="720.0"/>
+        <aef:meta note="Step 5: GitHub holds workflow runs from first-time contributors until the maintainer approves with one click."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f5</bpmn:incoming>
+      <bpmn:outgoing>pr_f6</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="checks" name="PR checks run (structural invariants + touched tests)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_checks"/>
+        <aef:position x="920.0" y="240.0"/>
+        <aef:meta note="Step 5: the 'PR checks' workflow."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f6</bpmn:incoming>
+      <bpmn:incoming>pr_f9</bpmn:incoming>
+      <bpmn:outgoing>pr_f7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="gw_ci" name="CI red?">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_gw_ci"/>
+        <aef:position x="1060.0" y="240.0"/>
+        <aef:meta note="Failure point seen on PR #116: red CI that was pre-existing on bleeding-edge, not caused by the PR (T-5363 / T-5365). Has to be told apart before blaming the contributor."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f7</bpmn:incoming>
+      <bpmn:outgoing>pr_f8</bpmn:outgoing>
+      <bpmn:outgoing>pr_f10</bpmn:outgoing>
+      <bpmn:outgoing>pr_f11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="fix_pr" name="fix the cause and push to the PR branch">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_fix_pr"/>
+        <aef:position x="1060.0" y="80.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f8</bpmn:incoming>
+      <bpmn:outgoing>pr_f9</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:task id="note_red" name="note red as pre-existing on bleeding-edge (T-5363 / T-5365), continue">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_note_red"/>
+        <aef:position x="1200.0" y="400.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f10</bpmn:incoming>
+      <bpmn:outgoing>pr_f12</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:task id="evidence" name="save PR description + diff as review evidence">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_evidence"/>
+        <aef:position x="1340.0" y="400.0"/>
+        <aef:meta note="Step 6. Failure point seen: the GitHub PR URL was treated as a screenshot page rather than fetched as text (T-5367); the evidence is saved as files instead."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f11</bpmn:incoming>
+      <bpmn:incoming>pr_f12</bpmn:incoming>
+      <bpmn:outgoing>pr_f13</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:serviceTask id="testhost" name="fw testhost run --pr N on an isolated host">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_testhost"/>
+        <aef:position x="1480.0" y="400.0"/>
+        <aef:meta note="Step 6: deeper tests on isolated hosts."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f13</bpmn:incoming>
+      <bpmn:outgoing>pr_f14</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="judge" name="fw reviewer judge T-X at rung 5 (outside = one level higher)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_judge"/>
+        <aef:position x="1620.0" y="400.0"/>
+        <aef:meta note="Step 6: 'a change from outside is reviewed one risk level higher'."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f14</bpmn:incoming>
+      <bpmn:incoming>pr_f18</bpmn:incoming>
+      <bpmn:outgoing>pr_f15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:task id="vote" name="three vendors vote (three-seat panel)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_vote"/>
+        <aef:position x="1760.0" y="560.0"/>
+        <aef:meta note="Failure point seen: opencode seat refused on citation rules; antigravity was moved ahead of it in the seat order (2026-11-24)."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f15</bpmn:incoming>
+      <bpmn:outgoing>pr_f16</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:exclusiveGateway id="gw_panel" name="panel green?">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_gw_panel"/>
+        <aef:position x="1900.0" y="560.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f16</bpmn:incoming>
+      <bpmn:outgoing>pr_f17</bpmn:outgoing>
+      <bpmn:outgoing>pr_f19</bpmn:outgoing>
+      <bpmn:outgoing>pr_f21</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:task id="fix_agent" name="fix the cause, then re-judge">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_fix_agent"/>
+        <aef:position x="1900.0" y="350.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f17</bpmn:incoming>
+      <bpmn:outgoing>pr_f18</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:userTask id="decide" name="operator decides on the escalated finding">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_decide"/>
+        <aef:position x="1900.0" y="720.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f19</bpmn:incoming>
+      <bpmn:outgoing>pr_f20</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:task id="reco" name="write one-screen recommendation (T-X ## Recommendation) + runme pr116-recommend">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_reco"/>
+        <aef:position x="2040.0" y="400.0"/>
+        <aef:meta note="Step 6 output: the recommendation and a runme the operator runs to post it."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f20</bpmn:incoming>
+      <bpmn:incoming>pr_f21</bpmn:incoming>
+      <bpmn:outgoing>pr_f22</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:sendTask id="post" name="post recommendation on the PR (bash runme)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_post"/>
+        <aef:position x="2180.0" y="720.0"/>
+        <aef:meta note="Operator-only: comments on the PR go out under the operator's account."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f22</bpmn:incoming>
+      <bpmn:outgoing>pr_f23</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:exclusiveGateway id="gw_merge" name="merge?">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_gw_merge"/>
+        <aef:position x="2320.0" y="720.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f23</bpmn:incoming>
+      <bpmn:outgoing>pr_f24</bpmn:outgoing>
+      <bpmn:outgoing>pr_f26</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:sendTask id="refuse" name="one-line refusal on the PR">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_refuse"/>
+        <aef:position x="2460.0" y="775.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f24</bpmn:incoming>
+      <bpmn:outgoing>pr_f25</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:endEvent id="end_refused" name="PR refused">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_end_refused"/>
+        <aef:position x="2600.0" y="775.0"/>
+        <aef:meta terminalKind="failure" state="refused"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f25</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:userTask id="merge" name="merge into bleeding-edge (only the operator)">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_merge"/>
+        <aef:position x="2460.0" y="695.0"/>
+        <aef:meta note="Step 7: nobody else can merge."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f26</bpmn:incoming>
+      <bpmn:outgoing>pr_f27</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:task id="postmerge" name="post-merge checks; close T-X; issue stage → fixed">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_postmerge"/>
+        <aef:position x="2600.0" y="400.0"/>
+        <aef:meta note="Step 8, agent side."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f27</bpmn:incoming>
+      <bpmn:outgoing>pr_f28</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:userTask id="betag" name="cut be-tag">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_betag"/>
+        <aef:position x="2740.0" y="720.0"/>
+        <aef:meta note="Step 8: the change ships in the next be-tag."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f28</bpmn:incoming>
+      <bpmn:outgoing>pr_f29</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:manualTask id="field" name="field test the be-tag">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_field"/>
+        <aef:position x="2880.0" y="720.0"/>
+        <aef:meta note="Step 8: field-tested before pre-release and stable."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f29</bpmn:incoming>
+      <bpmn:outgoing>pr_f30</bpmn:outgoing>
+    </bpmn:manualTask>
+
+    <bpmn:task id="released" name="issue stage → released">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_released"/>
+        <aef:position x="3020.0" y="400.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f30</bpmn:incoming>
+      <bpmn:outgoing>pr_f31</bpmn:outgoing>
+    </bpmn:task>
+
+    <bpmn:endEvent id="end" name="change released">
+      <bpmn:extensionElements>
+        <aef:uid value="pr_end"/>
+        <aef:position x="3160.0" y="400.0"/>
+        <aef:meta terminalKind="success" state="released"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>pr_f31</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="pr_f1" sourceRef="start" targetRef="sync">
+      <bpmn:extensionElements><aef:uid value="pr_e1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f2" sourceRef="sync" targetRef="fork">
+      <bpmn:extensionElements><aef:uid value="pr_e2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f3" sourceRef="fork" targetRef="pr">
+      <bpmn:extensionElements><aef:uid value="pr_e3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f4" sourceRef="pr" targetRef="tpl">
+      <bpmn:extensionElements><aef:uid value="pr_e4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f5" sourceRef="tpl" targetRef="approve_run">
+      <bpmn:extensionElements><aef:uid value="pr_e5"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f6" sourceRef="approve_run" targetRef="checks">
+      <bpmn:extensionElements><aef:uid value="pr_e6"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f7" sourceRef="checks" targetRef="gw_ci">
+      <bpmn:extensionElements><aef:uid value="pr_e7"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f8" name="red, PR-caused" sourceRef="gw_ci" targetRef="fix_pr">
+      <bpmn:extensionElements><aef:uid value="pr_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f9" sourceRef="fix_pr" targetRef="checks">
+      <bpmn:extensionElements><aef:uid value="pr_e9"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f10" name="red, pre-existing on bleeding-edge" sourceRef="gw_ci" targetRef="note_red">
+      <bpmn:extensionElements><aef:uid value="pr_e10"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f11" name="green" sourceRef="gw_ci" targetRef="evidence">
+      <bpmn:extensionElements><aef:uid value="pr_e11"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f12" sourceRef="note_red" targetRef="evidence">
+      <bpmn:extensionElements><aef:uid value="pr_e12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f13" sourceRef="evidence" targetRef="testhost">
+      <bpmn:extensionElements><aef:uid value="pr_e13"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f14" sourceRef="testhost" targetRef="judge">
+      <bpmn:extensionElements><aef:uid value="pr_e14"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f15" sourceRef="judge" targetRef="vote">
+      <bpmn:extensionElements><aef:uid value="pr_e15"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f16" sourceRef="vote" targetRef="gw_panel">
+      <bpmn:extensionElements><aef:uid value="pr_e16"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f17" name="no" sourceRef="gw_panel" targetRef="fix_agent">
+      <bpmn:extensionElements><aef:uid value="pr_e17"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f18" sourceRef="fix_agent" targetRef="judge">
+      <bpmn:extensionElements><aef:uid value="pr_e18"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f19" name="escalate" sourceRef="gw_panel" targetRef="decide">
+      <bpmn:extensionElements><aef:uid value="pr_e19"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f20" sourceRef="decide" targetRef="reco">
+      <bpmn:extensionElements><aef:uid value="pr_e20"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f21" name="yes" sourceRef="gw_panel" targetRef="reco">
+      <bpmn:extensionElements><aef:uid value="pr_e21"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f22" sourceRef="reco" targetRef="post">
+      <bpmn:extensionElements><aef:uid value="pr_e22"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f23" sourceRef="post" targetRef="gw_merge">
+      <bpmn:extensionElements><aef:uid value="pr_e23"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f24" name="no" sourceRef="gw_merge" targetRef="refuse">
+      <bpmn:extensionElements><aef:uid value="pr_e24"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f25" sourceRef="refuse" targetRef="end_refused">
+      <bpmn:extensionElements><aef:uid value="pr_e25"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f26" name="yes" sourceRef="gw_merge" targetRef="merge">
+      <bpmn:extensionElements><aef:uid value="pr_e26"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f27" sourceRef="merge" targetRef="postmerge">
+      <bpmn:extensionElements><aef:uid value="pr_e27"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f28" sourceRef="postmerge" targetRef="betag">
+      <bpmn:extensionElements><aef:uid value="pr_e28"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f29" sourceRef="betag" targetRef="field">
+      <bpmn:extensionElements><aef:uid value="pr_e29"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f30" sourceRef="field" targetRef="released">
+      <bpmn:extensionElements><aef:uid value="pr_e30"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="pr_f31" sourceRef="released" targetRef="end">
+      <bpmn:extensionElements><aef:uid value="pr_e31"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

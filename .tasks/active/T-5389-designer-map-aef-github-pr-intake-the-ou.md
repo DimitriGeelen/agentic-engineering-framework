@@ -91,10 +91,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Map `aef-github-pr-intake` exists in .context/designer/projects (saved through /api/save, e.g. `fw corpus spec generate <spec> --save --url "$(bin/fw watchtower url)"`), with its spec committed under docs/designs/ or the corpus spec location the other aef-* maps use.
-- [ ] Five lanes (Contributor, GitHub CI, Agent, Review panel, Operator) and the 8 CONTRIBUTING steps as nodes in order, each naming its real command or artefact from PR #116 (fw issues sync, T-5301, fw testhost run --pr, fw reviewer judge rung 5, runme pr116-recommend, merge, close/stage/be-tag); operator-only steps (post comment, merge, be-tag) sit in the Operator lane.
-- [ ] The two decision points are gateways (CI red: PR-caused or pre-existing on bleeding-edge; panel: green / not green → fix or escalate), and the known failure points are noted in node documentation.
-- [ ] `fw corpus lint` accepts the map and /api/validate returns no errors; it opens at http://192.168.10.107:3000/designer/app.
+- [x] Map `aef-github-pr-intake` exists in .context/designer/projects (saved through /api/save, e.g. `fw corpus spec generate <spec> --save --url "$(bin/fw watchtower url)"`), with its spec committed under docs/designs/ or the corpus spec location the other aef-* maps use.
+- [x] Five lanes (Contributor, GitHub CI, Agent, Review panel, Operator) and the 8 CONTRIBUTING steps as nodes in order, each naming its real command or artefact from PR #116 (fw issues sync, T-5301, fw testhost run --pr, fw reviewer judge rung 5, runme pr116-recommend, merge, close/stage/be-tag); operator-only steps (post comment, merge, be-tag) sit in the Operator lane.
+- [x] The two decision points are gateways (CI red: PR-caused or pre-existing on bleeding-edge; panel: green / not green → fix or escalate), and the known failure points are noted in node documentation.
+- [x] `fw corpus lint` accepts the map and /api/validate returns no errors; it opens at http://192.168.10.107:3000/designer/app.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
