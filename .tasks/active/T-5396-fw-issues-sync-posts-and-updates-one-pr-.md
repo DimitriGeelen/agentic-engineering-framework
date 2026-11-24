@@ -90,11 +90,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw issues sync` lists open pull requests and, for each one from outside (author != repo owner), posts one comment carrying a hidden marker (e.g. `<!-- aef:pr-process -->`) when none exists, and EDITS that comment (no new comment) when the computed step text differs; unchanged step = no API write. `--dry-run` prints what it would post/edit and writes nothing.
-- [ ] The step is derived deterministically from GitHub state: 5 checks pending/awaiting first-run approval/red/green; 6 review (a maintainer comment carrying the recommendation marker, or a review-ledger row for the task); 7 merged or closed-unmerged (one-line refusal); 8 merge commit contained in a `v*-be.*` tag. Steps 1-4 ticked once the PR is open. Pure function, unit-tested per step, hermetic (gh mocked, no network).
-- [ ] The body links: CONTRIBUTING.md `#pull-request-process` on bleeding-edge; the issue from "Fixes #N"; the task file on GitHub when the intake ledger maps the issue to a task (omitted otherwise). It contains no host names, IPs or paths outside the repository.
+- [x] `fw issues sync` lists open pull requests and, for each one from outside (author != repo owner), posts one comment carrying a hidden marker (e.g. `<!-- aef:pr-process -->`) when none exists, and EDITS that comment (no new comment) when the computed step text differs; unchanged step = no API write. `--dry-run` prints what it would post/edit and writes nothing.
+- [x] The step is derived deterministically from GitHub state: 5 checks pending/awaiting first-run approval/red/green; 6 review (a maintainer comment carrying the recommendation marker, or a review-ledger row for the task); 7 merged or closed-unmerged (one-line refusal); 8 merge commit contained in a `v*-be.*` tag. Steps 1-4 ticked once the PR is open. Pure function, unit-tested per step, hermetic (gh mocked, no network).
+- [x] The body links: CONTRIBUTING.md `#pull-request-process` on bleeding-edge; the issue from "Fixes #N"; the task file on GitHub when the intake ledger maps the issue to a task (omitted otherwise). It contains no host names, IPs or paths outside the repository.
 - [ ] Posting rides on the operator ruling, recorded as a config key in `lib/config.sh` FW_CONFIG_REGISTRY (default 0, set 1 in this project's `.framework.yaml`) citing "operator 2026-11-24, T-5393: a, make it routine"; with the key 0, sync only reports what it would post. Each post/edit appends a ledger row (`.context/issues/`).
-- [ ] Existing issue-sync tests stay green; vendored copies synced (`bin/fw vendor self --check` clean).
+- [x] Existing issue-sync tests stay green; vendored copies synced (`bin/fw vendor self --check` clean).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +281,12 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/t5396_pr_process_comment_test.py -q > /tmp/.t5396-out 2>&1 && grep -q passed /tmp/.t5396-out && ! grep -q failed /tmp/.t5396-out
+python3 -m pytest tests/unit/t4078_issues_sync_test.py tests/unit/t4347_issues_standing_permission_test.py tests/unit/test_t4660_issue_replies.py -q > /tmp/.t5396-old 2>&1 && grep -q passed /tmp/.t5396-old && ! grep -q failed /tmp/.t5396-old
+timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t5396-parity 2>&1 && ! grep -q "^not ok" /tmp/.t5396-parity
+grep -q '^    "ISSUES_PR_PROCESS_COMMENT|0|' lib/config.sh
+bin/fw vendor self --check --task T-5396
+bin/fw watchtower current
 
 ## RCA
 

@@ -1,0 +1,21 @@
+id: tests/unit/t5396_pr_process_comment_test.py
+name: t5396_pr_process_comment_test
+type: script
+subsystem: tests
+location: tests/unit/t5396_pr_process_comment_test.py
+tags: []
+
+purpose: "T-5396: fw issues sync posts and edits ONE process comment on each outside pull request."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-24
+created_by: unknown

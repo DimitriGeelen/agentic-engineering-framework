@@ -743,6 +743,265 @@ def _stage_comment(n: int, stage: str, text, extra: dict) -> None:
                                    dry_run=False, extra=extra))
 
 
+# ── PR process comment (T-5396) ──────────────────────────────────────────────
+# Operator ruling 2026-11-24 (T-5393 IW-1), verbatim "a, make it routine": sync posts ONE process
+# comment on each pull request from outside and edits that same comment when the step changes.
+# Only while ISSUES_PR_PROCESS_COMMENT=1; at 0 sync reports what it would post and posts nothing.
+
+PR_PROCESS_KEY = "ISSUES_PR_PROCESS_COMMENT"
+PR_PROCESS_RULING = "operator 2026-11-24, T-5393: a, make it routine"
+PR_PROCESS_MARKER = "<!-- aef:pr-process -->"
+# A maintainer comment carrying this marker is the one-screen review recommendation (step 6).
+PR_RECOMMENDATION_MARKER = "<!-- aef:pr-recommendation -->"
+PR_RECENT_LIMIT = 50  # merged/closed PRs are only revisited when they already carry our comment
+CONTRIBUTING_URL = "https://github.com/{repo}/blob/bleeding-edge/CONTRIBUTING.md#pull-request-process"
+PR_STEPS = [
+    "Issue first",
+    "Fork and branch from `bleeding-edge`",
+    "Pull request against `bleeding-edge`, \"Fixes #N\"",
+    "Template filled in",
+    "Checks on GitHub",
+    "Review: deeper tests on an isolated host, a three-vendor review panel, a one-screen "
+    "recommendation here",
+    "The maintainer merges into `bleeding-edge` (or explains a refusal in one line)",
+    "Ships in the next be-tag, field-tested before pre-release and stable",
+]
+_FIXES_RE = re.compile(r"\b(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s*:?\s+#(\d+)\b", re.I)
+_CHECK_FAIL = {"FAILURE", "TIMED_OUT", "ERROR", "STARTUP_FAILURE"}
+_CHECK_PENDING = {"PENDING", "EXPECTED", "QUEUED", "IN_PROGRESS", "WAITING", "REQUESTED"}
+
+
+def _config_flag(key: str) -> bool:
+    """env FW_<KEY> > .framework.yaml > 0, resolved like fw_config. Only an explicit 1 is on."""
+    raw = os.environ.get("FW_" + key)
+    if raw in (None, ""):
+        try:
+            text = (_project_root() / ".framework.yaml").read_text(encoding="utf-8")
+        except OSError:
+            return False
+        m = re.search(rf"^{key}:\s*['\"]?([^'\"#\n]+?)['\"]?\s*(#.*)?$", text, re.M)
+        raw = m.group(1) if m else ""
+    return raw.strip() == "1"
+
+
+def pr_checks_state(rollup) -> str:
+    """statusCheckRollup → none | action_required | pending | failure | success."""
+    if not rollup:
+        return "none"
+    states = []
+    for c in rollup:
+        if c.get("__typename") == "StatusContext" or (c.get("state") and not c.get("status")):
+            states.append(str(c.get("state") or "").upper())
+            continue
+        status, concl = str(c.get("status") or "").upper(), str(c.get("conclusion") or "").upper()
+        states.append(concl if status == "COMPLETED" else (status or "PENDING"))
+    if "ACTION_REQUIRED" in states:
+        return "action_required"
+    if any(s in _CHECK_PENDING for s in states):
+        return "pending"
+    if any(s in _CHECK_FAIL for s in states):
+        return "failure"
+    return "success"
+
+
+_CHECK_TEXT = {
+    "none": "Checks have not started yet. First-time contributors: the maintainer approves the "
+            "run; nothing needed from you.",
+    "action_required": "Checks are waiting for the maintainer to approve the first run; nothing "
+                       "needed from you.",
+    "pending": "Checks are running.",
+    "failure": "Some checks failed. We look at the failures with you; a failure that also "
+               "happens on `bleeding-edge` without your change is ours to fix, not yours.",
+    "success": "Checks passed. The review starts next.",
+}
+
+
+def pr_step(facts: dict) -> tuple:
+    """PR facts → (step 1-8, one status line). Pure. Facts: state OPEN|MERGED|CLOSED, checks (as
+    pr_checks_state), recommendation (bool: maintainer comment with the recommendation marker),
+    review (bool: review-ledger row for the task), be_tag (first v*-be.* tag holding the merge
+    commit, '' when none). Steps 1-4 are done once the pull request is open."""
+    state = str(facts.get("state") or "OPEN").upper()
+    if state == "MERGED":
+        tag = facts.get("be_tag") or ""
+        if tag:
+            return 8, (f"Shipped in `{tag}`. It is field-tested before it reaches pre-release "
+                       "and stable.")
+        return 7, "Merged into `bleeding-edge`. It ships in the next be-tag."
+    if state == "CLOSED":
+        return 7, ("Closed without merging. The maintainer's one-line reason is on this pull "
+                   "request.")
+    if facts.get("recommendation"):
+        return 6, ("The review recommendation is posted on this pull request; the maintainer "
+                   "decides next.")
+    if facts.get("review"):
+        return 6, "Review in progress: the deeper tests and the review panel are running."
+    return 5, _CHECK_TEXT.get(facts.get("checks") or "none", _CHECK_TEXT["none"])
+
+
+def render_pr_process(step: int, status: str, repo: str, issue=None, task_link=None) -> str:
+    """The comment body. Pure. task_link = (task id, path inside the repo) or None. Every link
+    points at the GitHub repository: no host names, addresses or paths outside it."""
+    lines = [PR_PROCESS_MARKER,
+             "Thanks for the pull request! Here is how a pull request moves through this project, "
+             "and where yours is now.", "",
+             f"The full process, with the workflow map: [Pull Request Process]"
+             f"({CONTRIBUTING_URL.format(repo=repo)}) in CONTRIBUTING.md.", ""]
+    if issue:
+        lines.append(f"Issue: [#{issue}](https://github.com/{repo}/issues/{issue})")
+    if task_link:
+        tid, path = task_link
+        lines.append(f"Our task for this pull request: [{tid}](https://github.com/{repo}/blob/"
+                     f"bleeding-edge/{path}) (what we check and decide, kept up to date)")
+    if issue or task_link:
+        lines.append("")
+    for i, name in enumerate(PR_STEPS, 1):
+        if i == 3 and issue:
+            name = name.replace("#N", f"#{issue}")
+        if i < step:
+            lines.append(f"- [x] {i}. {name}")
+        elif i == step:
+            lines.append(f"- [ ] **{i}. {name} ← you are here.** {status}")
+        else:
+            lines.append(f"- [ ] {i}. {name}")
+    lines += ["", "*This comment is updated as your pull request moves.*"]
+    return "\n".join(lines) + "\n"
+
+
+def _norm(body: str) -> str:
+    return (body or "").replace("\r\n", "\n").strip()
+
+
+def _pr_issue(body: str):
+    m = _FIXES_RE.search(body or "")
+    return int(m.group(1)) if m else None
+
+
+def _pr_task_link(issue, rows: list):
+    """The task the intake ledger maps this issue to (latest row naming one), as (id, repo path)."""
+    if not issue:
+        return None
+    tid = ""
+    for r in rows:
+        if r.get("issue") == issue and r.get("tasks"):
+            tid = str((r.get("tasks") or [""])[-1])
+    if not _TASK_RE.match(tid):
+        return None
+    for sub in ("active", "completed"):
+        d = _project_root() / ".tasks" / sub
+        for f in (sorted(d.glob(f"{tid}-*.md")) if d.is_dir() else []):
+            return tid, f".tasks/{sub}/{f.name}"
+    return None
+
+
+def _review_row(tid: str) -> bool:
+    p = _project_root() / ".context" / "reviews" / "verdicts.jsonl"
+    return bool(tid) and any(r.get("task") == tid for r in _read_rows(p))
+
+
+def _be_tag(commit: str) -> str:
+    if not commit or not _COMMIT_RE.match(commit):
+        return ""
+    try:
+        p = _run(["git", "-C", str(_project_root()), "tag", "--contains", commit,
+                  "--list", "v*-be.*", "--sort=v:refname"])
+    except FileNotFoundError:
+        return ""
+    tags = (p.stdout or "").split() if p.returncode == 0 else []
+    return tags[0] if tags else ""
+
+
+def _comment_id(cm: dict) -> str:
+    m = re.search(r"#issuecomment-(\d+)$", (cm or {}).get("url") or "")
+    return m.group(1) if m else ""
+
+
+def _list_prs() -> list:
+    """Open pull requests, plus the most recent merged/closed ones (revisited only when they
+    already carry our comment, so a merge or a be-tag still updates it)."""
+    fields = "number,author,state,body,statusCheckRollup,mergeCommit,comments"
+    seen, prs = set(), []
+    for state, limit in (("open", 500), ("all", PR_RECENT_LIMIT)):
+        p = _gh(["pr", "list", "--repo", _repo(), "--state", state, "--limit", str(limit),
+                 "--json", fields])
+        if p.returncode != 0:
+            raise IssuesError(f"cannot list pull requests: {p.stderr.strip()[:300]}", 2)
+        try:
+            got = json.loads(p.stdout or "[]")
+        except ValueError:
+            raise IssuesError("gh returned unparseable pull request list", 2)
+        for pr in got:
+            n = int(pr.get("number", 0))
+            if n not in seen:
+                seen.add(n)
+                prs.append(pr)
+    return prs
+
+
+def _pr_process(rows: list, dry_run: bool) -> list:
+    """Post or edit the process comment on each outside pull request. Returns report lines."""
+    repo = _repo()
+    owner = repo.split("/")[0].lower()
+    prs = [p for p in _list_prs() if _login(p.get("author")).lower() != owner]
+    if not prs:
+        return []
+    enabled = _config_flag(PR_PROCESS_KEY)
+    # Untrusted text: our comments are only those by the authenticated maintainer login.
+    maint = _maintainer_login().lower()
+    ledger = _issues_dir() / "pr-process.jsonl"
+    lines = []
+    for pr in sorted(prs, key=lambda p: int(p.get("number", 0))):
+        n = int(pr["number"])
+        who = _login(pr.get("author"))
+        state = str(pr.get("state") or "OPEN").upper()
+        ours = [c for c in pr.get("comments") or [] if _login(c.get("author")).lower() == maint]
+        mine = next((c for c in ours if PR_PROCESS_MARKER in (c.get("body") or "")), None)
+        if state != "OPEN" and not mine:
+            continue  # closed before we ever commented: nothing to update
+        issue = _pr_issue(pr.get("body") or "")
+        link = _pr_task_link(issue, rows)
+        facts = {"state": state, "checks": pr_checks_state(pr.get("statusCheckRollup")),
+                 "recommendation": any(PR_RECOMMENDATION_MARKER in (c.get("body") or "")
+                                       for c in ours),
+                 "review": _review_row(link[0]) if link else False,
+                 "be_tag": (_be_tag((pr.get("mergeCommit") or {}).get("oid") or "")
+                            if state == "MERGED" else "")}
+        step, status = pr_step(facts)
+        body = render_pr_process(step, status, repo, issue, link)
+        if mine and _norm(mine.get("body")) == _norm(body):
+            lines.append(f"PR #{n} from {who}: step {step}, process comment current")
+            continue
+        cid = _comment_id(mine) if mine else ""
+        if mine and not cid:
+            lines.append(f"WARN PR #{n}: process comment found but its id is unreadable; not edited")
+            continue
+        action = "edit" if mine else "post"
+        if dry_run or not enabled:
+            why = "dry-run" if dry_run else f"{PR_PROCESS_KEY}=0, nothing posted"
+            lines.append(f"PR #{n} from {who}: would {action} process comment (step {step}; {why})")
+            if dry_run:
+                lines += ["    " + x for x in body.rstrip("\n").split("\n")]
+            continue
+        if mine:
+            args = ["api", "-X", "PATCH", f"repos/{repo}/issues/comments/{cid}"]
+        else:
+            args = ["api", "-X", "POST", f"repos/{repo}/issues/{n}/comments"]
+        p = _gh(args + ["-f", f"body={body}", "--jq", ".html_url"])
+        if p.returncode != 0:
+            lines.append(f"WARN PR #{n}: {action} of the process comment failed: "
+                         f"{p.stderr.strip()[:200]}")
+            continue
+        url = (p.stdout or "").strip()
+        _append_row(ledger, {"pr": n, "action": "posted" if mine is None else "edited",
+                             "step": step, "issue": issue, "task": link[0] if link else "",
+                             "comment": url, "author": who,
+                             "body_hash": hashlib.sha256(body.encode()).hexdigest()[:16],
+                             "ruling": PR_PROCESS_RULING, "ts": _now()})
+        lines.append(f"PR #{n} from {who}: {'posted' if mine is None else 'edited'} process "
+                     f"comment (step {step}) {url}")
+    return lines
+
+
 def cmd_sync(a) -> int:
     issues = _list_open_issues()
     ledger = _issues_dir() / "intake.jsonl"
@@ -818,6 +1077,10 @@ def cmd_sync(a) -> int:
         lines += _settle_replies({int(i["number"]) for i in issues}, a.dry_run)
     except IssuesError as e:
         print(f"WARN: submitter replies not processed: {e}", file=sys.stderr)
+    try:  # T-5396: the PR process comment rides on sync; an unreadable GitHub waits for the next run
+        lines += _pr_process(rows, a.dry_run)
+    except IssuesError as e:
+        print(f"WARN: pull request process comments not processed: {e}", file=sys.stderr)
     for ln in lines:
         print(ln)
     tag = " (dry-run: nothing posted or written)" if a.dry_run else ""
