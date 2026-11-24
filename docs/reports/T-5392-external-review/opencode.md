@@ -1,0 +1,31 @@
+**Findings**
+
+1. **HIGH — Script placement:** `agents/audit/node1-nightly.sh` + `agents/audit/node1_nightly.py` sit in a vendored path (`agents/`) yet are ring20's integration: names (`node1-nightly`, `node1-unit-suite-nightly`, `.context/locks/node1-nightly.lock`, `.context/audits/unit-suite/node1/`, schema `aef.node1-unit-suite/1`). "node1" is one operator's host; every consumer receives it. **Change:** keep only a generic, off-by-default "remote test pool" runner in the framework; the node1 instantiation moves to this project's local scripts/config (or ring20's side). The genuinely generic parts (discover/select/grade/report/hold-loop) survive as that runner.
+
+2. **HIGH — Baked-in foreign defaults:** `CFG_DEFAULTS` hard-codes another party's infrastructure: `ring20-management`, `node1-pool`, client `999-Agentic-Engineering-Framework` (ring20's registry id for this project), entries `aef2.bats`/`aef2.pytest`, env `aef-unit-2`, `POOL_CLIENT=/usr/local/bin/pool-client`. Invoked anywhere, a consumer makes network calls to ring20. **Change:** defaults empty; all pool identity from project-local config (e.g. `.context/remote-pool.yaml`); unset ⇒ clean "not configured", exit 0, no network, no tool lookup.
+
+3. **HIGH — Vendored exclusion list:** `agents/audit/node1-incompatible.txt` is 40+ of *this repo's* test files classified against *ring20's sandbox* (playwright, read-only `/`, host cron, CPU speed…), citing T-5069/T-5073/T-5075/T-5076. Wrong corpus for every consumer; wrong list for any other pool; rots with node1's env. **Change:** project-local config, path passed to the runner; framework default = no exclusions. Keyed per pool if a second pool ever appears.
+
+4. **HIGH — Out-of-repo wrapper in framework code:** the planned switch (task Updates) has the vendored script calling `/var/lib/ring20-handoff/999/aef-pool-submit.py`. A fixed third-party path in framework code is a missing-file break on every consumer and wires ring20's tool into the product. **Change:** the wrapper is pool-side software; the framework knows only "adapter command + argv contract + output dir", supplied by local config.
+
+5. **HIGH — Trust (Q4):** nightly cron executes ring20-authored code under this project's identity (hub profiles, client 999). "Read-only for us" ≠ read-only for ring20 — the file can change server-side silently; the sha256 in the task file is documentation, not enforcement. **Change:** verify the pinned sha256 before every exec, fail closed; re-pin only by operator action; pin recorded in local config. A *project-local* pinned copy is acceptable precisely so the pin is checkable — never in vendored paths.
+
+6. **MEDIUM — Option 1 (boundary widening):** `BOUNDARY_EXTRA_READ_PATHS` to `/var/lib/ring20-handoff/` is local config (no framework leak) but makes ring20-writable content readable by AEF agent sessions — a prompt-injection channel from another party into agents. **Change:** don't widen; run the trial through the operator's runme (option 3). If the operator insists, it's their explicit, time-boxed risk acceptance for the trial only.
+
+7. **MEDIUM — `lib/test-bundle.sh`:** a genuinely generic capability with node1 semantics baked in: default out `.context/scratch/node1-bundles/` ("the relay copies from it"), 64 MB cap justified as "the node's stage limit", help text "node1 unit-suite package", commit message cites T-5070, excludes are this project's `.context` trims. **Change:** keep `fw test bundle` generic — generic out path, cap an explicit caller parameter, excludes overridable (framework default only if those `.context/` subdirs are framework conventions), no node1/relay/task references.
+
+8. **MEDIUM — Protocol string:** `"ring20.pool.stage/1"` literal in framework code (stage()). **Change:** belongs to the pool adapter / config; the framework's fallback is whatever the adapter provides.
+
+9. **MEDIUM — "Collect into the nightly report":** if vendored `agents/audit/unit-suite.sh` is modified to invoke, await, or merge node1 results, every consumer's nightly inherits missing-tool failures or network attempts. **Change:** strictly one-way and config-gated — node1 report written beside the local report; any merge lives in a project-local script that no-ops when unconfigured. Also verify `fw cron generate`'s *source* for the node1 entry is project-local (the unshipped registry is necessary but not sufficient if a vendored default manifest exists).
+
+10. **MEDIUM — Q2 verdict on options 1–3:** none fits as stated. Shape: (a) framework ships the generic off-by-default runner from finding 1; (b) ring20's node1 = this project's local config + ring20's tooling (pool-client/wrapper) outside the framework, invoked via the documented adapter contract; (c) trial via operator runme (option 3); (d) steady-state wrapper invocation from local cron with runtime sha pin (finding 5). Option 2 only as a project-local pinned copy (never the vendored tree); option 1 only as operator-accepted, time-boxed risk.
+
+11. **LOW — Project-local identifiers in vendored code:** `--task T-5392`, report `"task": "T-5392"`, job prefix `aef-n1-`, unit `aef-nightly-<sha>`, docstring cites to T-5069 §7–§9. **Change:** config values or derived from the configured pool/project name.
+
+12. **LOW — feed.health protocol:** the pool:feed document, `health.state`, `stale_after_s`, and ring20's canary semantics are ring20's protocol; the hold-while-unhealthy/give-up-with-reason *pattern* is framework-worthy. **Change:** keep the pattern, move the document format into the adapter/config.
+
+13. **LOW — Consumer surprise audit (Q3):** `--dry-run` is clean (no network/writes — good); confirm nothing auto-executes `agents/audit/*` (fw audit/doctor) and no doctor check gains node1 items; `to_yaml`'s stdlib fallback is fine. **Change:** add an explicit "feature invisible unless locally configured" acceptance criterion to the task.
+
+14. **LOW — Data trust:** the bundle intentionally ships HEAD's tree to ring20 (excludes keep `.context` state out — good; repo hygiene for committed secrets is pre-existing); pool-produced `unit.log`/`pool-result.json` enter the repo and reports — already length-capped in detail strings. **Change:** keep treating pool output as untrusted data; never echo raw logs.
+
+VERDICT: NO-GO

@@ -1,0 +1,20 @@
+[
+  {
+    "backend": "codex",
+    "rc": 0,
+    "independent": false,
+    "tool_markers": [
+      "^(\\[[^\\]]*\\]\\s*)?exec\\b"
+    ],
+    "seat_files_written": [],
+    "label": "non-independent"
+  },
+  {
+    "backend": "opencode",
+    "rc": 0,
+    "independent": true,
+    "tool_markers": [],
+    "seat_files_written": [],
+    "label": "independent"
+  }
+]
