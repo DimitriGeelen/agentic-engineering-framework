@@ -165,6 +165,9 @@ def test_render_marks_step_and_links_repo_only():
     assert "**5. Checks on GitHub ← you are here.** Checks are running." in body
     assert "- [ ] 6. Review" in body and '"Fixes #68"' in body
     assert "updated as your pull request moves" in body
+    # the map picture is in the comment itself, linked to the process section
+    assert "![Pull request workflow map](https://github.com/o/r/blob/bleeding-edge/docs/contributing/pr-workflow-map.png?raw=true)" in body
+    assert "top lane, **Contributor**" in body
     urls = [w for w in body.replace("(", " ").replace(")", " ").split() if "://" in w]
     assert urls and all(u.startswith("https://github.com/o/r/") for u in urls)
 

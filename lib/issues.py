@@ -755,6 +755,7 @@ PR_PROCESS_MARKER = "<!-- aef:pr-process -->"
 PR_RECOMMENDATION_MARKER = "<!-- aef:pr-recommendation -->"
 PR_RECENT_LIMIT = 50  # merged/closed PRs are only revisited when they already carry our comment
 CONTRIBUTING_URL = "https://github.com/{repo}/blob/bleeding-edge/CONTRIBUTING.md#pull-request-process"
+PR_MAP_URL = "https://github.com/{repo}/blob/bleeding-edge/docs/contributing/pr-workflow-map.png?raw=true"
 PR_STEPS = [
     "Issue first",
     "Fork and branch from `bleeding-edge`",
@@ -846,7 +847,13 @@ def render_pr_process(step: int, status: str, repo: str, issue=None, task_link=N
              "Thanks for the pull request! Here is how a pull request moves through this project, "
              "and where yours is now.", "",
              f"The full process, with the workflow map: [Pull Request Process]"
-             f"({CONTRIBUTING_URL.format(repo=repo)}) in CONTRIBUTING.md.", ""]
+             f"({CONTRIBUTING_URL.format(repo=repo)}) in CONTRIBUTING.md.", "",
+             # T-5396 (operator 2026-11-24): the map itself is in the comment, not only a link.
+             # Your part is the top lane, Contributor.
+             f"[![Pull request workflow map]({PR_MAP_URL.format(repo=repo)})]"
+             f"({CONTRIBUTING_URL.format(repo=repo)})", "",
+             "Your part is the top lane, **Contributor**; below it are GitHub CI, our agents, "
+             "the review panel and the maintainer.", ""]
     if issue:
         lines.append(f"Issue: [#{issue}](https://github.com/{repo}/issues/{issue})")
     if task_link:
