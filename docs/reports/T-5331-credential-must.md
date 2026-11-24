@@ -16,7 +16,7 @@ Spec §6.5a–c (2026-11-22, T-5328, T-5355, T-5356, T-5359) describe what each 
 > credential (hub: `supervisor_token`) MUST travel only on the route the backend declares for lifecycle writes
 > (hub: the Execute-scope connection; `local`: the store's own API in the holder's process; an external backend:
 > its declared channel or lease, §6.6). They MUST NOT appear in a bus, chat, sidecar or other message; in a log,
-> journal, ledger, feed or audit row (a sha256 digest is allowed); in the agent child's environment or prompt; or
+> journal, ledger, feed or audit row (a sha256 digest of the value, or of a request that contains it, is allowed); in the agent child's environment or prompt; or
 > in any file readable by another uid than the holder's, or tracked in version control or otherwise replicated off the
 > holder (backup, push, sync). The nonce inside the signed completion evidence of §6.5, presented through the store's
 > completion write, travels on the declared route and is allowed. A store keeps only their sha256. A holder that must keep
@@ -41,7 +41,7 @@ Spec §6.5a–c (2026-11-22, T-5328, T-5355, T-5356, T-5359) describe what each 
 
 ## Answers from the other owners
 
-- TermLink: **technical check passed, operator ruling pending** (msg 974c5417, 2026-11-22). TermLink complies as written, including ring20's two amendments (the hub store is under /var/lib, never in version control or replicated). The binding agreement is TermLink's operator's. Likely wording request: "a sha256 digest is allowed" → "a sha256 digest of the value, or of a request that contains it, is allowed", because the hub admin log records a sha256 of a request's whole params, which include the token.
+- TermLink: **AGREE with one amendment, operator ruling 2026-11-24** (msg fb7e1f5a; TermLink T-3860), taken into the text above: "a sha256 digest is allowed" → "a sha256 digest of the value, or of a request that contains it, is allowed". Reason: the hub admin log keeps `params_digest`, a sha256 of a request's whole parameters, which for lifecycle writes include `supervisor_token`; the token is random and the digest cannot be reversed. TermLink compliance otherwise: nonce and token travel only on the Execute-scope connection; the store keeps only their sha256 (a test asserts the plain values appear nowhere); the per-request audit row carries no parameters; TermLink spawns no agent child for dispatch.
 - ring20: **AGREE with two amendments** (msg 29d3a492, 2026-11-22), both taken into the text above:
   1. a scope sentence, so a harness credential the job needs (ring20 passes `CLAUDE_CODE_OAUTH_TOKEN` to the job container by name from the unit EnvironmentFile) is not read as banned;
   2. the file clause also forbids version-controlled or otherwise replicated files. That is exactly ring20's T-2841 case: a git-tracked commission ledger pushed to OneDev.
