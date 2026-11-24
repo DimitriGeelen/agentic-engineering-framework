@@ -456,6 +456,24 @@ jobs:
     \ 'audit.sh --section structure', which contends the shared audit lock (T-3070\
     \ collision class) \u2014 the runner takes its OWN overlap lock (.context/locks/unit-suite.lock,\
     \ skip-if-held logged exit 0) and never holds the audit lock itself."
+- id: node1-unit-suite-nightly
+  name: Unit-suite run on node1 (ring20 pool, nightly)
+  schedule: 33 3 * * *
+  command: /opt/999-Agentic-Engineering-Framework/agents/audit/node1-nightly.sh
+  source_file: agentic-audit.crontab
+  origin_task: T-5392
+  status: active
+  ignore_paths:
+  - .context/audits/unit-suite/node1/*
+  description: "T-5392 \u2014 builds and stages the unit-suite bundle of HEAD (lib/test-bundle.sh),\
+    \ submits every node1-compatible tests/unit file to ring20's node1 (pool-client submit-cmd,\
+    \ entries aef2.bats/aef2.pytest, env aef-unit-2, at most 12 open; contract\
+    \ docs/reports/T-5069-node1-unit-suite-spec.md \u00a77), holds while node1's pool:feed\
+    \ health.state is not healthy (gives up after 3 h, logged), collects every result\
+    \ and writes .context/audits/unit-suite/node1/<date>.yaml + LATEST.yaml (counts,\
+    \ failures marked NEW unless on agents/audit/node1-incompatible.txt). 03:33, after\
+    \ unit-suite-nightly (03:03). A run can take most of a day; its own lock\
+    \ (.context/locks/node1-nightly.lock) makes the next night skip while one runs."
 - id: integration-suite-nightly
   name: Integration-suite corpus run (tests/integration, nightly)
   schedule: 33 1 * * *

@@ -206,6 +206,8 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 # T-5268: per-host append-only log of unattended Verification re-runs (CTL-013, verify-queue)
 .context/audits/verify-queue/history.jsonl
 .context/audits/unit-suite/2*.yaml
+# T-5392: node1 nightly run reports (per-host runtime state)
+.context/audits/unit-suite/node1/
 .context/audits/integration-suite/LATEST.yaml
 .context/audits/integration-suite/LAST-COMPLETE.yaml
 .context/audits/integration-suite/runs.log

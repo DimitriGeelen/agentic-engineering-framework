@@ -1,0 +1,76 @@
+# agents/audit/node1-incompatible.txt — T-5392: unit test files the nightly node1 run
+# does NOT send (agents/audit/node1-nightly.sh). They keep running in the local nightly
+# suite (agents/audit/unit-suite.sh), so no coverage is lost.
+#
+# One path per line, relative to the repo root; `#` starts a comment. Sources:
+#   - docs/reports/T-5069-node1-unit-suite-spec.md §3: fail without network even with
+#     loopback (real TermLink runtime/hub, live tmux, doctor probes of this host).
+#   - §9 (T-5073): the files that failed only on node1 (docs/reports/T-5073-node1-compare-590b.tsv),
+#     minus t4108_issues_security_test.py (a real bug, fixed in T-5075), plus
+#     verification_pipe_buffer.bats (A3/A4 batches). test_t4386_doctor_perf.py is not
+#     listed: its cause was lib/costs.sh, fixed in T-5076.
+# A file here that starts passing on node1 can be removed: run it with
+#   agents/audit/node1-nightly.sh --files tests/unit/<file> --include-excluded
+
+# §3 — needs network / this host's live services
+tests/unit/fw_mode_detection.bats
+tests/unit/t1719_index_one_post_write.bats
+tests/unit/t3537_wm_task_class.bats
+tests/unit/t3595_cleanup_scope.bats
+tests/unit/t3651_termlink_cleanup_guards.bats
+tests/unit/t3698_mcp_termlink_runtime_pin.bats
+tests/unit/t3766_review_credential.bats
+tests/unit/t3779_termlink_runtime.bats
+tests/unit/t4249_termlink_restart_on_exit.bats
+tests/unit/t4281_wm_scratchpad_fence.bats
+tests/unit/t4651_polluted_tmux_server.bats
+tests/unit/t4722_termlink_hub_runtime_discovery.bats
+tests/unit/t4781_per_project_tmux.bats
+tests/unit/test_doctor_litellm_ollama.bats
+tests/unit/test_doctor_scope_tags.bats
+tests/unit/test_govd_envelope.py
+
+# §9 — sandbox limit (read-only /, open-file limit, no unshare --pid)
+tests/unit/t4395_boundary_unknown_top_reads.bats
+tests/unit/t4400_secret_scan_bootstrap_scale.bats
+tests/unit/t5008_seat_process_isolation.bats
+
+# §9 — root without permission override (writes a file the test made read-only)
+tests/unit/t4493_runme_batches.bats
+tests/unit/t2990_root_pollution.bats
+tests/unit/t3636_objectives_seed.bats
+tests/unit/t4858_scanner_awk_division.bats
+tests/unit/t2293_mcp_check.bats
+
+# §9 — missing tool: playwright, opencode, tmux, systemd, live TermLink
+tests/unit/test_playwright_server_adoption.py
+tests/unit/t4844_opencode_seat_tmp.bats
+tests/unit/t4217_spawn_env_isolation.bats
+tests/unit/t5060_claude_fw_end_reason.bats
+tests/unit/t4426_claude_fw_tmux_redraw.bats
+tests/unit/t3277_transport_leg.bats
+tests/unit/t4647_spawn_env_allowlist.bats
+tests/unit/termlink.bats
+tests/unit/t4641_termlink_check_broken_binary.bats
+
+# §9 — missing host state: git identity, host cron, .context/handovers (left out of the bundle)
+tests/unit/git_identity_check.bats
+tests/unit/t2452_doctor_quick.bats
+tests/unit/t3062_prepush_runtime.bats
+tests/unit/bvp_auto_promote_enable.bats
+tests/unit/test_search_inclusion_set.py
+
+# §9 — CPU speed (5 ms per-fire budget)
+tests/unit/hook_telemetry.bats
+tests/unit/hook_telemetry_race.bats
+
+# §9 — 900 s per-file cap
+tests/unit/init_project_shape_detection.bats
+tests/unit/t5061_handover_log_bounded.bats
+
+# §9 — no network or listener in the sandbox
+tests/unit/t4332_watchtower_start_exit_zero.bats
+tests/unit/t3580_round8_test.py
+
+# §9 — pipe/signal setup (expects SIGPIPE exit 141)
+tests/unit/verification_pipe_buffer.bats

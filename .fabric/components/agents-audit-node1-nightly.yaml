@@ -1,0 +1,21 @@
+id: agents/audit/node1-nightly.sh
+name: node1-nightly
+type: script
+subsystem: audit
+location: agents/audit/node1-nightly.sh
+tags: []
+
+purpose: "agents/audit/node1-nightly.sh — T-5392: nightly unit-suite run on node1 (ring20's pool)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-24
+created_by: unknown
