@@ -218,6 +218,13 @@ def build_report(*, run_id: str, commit: str, bundle_sha: str, discovered: int,
     }
 
 
+def write_atomic(path: Path, text: str) -> None:
+    """Same-dir temp + os.replace: a reader never sees a half-written report (L-493)."""
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    tmp.write_text(text)
+    os.replace(tmp, path)
+
+
 def to_yaml(doc: dict) -> str:
     try:
         import yaml  # type: ignore
@@ -516,8 +523,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     dated = nr.report_dir / f"{started[:10]}.yaml"
     if dated.exists():
         dated = nr.report_dir / f"{run_id}.yaml"
-    dated.write_text(text)
-    (nr.report_dir / "LATEST.yaml").write_text(text)
+    write_atomic(dated, text)
+    write_atomic(nr.report_dir / "LATEST.yaml", text)
     c = report["counts"]
     line = (f"{started} run={run_id} commit={commit[:12]} " + " ".join(f"{k}={v}" for k, v in c.items())
             + (f" gave_up={gave_up!r}" if gave_up else ""))
