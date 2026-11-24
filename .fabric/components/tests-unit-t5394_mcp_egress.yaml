@@ -1,0 +1,21 @@
+id: tests/unit/t5394_mcp_egress.bats
+name: t5394_mcp_egress
+type: script
+subsystem: tests
+location: tests/unit/t5394_mcp_egress.bats
+tags: []
+
+purpose: "T-5394 (G-140) — MCP egress gate: the PreToolUse hook agents/context/check-mcp-egress.sh (matcher `mcp__.*`) refuses MCP tools that can move data off the host unless the operator approved that one use; the approval is operator-only…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-24
+created_by: unknown

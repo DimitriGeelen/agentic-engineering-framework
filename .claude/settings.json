@@ -190,6 +190,15 @@
             "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook block-cross-session-messages"
           }
         ]
+      },
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-mcp-egress"
+          }
+        ]
       }
     ],
     "PostToolUse": [

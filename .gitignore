@@ -212,3 +212,4 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 .context/audits/integration-suite/LAST-COMPLETE.yaml
 .context/audits/integration-suite/runs.log
 .context/audits/integration-suite/2*.yaml
+.context/working/mcp-egress-*.jsonl

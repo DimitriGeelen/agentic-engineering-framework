@@ -6388,6 +6388,22 @@ if [ -f "$FRAMEWORK_ROOT/lib/subscriptions.py" ]; then
     done < <(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/subscriptions.py" audit 2>&1)
 fi
 
+# MCP egress gate (T-5394, G-140): lists every registered MCP server with the egress-capable
+# tools/rules that cover it and the gate; FAIL when the PreToolUse hook is not wired.
+if [ -f "$FRAMEWORK_ROOT/lib/mcp_egress.py" ]; then
+    while IFS=$'\t' read -r _eg_lvl _eg_msg; do
+        case "$_eg_lvl" in
+            PASS) pass "$_eg_msg" ;;
+            FAIL) fail "$_eg_msg" "policy/mcp-egress.yaml / .claude/settings.json" \
+                       "Wire the hook: fw upgrade (consumers) or fw hook-enable --name check-mcp-egress --matcher 'mcp__.*' --event PreToolUse" ;;
+            WARN) warn "$_eg_msg" "lib/mcp_egress.py audit" "Run: bin/fw egress audit" ;;
+            INFO|"") ;;
+            *) warn "MCP egress audit emitted unexpected output: ${_eg_lvl:0:120}" "lib/mcp_egress.py audit" \
+                    "Run: python3 lib/mcp_egress.py audit" ;;
+        esac
+    done < <(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/mcp_egress.py" audit 2>&1)
+fi
+
 # Check for commit-msg hook (validates task references)
 if [ -f "$PROJECT_ROOT/.git/hooks/commit-msg" ]; then
     pass "Commit-msg hook installed"

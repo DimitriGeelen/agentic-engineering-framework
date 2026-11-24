@@ -1,0 +1,21 @@
+id: lib/mcp_egress.py
+name: mcp_egress
+type: script
+subsystem: framework-core
+location: lib/mcp_egress.py
+tags: []
+
+purpose: "MCP egress gate (T-5394, G-140): MCP tools that move data off this host need the operator's approval for each use."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-24
+created_by: unknown

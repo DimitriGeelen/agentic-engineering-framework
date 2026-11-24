@@ -1,0 +1,268 @@
+# MCP egress policy (T-5394, G-140)
+#
+# Which MCP tools can move data off this host. The PreToolUse hook
+# `check-mcp-egress` (matcher `mcp__.*`) reads this file through lib/mcp_egress.py:
+#
+#   egress  — refused unless the OPERATOR approved this one use
+#             (`fw egress approve <tool> --reason "..."`, single use, TTL).
+#   local   — allowed.
+#
+# Rules are tried in order; the first `match` (an fnmatch glob against the full tool
+# name, e.g. `mcp__termlink__termlink_remote_exec`) wins. A tool that matches no rule is
+# classified by its name: when the tool part (after `mcp__<server>__`) contains one of
+# the `unknown_egress_verbs` as a word, it is egress until a rule classifies it;
+# otherwise it is allowed and listed as unclassified by `fw egress audit`.
+#
+# A project may ADD rules in `.context/project/mcp-egress.yaml` (same shape). Project
+# rules are tried first, and only `class: egress` is honoured there: a project file can
+# tighten the policy, never loosen it (an agent that wrote it could only block itself).
+#
+# Origin: 050-email-archive (T-2570, G-MCP-EGRESS-UNGATED) — an agent published the
+# operator's personal data to a claude.ai artifact through an MCP publish tool, unasked.
+# Seed lists: 050's interim hook (claude-artifacts) and its per-tool TermLink classes.
+
+unknown_egress_verbs:
+  - publish
+  - upload
+  - post
+  - send
+  - share
+  - write
+  - copy
+  - push
+  - reply
+  - broadcast
+  - emit
+  - delete
+  - export
+  - forward
+  - create_issue
+  - create_comment
+  - create_page
+  - create_file
+
+rules:
+  # ── claude.ai artifacts connector (050's incident surface) ──────────────────
+  - match: "mcp__claude-artifacts__publish_files"
+    class: egress
+    reason: publishes files to a claude.ai artifact (off-host, shareable)
+  - match: "mcp__claude-artifacts__publish_version"
+    class: egress
+    reason: publishes a new artifact version off-host
+  - match: "mcp__claude-artifacts__edit_version"
+    class: egress
+    reason: writes artifact content off-host
+  - match: "mcp__claude-artifacts__create_from_type"
+    class: egress
+    reason: creates an artifact off-host
+  - match: "mcp__claude-artifacts__upload_asset"
+    class: egress
+    reason: uploads a file off-host
+  - match: "mcp__claude-artifacts__copy_file"
+    class: egress
+    reason: copies content into an artifact off-host
+  - match: "mcp__claude-artifacts__copy_asset"
+    class: egress
+    reason: copies an asset into an artifact off-host
+  - match: "mcp__claude-artifacts__db_write"
+    class: egress
+    reason: writes rows to an artifact database off-host
+  - match: "mcp__claude-artifacts__db_str_replace"
+    class: egress
+    reason: writes artifact database content off-host
+  - match: "mcp__claude-artifacts__reply_comment"
+    class: egress
+    reason: posts a comment off-host
+  - match: "mcp__claude-artifacts__reply_shared_comment"
+    class: egress
+    reason: posts a comment on a shared artifact off-host
+  - match: "mcp__claude-artifacts__resolve_comment"
+    class: egress
+    reason: changes shared comment state off-host
+  - match: "mcp__claude-artifacts__pin_artifact"
+    class: egress
+    reason: changes artifact visibility off-host
+  - match: "mcp__claude-artifacts__declare_capabilities"
+    class: egress
+    reason: declares artifact capabilities off-host
+  - match: "mcp__claude-artifacts__watch"
+    class: egress
+    reason: registers a watcher off-host
+  - match: "mcp__claude-artifacts__delete*"
+    class: local
+    reason: deletes an artifact (clean-up; sends no new data)
+  - match: "mcp__claude-artifacts__*"
+    class: local
+    reason: read, list and guide tools
+
+  # ── TermLink (hubs can be on other hosts: ring20 is remote) ─────────────────
+  - match: "mcp__termlink__termlink_remote_*"
+    class: egress
+    reason: acts on a session on another host
+  - match: "mcp__termlink__termlink_file_send"
+    class: egress
+    reason: sends a file through the hub
+  - match: "mcp__termlink__termlink_hub_export_secret"
+    class: egress
+    reason: exports the hub secret
+  - match: "mcp__termlink__termlink_dispatch"
+    class: egress
+    reason: sends a prompt to a worker session
+  - match: "mcp__termlink__termlink_batch_exec"
+    class: egress
+    reason: runs a command in other sessions
+  - match: "mcp__termlink__termlink_batch_run"
+    class: egress
+    reason: runs a command in other sessions
+  - match: "mcp__termlink__termlink_exec"
+    class: egress
+    reason: runs a command in another session
+  - match: "mcp__termlink__termlink_inject"
+    class: egress
+    reason: types text into another session
+  - match: "mcp__termlink__termlink_interact"
+    class: egress
+    reason: runs a command in another session
+  - match: "mcp__termlink__termlink_run"
+    class: egress
+    reason: runs a command in a new session
+  - match: "mcp__termlink__termlink_send"
+    class: egress
+    reason: sends a message to another session
+  - match: "mcp__termlink__termlink_spawn"
+    class: egress
+    reason: starts a session with given input
+  - match: "mcp__termlink__termlink_broadcast"
+    class: egress
+    reason: sends to every session
+  - match: "mcp__termlink__termlink_chat_arc_broadcast"
+    class: egress
+    reason: posts to every hub in the fleet
+  - match: "mcp__termlink__termlink_emit"
+    class: egress
+    reason: emits an event with a payload
+  - match: "mcp__termlink__termlink_emit_to"
+    class: egress
+    reason: emits an event with a payload to a session
+  - match: "mcp__termlink__termlink_request"
+    class: egress
+    reason: sends a request with a payload
+  - match: "mcp__termlink__termlink_kv_set"
+    class: egress
+    reason: writes a value to the hub store
+  - match: "mcp__termlink__termlink_channel_post"
+    class: egress
+    reason: posts a message to a hub channel
+  - match: "mcp__termlink__termlink_channel_reply"
+    class: egress
+    reason: posts a reply to a hub channel
+  - match: "mcp__termlink__termlink_channel_forward"
+    class: egress
+    reason: forwards a message to a hub channel
+  - match: "mcp__termlink__termlink_channel_quote"
+    class: egress
+    reason: posts a quote to a hub channel
+  - match: "mcp__termlink__termlink_channel_edit"
+    class: egress
+    reason: rewrites a message on a hub channel
+  - match: "mcp__termlink__termlink_channel_poll_start"
+    class: egress
+    reason: posts a poll question to a hub channel
+  - match: "mcp__termlink__termlink_agent_post"
+    class: egress
+    reason: posts an agent message
+  - match: "mcp__termlink__termlink_agent_reply"
+    class: egress
+    reason: posts an agent reply
+  - match: "mcp__termlink__termlink_agent_quote"
+    class: egress
+    reason: posts an agent quote
+  - match: "mcp__termlink__termlink_agent_edit"
+    class: egress
+    reason: rewrites an agent message
+  - match: "mcp__termlink__termlink_agent_ask"
+    class: egress
+    reason: sends a question to another agent
+  - match: "mcp__termlink__termlink_agent_contact"
+    class: egress
+    reason: sends a message to another agent
+  - match: "mcp__termlink__termlink_agent_poll_start"
+    class: egress
+    reason: posts a poll question
+  - match: "mcp__termlink__termlink_agent_send_auto_discover"
+    class: egress
+    reason: sends a message to a discovered agent
+  - match: "mcp__termlink__*"
+    class: local
+    reason: reads, lists, status and hub metadata (reactions, pins, claims); no message payload
+
+  # ── this framework's own MCP server (stdio, local files only) ───────────────
+  - match: "mcp__fw__*"
+    class: local
+    reason: framework verbs on this project's local files
+
+  # ── Playwright (browser) ────────────────────────────────────────────────────
+  - match: "*playwright*__browser_file_upload"
+    class: egress
+    reason: uploads a local file to a web page
+  - match: "*playwright*__browser_run_code_unsafe"
+    class: egress
+    reason: runs arbitrary code that can send data anywhere
+  - match: "*playwright*__browser_evaluate"
+    class: egress
+    reason: runs page script that can send data anywhere
+  - match: "*playwright*__*"
+    class: local
+    reason: "browser navigation and reads (residual: a typed URL or form text can carry data)"
+
+  # ── context7 docs lookup ────────────────────────────────────────────────────
+  - match: "mcp__*context7*__*"
+    class: local
+    reason: "sends only a library name or docs query (residual: query text leaves the host)"
+
+  # ── skills-manager (host infrastructure; many tools act on other hosts) ─────
+  - match: "mcp__skills__nas_file_service_push"
+    class: egress
+    reason: copies files to the NAS
+  - match: "mcp__skills__nas_file_service_serve"
+    class: egress
+    reason: serves local files over the network
+  - match: "mcp__skills__remote_exec_exec"
+    class: egress
+    reason: runs a command on another host
+  - match: "mcp__skills__remote_exec_expose_service"
+    class: egress
+    reason: exposes a local service to the network
+  - match: "mcp__skills__credentials_export"
+    class: egress
+    reason: exports credentials
+  - match: "mcp__skills__alert_dispatcher_dispatch_alert"
+    class: egress
+    reason: sends an alert to an external channel
+  - match: "mcp__skills__infisical_manager_set_secret"
+    class: egress
+    reason: writes a secret to the secret store
+  - match: "mcp__skills__infisical_manager_copy_secret"
+    class: egress
+    reason: copies a secret between stores
+  - match: "mcp__skills__certificate_manager_copy_to_target"
+    class: egress
+    reason: copies certificate material to another host
+  - match: "mcp__skills__certificate_manager_sync_nodes"
+    class: egress
+    reason: copies certificate material to other hosts
+  - match: "mcp__skills__orchestrator_sync_*"
+    class: egress
+    reason: pushes project data to other hosts
+  - match: "mcp__skills__knowledge_management_sync_knowledge"
+    class: egress
+    reason: pushes learnings to a shared store
+  - match: "mcp__skills__knowledge_management_index_to_qdrant"
+    class: egress
+    reason: writes project text to a shared vector store
+  - match: "mcp__skills__errors_capture"
+    class: egress
+    reason: writes error text to a shared store
+  - match: "mcp__skills__tasks_sync"
+    class: egress
+    reason: pushes task data to a shared store

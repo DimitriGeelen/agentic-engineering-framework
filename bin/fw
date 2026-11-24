@@ -4719,6 +4719,25 @@ except Exception:
         done < <(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/subscriptions.py" audit 2>&1)
     fi
 
+    # Check: MCP egress gate (T-5394, G-140): every registered MCP server with its egress
+    # rules and gate; FAIL when the PreToolUse hook is not wired. lib/mcp_egress.py decides.
+    if [ -f "$FRAMEWORK_ROOT/lib/mcp_egress.py" ]; then
+        local _eg_lvl _eg_msg _eg_fail=0 _eg_warn=0 _eg_pass=0
+        while IFS=$'\t' read -r _eg_lvl _eg_msg; do
+            case "$_eg_lvl" in
+                PASS) _eg_pass=$((_eg_pass + 1)) ;;
+                FAIL) echo -e "  ${RED}FAIL${NC}  $_eg_msg"; _eg_fail=$((_eg_fail + 1)) ;;
+                WARN) echo -e "  ${YELLOW}WARN${NC}  $_eg_msg"; _eg_warn=$((_eg_warn + 1)) ;;
+                INFO|"") ;;
+                *) echo -e "  ${YELLOW}WARN${NC}  MCP egress check: unexpected output ${_eg_lvl:0:120}"; _eg_warn=$((_eg_warn + 1)) ;;
+            esac
+        done < <(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/mcp_egress.py" audit 2>&1)
+        if [ "$_eg_fail" -eq 0 ] && [ "$_eg_warn" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  MCP egress gate wired ($_eg_pass check(s); details: $(_emit_user_command "egress audit"))"
+        fi
+        issues=$((issues + _eg_fail)); warnings=$((warnings + _eg_warn))
+    fi
+
     # Check: TypeScript build health (optional)
     if [ -d "$FRAMEWORK_ROOT/lib/ts/src" ]; then
         shopt -s nullglob
@@ -12705,6 +12724,12 @@ YAMLEOF
             exit $?
         fi
         PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FW_LIB_DIR/subscriptions.py" "$@"
+        exit $?
+        ;;
+    egress)
+        # T-5394 (G-140): MCP egress gate. approve is operator-only (refused under agent control,
+        # --i-am-human does not lift it); list|status|classify|audit are read-only.
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FW_LIB_DIR/mcp_egress.py" "$@"
         exit $?
         ;;
     review)
