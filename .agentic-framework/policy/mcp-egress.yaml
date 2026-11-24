@@ -5,6 +5,11 @@
 #
 #   egress  — refused unless the OPERATOR approved this one use
 #             (`fw egress approve <tool> --reason "..."`, single use, TTL).
+#   forbidden — publishing to Anthropic (T-5405, operator ruling 2026-11-24): refused
+#             unless config PUBLISH_TO_ANTHROPIC=allow, or the operator approved ONE use
+#             with `fw egress approve <tool> --override-publish-ban --reason "..."`. An
+#             ordinary approval does not open it. (When the key is allow these rules are
+#             skipped and the egress/local rules below apply.)
 #   local   — allowed.
 #
 # Rules are tried in order; the first `match` (an fnmatch glob against the full tool
@@ -42,6 +47,13 @@ unknown_egress_verbs:
   - create_file
 
 rules:
+  # ── publishing to Anthropic: blocked by default (T-5405) ────────────────────
+  - match: "mcp__claude-artifacts__*"
+    class: forbidden
+    reason: claude.ai artifacts connector
+  - match: "mcp__claude_ai_Claude_Docs__*"
+    class: forbidden
+    reason: Claude Docs connector
   # ── claude.ai artifacts connector (050's incident surface) ──────────────────
   - match: "mcp__claude-artifacts__publish_files"
     class: egress

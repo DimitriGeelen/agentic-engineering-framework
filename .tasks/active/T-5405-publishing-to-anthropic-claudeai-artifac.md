@@ -1,10 +1,16 @@
 ---
 id: T-5405
-name: "Publishing to Anthropic (claude.ai artifacts, Claude Docs, design sync) blocked by default in every AEF project; operator can switch off or approve one use"
+name: "Publishing to Anthropic (claude.ai artifacts, Claude Docs, design sync) blocked
+  by default in every AEF project; operator can switch off or approve one use"
 description: >
-  Operator 2026-11-24: 'This block needs to become default in the framework. People can choose to switch it off or to bypass it, but it should be default.' Today: this host blocks it via user-level permissions.deny (runme deny-publish-tools); AEF's egress gate (T-5394) blocks it unless the operator approves one use. Make it a framework default: fw init/fw upgrade write the deny rules into the project's .claude/settings.json, a config key switches it off, the egress gate classes these tools forbidden-by-default.
+  Operator 2026-11-24: 'This block needs to become default in the framework. People
+  can choose to switch it off or to bypass it, but it should be default.' Today: this
+  host blocks it via user-level permissions.deny (runme deny-publish-tools); AEF's
+  egress gate (T-5394) blocks it unless the operator approves one use. Make it a framework
+  default: fw init/fw upgrade write the deny rules into the project's .claude/settings.json,
+  a config key switches it off, the egress gate classes these tools forbidden-by-default.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T19:03:56Z
-last_update: 2026-11-24T19:03:56Z
-date_finished: null
+last_update: '2026-11-24T19:14:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-24T19:14:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 4
+      D3: 0
+      D4: 3
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=3 (body:portability-abstraction); F-RECALL=0 (no-signal); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5405: Publishing to Anthropic (claude.ai artifacts, Claude Docs, design sync) blocked by default in every AEF project; operator can switch off or approve one use
@@ -260,6 +284,10 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t5405_publish_ban.bats
+bats tests/unit/t5394_mcp_egress.bats
+python3 lib/publish_ban.py guard-set deny
+bin/fw vendor self --check --task T-5405
 
 ## RCA
 
@@ -357,3 +385,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5405-publishing-to-anthropic-claudeai-artifac.md
 - **Context:** Initial task creation
+
+### 2026-11-24T19:14:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -45,6 +45,7 @@ HOOK_NAME = "check-mcp-egress"
 DEFAULT_TTL_MIN = 30
 MAX_TTL_MIN = 24 * 60
 PROBE_TOOL = "mcp__probe__publish_files"
+PUBLISH_OVERRIDE = "publish-ban"
 
 
 class EgressError(Exception):
@@ -155,8 +156,8 @@ def _check_rules(rules, where: str) -> list[dict]:
     out = []
     for i, r in enumerate(rules):
         if not (isinstance(r, dict) and isinstance(r.get("match"), str) and r.get("match")
-                and r.get("class") in ("egress", "local") and isinstance(r.get("reason"), str)):
-            raise EgressError(f"{where}: rule {i + 1} needs match, class (egress|local) and reason")
+                and r.get("class") in ("egress", "local", "forbidden") and isinstance(r.get("reason"), str)):
+            raise EgressError(f"{where}: rule {i + 1} needs match, class (egress|local|forbidden) and reason")
         out.append({"match": r["match"], "class": r["class"], "reason": r["reason"], "source": where})
     return out
 
@@ -237,7 +238,8 @@ def _status_of(a: dict, uses: dict, now: datetime) -> str:
     return "open"
 
 
-def approve(tool: str, reason: str, target: str | None, ttl_min: int) -> dict:
+def approve(tool: str, reason: str, target: str | None, ttl_min: int,
+            override_publish_ban: bool = False) -> dict:
     if _is_agent():
         raise EgressError(
             "REFUSED: approving an MCP egress call is an operator action. It is never run under "
@@ -247,6 +249,16 @@ def approve(tool: str, reason: str, target: str | None, ttl_min: int) -> dict:
     if not tool.startswith("mcp__") or any(c in tool for c in "*?[]"):
         raise EgressError("give the exact MCP tool name, e.g. mcp__claude-artifacts__publish_files "
                           "(no wildcards: one approval covers one tool)")
+    forbidden = classify(tool, load_policy())[0] == "forbidden"
+    if forbidden and not override_publish_ban:
+        raise EgressError(
+            f"REFUSED: {tool} is covered by the publish-to-Anthropic ban (operator ruling "
+            "2026-11-24, T-5405); an ordinary approval does not open it. To allow ONE use, "
+            "re-run with --override-publish-ban. To switch the ban off for the project: "
+            "fw config set PUBLISH_TO_ANTHROPIC allow")
+    if override_publish_ban and not forbidden:
+        raise EgressError(f"{tool} is not covered by the publish ban; use an ordinary approval "
+                          "(without --override-publish-ban)")
     if not reason or not reason.strip():
         raise EgressError("--reason is required: say what may leave the host, and why")
     if not (1 <= ttl_min <= MAX_TTL_MIN):
@@ -256,6 +268,8 @@ def approve(tool: str, reason: str, target: str | None, ttl_min: int) -> dict:
            "reason": reason.strip(), "ts": _iso(now),
            "expires": _iso(now + timedelta(minutes=ttl_min)), "by": "operator",
            "user": os.environ.get("USER", "")}
+    if override_publish_ban:
+        row["override"] = PUBLISH_OVERRIDE
     fd = _open_locked(_working() / APPROVALS)
     try:
         _append(fd, row)
@@ -275,7 +289,7 @@ def _target_ok(a: dict, tool_input) -> bool:
     return t in blob
 
 
-def consume(tool: str, tool_input, tool_use_id: str) -> dict | None:
+def consume(tool: str, tool_input, tool_use_id: str, override: bool = False) -> dict | None:
     """Consume the oldest open approval for `tool` (and its target). A second fire of the same
     tool_use_id (T-1508 duplicate hook fire) is re-admitted without consuming another."""
     fd = _open_locked(_working() / USES)
@@ -287,6 +301,8 @@ def consume(tool: str, tool_input, tool_use_id: str) -> dict | None:
                     return {"id": u.get("id"), "duplicate_fire": True}
         now = _now()
         for a in sorted(approvals, key=lambda r: r.get("ts", "")):
+            if bool(a.get("override") == PUBLISH_OVERRIDE) != override:
+                continue
             if a.get("tool") == tool and _status_of(a, uses, now) == "open" and _target_ok(a, tool_input):
                 _append(fd, {"id": a["id"], "tool": tool, "ts": _iso(now),
                              "tool_use_id": tool_use_id or ""})
@@ -301,6 +317,31 @@ def consume(tool: str, tool_input, tool_use_id: str) -> dict | None:
 def _deny(lines: list[str]) -> int:
     sys.stderr.write("FW-DENY: mcp-egress (T-5394)\n" + "\n".join(lines) + "\n")
     return 2
+
+
+def _forbidden(name: str, data: dict, reason: str) -> int:
+    _tu = data.get("tool_use_id")
+    tuid: str = _tu if isinstance(_tu, str) else ""
+    try:
+        used = consume(name, data.get("tool_input"), tuid, override=True)
+    except OSError as e:
+        return _deny([f"BLOCKED: {name} — the approval ledger cannot be read or locked ({e}); "
+                      "refused (fail closed).", "Policy: T-5405 (publish ban)"])
+    if used:
+        if not used.get("duplicate_fire"):
+            sys.stderr.write(f"mcp-egress: {name} allowed once by operator override {used['id']} "
+                             f"({used.get('reason', '')}); approval now used.\n")
+        return 0
+    return _deny([
+        f"BLOCKED: {name} — publishing to Anthropic is blocked by default in this project ({reason}).",
+        "Operator ruling 2026-11-24 (T-5405): no agent publishes to claude.ai artifacts, Claude Docs",
+        "or design sync unasked. An ordinary egress approval does not open it. You cannot lift it.",
+        "Show the content in the conversation instead. The operator can:",
+        "  - allow ONE use, in their own terminal: "
+        + _fwc("egress approve " + name + ' --override-publish-ban --reason "<what may leave, and why>"'),
+        "  - switch the ban off for this project: " + _fwc("config set PUBLISH_TO_ANTHROPIC allow"),
+        "Policy: T-5405 (publish ban), T-5394 (MCP egress gate)",
+    ])
 
 
 def hook_check(raw: str) -> int:
@@ -325,6 +366,18 @@ def hook_check(raw: str) -> int:
                       "Fix policy/mcp-egress.yaml (or .context/project/mcp-egress.yaml).",
                       "Policy: T-5394 (MCP egress gate)"])
     cls, reason, _how = classify(name, policy)
+    if cls == "forbidden":
+        try:
+            import publish_ban
+            allowed = publish_ban.mode() == "allow"
+        except Exception:
+            allowed = False
+        if allowed:
+            # The operator switched the ban off: back to the ordinary classes.
+            cls, reason, _how = classify(name, {**policy, "rules": [
+                r for r in policy["rules"] if r["class"] != "forbidden"]})
+        else:
+            return _forbidden(name, data, reason)
     if cls != "egress":
         return 0
     tool_input = data.get("tool_input")
@@ -460,6 +513,11 @@ def audit_lines() -> list[tuple[str, str]]:
     else:
         out.append(("PASS", f"MCP egress hook wired ({len(servers)} registered server(s), "
                     f"{egress_total} egress rule(s)/tool(s) gated)"))
+    try:
+        import publish_ban
+        out.extend(publish_ban.audit_lines(proj))
+    except Exception as e:  # never hide the ban state behind an import problem
+        out.append(("FAIL", f"publishing to Anthropic: state unreadable ({e.__class__.__name__})"))
     for n in notes:
         out.append(("INFO", n))
     return out
@@ -475,6 +533,8 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("--reason", required=True)
     a.add_argument("--target", default=None, help="text the call's input must contain")
     a.add_argument("--ttl-minutes", type=int, default=DEFAULT_TTL_MIN)
+    a.add_argument("--override-publish-ban", action="store_true",
+                   help="operator: allow ONE use of a tool the publish-to-Anthropic ban covers")
     a.add_argument("--i-am-human", action="store_true", help="accepted, but does not lift the agent refusal")
     sub.add_parser("list", help="approvals and their state")
     sub.add_parser("status", help="hook wiring and open approvals")
@@ -492,7 +552,8 @@ def main(argv: list[str] | None = None) -> int:
                 raw = ""
             return hook_check(raw)
         if args.cmd == "approve":
-            row = approve(args.tool, args.reason, args.target, args.ttl_minutes)
+            row = approve(args.tool, args.reason, args.target, args.ttl_minutes,
+                          args.override_publish_ban)
             print(f"approved {row['id']}: one use of {row['tool']}"
                   f"{' (target ' + row['target'] + ')' if row['target'] else ''} until {row['expires']}")
             return 0

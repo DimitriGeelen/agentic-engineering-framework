@@ -143,6 +143,11 @@ _config_set() {
         fi
     fi
 
+    # T-5405: switching the publish ban off is the operator's act, never an agent's.
+    if [ "$(printf '%s' "$key" | tr a-z A-Z)" = "PUBLISH_TO_ANTHROPIC" ]; then
+        python3 "$(dirname "${BASH_SOURCE[0]}")/publish_ban.py" guard-set "$value" || exit 2
+    fi
+
     # T-2365 (T-2158 S3): keys under `continuous-mode.` write to the
     # dedicated continuous-mode file under .context/working/. Trim the
     # prefix before passing to the python writer.

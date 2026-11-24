@@ -11,7 +11,7 @@ load ../test_helper
 
 HOOK="$FRAMEWORK_ROOT/agents/context/check-mcp-egress.sh"
 MATCHER='mcp__.*'
-PUBLISH='mcp__claude-artifacts__publish_files'
+PUBLISH='mcp__termlink__termlink_send'   # an ordinary egress tool; claude-artifacts is forbidden since T-5405
 
 setup() {
     TEST_TEMP_DIR="$(mktemp -d -t fw-t5394-XXXXXX)"
@@ -55,7 +55,6 @@ PY
     [ "$status" -eq 0 ]
     run _feed '{"tool_name":"mcp__termlink__termlink_list_sessions","tool_input":{}}'
     [ "$status" -eq 0 ]
-    run _feed '{"tool_name":"mcp__claude-artifacts__list_artifacts","tool_input":{}}'
     [ "$status" -eq 0 ]
 }
 
@@ -133,7 +132,7 @@ def cls(name):
 for t in ("publish_files publish_version edit_version create_from_type upload_asset copy_file "
           "copy_asset db_write db_str_replace reply_comment reply_shared_comment resolve_comment "
           "pin_artifact declare_capabilities watch").split():
-    assert cls("mcp__claude-artifacts__" + t) == "egress", t
+    assert cls("mcp__claude-artifacts__" + t) in ("egress", "forbidden"), t  # T-5405: forbidden first
 for t in ("remote_exec file_send dispatch batch_exec batch_run exec inject interact run send spawn "
           "broadcast chat_arc_broadcast emit emit_to request kv_set channel_post channel_reply "
           "channel_forward channel_quote channel_edit agent_post agent_reply agent_quote agent_edit "
@@ -185,7 +184,7 @@ YAML
 }
 
 @test "T-5394: an approval for one tool does not open another" {
-    _operator_approve "mcp__claude-artifacts__upload_asset" >/dev/null
+    _operator_approve "mcp__termlink__termlink_broadcast" >/dev/null
     run _feed "{\"tool_name\":\"$PUBLISH\",\"tool_input\":{}}"
     [ "$status" -eq 2 ]
 }
@@ -286,6 +285,7 @@ J
     cat > "$PROJ/.claude/settings.json" <<'J'
 {"hooks":{"PreToolUse":[{"matcher":"mcp__.*","hooks":[{"type":"command","command":"bin/fw hook check-mcp-egress"}]}]}}
 J
+    python3 "$FRAMEWORK_ROOT/lib/publish_ban.py" ensure "$PROJ/.claude/settings.json" deny >/dev/null   # T-5405
     run env HOME="$TEST_TEMP_DIR/home" PROJECT_ROOT="$PROJ" python3 "$FRAMEWORK_ROOT/lib/mcp_egress.py" audit
     ! printf '%s\n' "$output" | grep -q "^FAIL" || false
     printf '%s\n' "$output" | grep -q "^PASS	MCP server 'claude-artifacts'.*gate: PreToolUse check-mcp-egress"

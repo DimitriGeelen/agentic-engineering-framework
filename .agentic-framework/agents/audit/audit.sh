@@ -6395,7 +6395,7 @@ if [ -f "$FRAMEWORK_ROOT/lib/mcp_egress.py" ]; then
         case "$_eg_lvl" in
             PASS) pass "$_eg_msg" ;;
             FAIL) fail "$_eg_msg" "policy/mcp-egress.yaml / .claude/settings.json" \
-                       "Wire the hook: fw upgrade (consumers) or fw hook-enable --name check-mcp-egress --matcher 'mcp__.*' --event PreToolUse" ;;
+                       "Read the message: unwired hook -> fw upgrade (consumers) or fw hook-enable --name check-mcp-egress --matcher 'mcp__.*' --event PreToolUse; missing publish-ban rules -> fw upgrade" ;;
             WARN) warn "$_eg_msg" "lib/mcp_egress.py audit" "Run: bin/fw egress audit" ;;
             INFO|"") ;;
             *) warn "MCP egress audit emitted unexpected output: ${_eg_lvl:0:120}" "lib/mcp_egress.py audit" \

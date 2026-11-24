@@ -4728,7 +4728,7 @@ except Exception:
         local _eg_lvl _eg_msg _eg_fail=0 _eg_warn=0 _eg_pass=0
         while IFS=$'\t' read -r _eg_lvl _eg_msg; do
             case "$_eg_lvl" in
-                PASS) _eg_pass=$((_eg_pass + 1)) ;;
+                PASS) case "$_eg_msg" in "publishing to Anthropic"*) echo -e "  ${GREEN}OK${NC}  $_eg_msg" ;; esac; _eg_pass=$((_eg_pass + 1)) ;;
                 FAIL) echo -e "  ${RED}FAIL${NC}  $_eg_msg"; _eg_fail=$((_eg_fail + 1)) ;;
                 WARN) echo -e "  ${YELLOW}WARN${NC}  $_eg_msg"; _eg_warn=$((_eg_warn + 1)) ;;
                 INFO|"") ;;

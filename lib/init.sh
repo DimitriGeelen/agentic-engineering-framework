@@ -1486,6 +1486,14 @@ except Exception:
 print(n)
 " 2>/dev/null || echo "?")
         echo -e "  ${GREEN}OK${NC}  .claude/settings.json written ($_t2912_hook_count hook command(s) configured)"
+        # T-5405: publishing to Anthropic is blocked by default (deny rules; key allow = off).
+        local _pb_py="${FW_LIB_DIR:-$(dirname "${BASH_SOURCE[0]}")}/publish_ban.py" _pb_mode
+        if [ -f "$_pb_py" ] && command -v python3 >/dev/null 2>&1; then
+            _pb_mode=$(PROJECT_ROOT="$dir" python3 "$_pb_py" mode 2>/dev/null || echo deny)
+            python3 "$_pb_py" ensure "$dir/.claude/settings.json" "$_pb_mode" >/dev/null 2>&1 \
+                && echo -e "  ${GREEN}OK${NC}  publishing to Anthropic: ${_pb_mode/deny/blocked (default)}" \
+                || echo -e "  ${YELLOW}WARN${NC}  could not write publish-to-Anthropic deny rules"
+        fi
     else
         # T-677: Pre-existing settings.json — back up and overwrite with framework hooks
         # The framework's governance hooks are authoritative; project-specific hooks from

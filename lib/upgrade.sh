@@ -3046,6 +3046,35 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
         fi
     fi
 
+    # T-5405: publishing to Anthropic is blocked by default (operator ruling 2026-11-24).
+    # Keep the seven permissions.deny entries in step with PUBLISH_TO_ANTHROPIC; every other
+    # entry is left alone. Runs for every branch above (converged, regenerated, created).
+    if [ -f "$settings_file" ] && [ -f "$FRAMEWORK_ROOT/lib/publish_ban.py" ]; then
+        local _pb_mode _pb_out _pb_act _pb_what
+        _pb_mode=$(PROJECT_ROOT="$target_dir" python3 "$FRAMEWORK_ROOT/lib/publish_ban.py" mode 2>/dev/null || echo deny)
+        if [ "$dry_run" = true ]; then
+            _pb_out=$(python3 -c "
+import sys; sys.path.insert(0, sys.argv[1]); import publish_ban as p
+h = p.present(__import__('pathlib').Path(sys.argv[2])); m = sys.argv[3]
+print('would-add' if m != 'allow' and len(h) < len(p.TOOLS) else 'would-remove' if m == 'allow' and h else 'none')
+" "$FRAMEWORK_ROOT/lib" "$settings_file" "$_pb_mode" 2>/dev/null || echo none)
+            if [ "$_pb_out" != none ]; then
+                echo -e "  ${CYAN}WOULD UPDATE${NC}  publish-to-Anthropic deny rules (${_pb_out#would-}, PUBLISH_TO_ANTHROPIC=$_pb_mode)"
+                changes=$((changes + 1))
+            fi
+        else
+            _pb_out=$(python3 "$FRAMEWORK_ROOT/lib/publish_ban.py" ensure "$settings_file" "$_pb_mode" 2>/dev/null || echo "skipped	")
+            _pb_act="${_pb_out%%	*}"; _pb_what="${_pb_out#*	}"
+            case "$_pb_act" in
+                added|removed)
+                    _t4697_wrote .claude/settings.json
+                    echo -e "  ${GREEN}${_pb_act^^}${NC}  publish-to-Anthropic deny rules: $_pb_what (PUBLISH_TO_ANTHROPIC=$_pb_mode)"
+                    changes=$((changes + 1)) ;;
+                skipped) echo -e "  ${YELLOW}WARN${NC}  could not update publish-to-Anthropic deny rules in $settings_file (unparseable JSON?)" ;;
+            esac
+        fi
+    fi
+
     # ── 6. .mcp.json (MCP server configuration) ──
     echo -e "${YELLOW}[6/10] MCP server configuration (.mcp.json)${NC}"
 
