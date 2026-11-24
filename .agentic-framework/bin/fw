@@ -3438,12 +3438,12 @@ PY
                 fi
             else
                 echo -e "  ${YELLOW}WARN${NC}  Watchtower triple present but identity mismatch or endpoint down"
-                echo -e "         Run: bin/watchtower.sh restart"
+                echo -e "         Run: $(_emit_user_command "watchtower restart")"
                 warnings=$((warnings + 1))
             fi
         else
             echo -e "  ${YELLOW}WARN${NC}  Stale Watchtower triple (pid $_wt_pid not running)"
-            echo -e "         Run: bin/watchtower.sh stop && bin/watchtower.sh start"
+            echo -e "         Run: $(_emit_user_command "watchtower restart")"
             warnings=$((warnings + 1))
         fi
     elif [ -f "$PROJECT_ROOT/.context/working/watchtower.log" ] || [ -n "$(_fw_config_file_val PORT 2>/dev/null)" ]; then
