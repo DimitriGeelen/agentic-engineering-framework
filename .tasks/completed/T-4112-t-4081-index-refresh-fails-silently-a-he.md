@@ -1,27 +1,22 @@
 ---
-id: T-4092
-name: "Hotfix v1.8.10 (emergency lane T-4035): T-4081 only — Watchtower decision commits
-  no longer reverted by the next ordinary commit, plus the revert detector"
+id: T-4112
+name: "T-4081 index refresh fails silently: a held .git/index.lock lets the next commit
+  revert a Watchtower decision (codex DO-NOT-SHIP on hotfix v1.8.10)"
 description: >
-  Emergency: a broken core path in every consumer — operator decisions recorded in
-  Watchtower are silently reverted in git by the next ordinary commit (G-114; 55 reverts
-  in 60 days here). Operator 2026-10-12: only the emergency lane goes to master now;
-  the 222 bleeding-edge commits wait for field testing. Fix on bleeding-edge: e483bd9bb
-  (+ vendored 759e2a683); applies cleanly to v1.8.9 (b82294243). Lane per docs/reports/T-4035-emergency-fix-lane.md:
-  branch from master with only the fix, its test and vendored copies; regression test
-  fails on the old code; related suites on the hotfix tree; full suite on the hotfix
-  tree WITH a control run of v1.8.9 in the same environment; one independent review;
-  field confirmation (ring20 already verified the detector; the fix was proven live
-  here — T-4017 GO held); explicit release question.
+  codex review of hotfix/v1.8.10: _refresh_real_index (web/blueprints/inception.py)
+  ignores git reset's exit code; with .git/index.lock held the decision commit reports
+  success and the next ordinary commit reverts it. Check rc, retry transient lock
+  contention, surface an unresolved failure to the operator and log it; regression
+  test with a held index.lock. Candidate patch: scratchpad t4092-review-fix.patch.
+  Must land on bleeding-edge AND be folded into hotfix/v1.8.10.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [emergency, hotfix, release, arc:parallel-execution-aef]
-components: []
-related_tasks: [T-4081, T-4035]
-origin: {kind: "operator"}
+horizon: null
+tags: [bug, g-114, hotfix, arc:parallel-execution-aef]
+components: [web/blueprints/inception.py]
+related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -49,9 +44,9 @@ arc_id: parallel-execution-aef
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-12T11:13:15Z
-last_update: 2026-11-23T17:35:23Z
-date_finished:
+created: 2026-10-12T13:56:38Z
+last_update: 2026-11-24T09:03:30Z
+date_finished: 2026-11-24T09:03:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,27 +57,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-12T11:15:36Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=277,acs=6)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-11-23T15:00:47Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 9
-      tier: 2
-      effort: 8
-    rationale: blast_radius=9 (2-fabric-paths, 730-dependents-cross-cutting); 
-      tier=2 (workflow:build); effort=8 (lines=293,acs=6)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-12T11:16:15Z'
+  - ts: '2026-10-12T13:58:01Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -99,7 +75,7 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-10-22T07:45:57Z'
+  - ts: '2026-10-22T07:45:59Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 3
@@ -116,7 +92,7 @@ bvp_scores_proposed:
       F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-10-31T13:15:29Z'
+  - ts: '2026-10-31T13:15:30Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 3
@@ -133,9 +109,28 @@ bvp_scores_proposed:
       (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-12T14:00:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=280,acs=6)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-23T15:00:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (2-fabric-paths, 730-dependents-cross-cutting); 
+      tier=2 (workflow:build); effort=8 (lines=293,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4092: Hotfix v1.8.10 (emergency lane T-4035): T-4081 only — Watchtower decision commits no longer reverted by the next ordinary commit, plus the revert detector
+# T-4112: T-4081 index refresh fails silently: a held .git/index.lock lets the next commit revert a Watchtower decision (codex DO-NOT-SHIP on hotfix v1.8.10)
 
 ## Context
 
@@ -145,10 +140,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A hotfix commit on top of master b82294243 (v1.8.9) carries exactly the T-4081 fix (`web/blueprints/inception.py`, `lib/watchtower_decision_revert.py`, `agents/audit/audit.sh`, `tests/unit/test_t4081_watchtower_commit_keeps_real_index.py`) and their vendored copies — no task records, nothing else — followed by a VERSION 1.8.10 commit; built in a scratch clone, the main checkout untouched; the result is available as local branch `hotfix/v1.8.10` in the main repo (not pushed).
-- [ ] The T-4081 regression test fails on v1.8.9 and passes on the hotfix tree; the suites around the changed files (Watchtower inception/decide tests, audit tests, test_t4081, t4075) pass on the hotfix tree.
-- [ ] Full unit suite on the hotfix tree AND on an identically prepared clone of v1.8.9 (control); every failure that is not identical on both is listed and attributed. Report `docs/reports/T-4092-hotfix-v1810.md`.
-- [ ] One independent review of the hotfix diff (codex or opencode review seat) — verdict and findings in the report; any finding fixed on both lanes with a test.
+- [x] `_refresh_real_index` checks `git reset`'s exit code, retries transient `index.lock` contention (bounded), and on a final failure returns/logs it so the decision response tells the operator the decision may be reverted by the next commit (not a silent success)
+- [x] Regression test: with `.git/index.lock` held through the retries, the failure is surfaced; with the lock released during the retries, the decision survives the next ordinary commit. The test fails on the current code
+- [x] Landed on bleeding-edge with vendored copies synced (`bin/fw vendor self --check` clean); test_t4081 + the new test green
+- [ ] Folded into `hotfix/v1.8.10` (scratch clone `hf`, then fetched into the main repo's branch); the hotfix's related tests are green, and the 5 files that were red only on the hotfix side of the full-suite comparison (check_render_surface_human_ac_sigpipe, t2244_audit_self_vendor_drift, t3062_prepush_runtime, t3662_watchtower_port_allocation ×2) are rerun on both clones and attributed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -311,9 +306,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-test -s docs/reports/T-4092-hotfix-v1810.md
-git rev-parse --verify -q refs/heads/hotfix/v1.8.10
-git merge-base --is-ancestor b82294243 hotfix/v1.8.10
+
+python3 -m pytest tests/unit/test_t4081_watchtower_commit_keeps_real_index.py -q > /tmp/.t4112.out 2>&1 && grep -q passed /tmp/.t4112.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -330,6 +325,14 @@ git merge-base --is-ancestor b82294243 hotfix/v1.8.10
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** A Watchtower decision commit reported success, but when `.git/index.lock` was held by a concurrent git command, the next ordinary commit reverted the decision (`.tasks/completed/` file back to pre-decision content). codex review of hotfix v1.8.10 flagged it as DO-NOT-SHIP.
+
+**Root cause:** `_refresh_real_index` (web/blueprints/inception.py) ran `git reset -q -- <paths>` and discarded its return code. A held index lock makes that reset fail with no effect on the real index, so the caller had no signal: `_commit_decision_unlocked` returned `(True, msg)`, and the stale pre-decision blobs stayed in `.git/index` for the next commit to write back.
+
+**Why structurally allowed:** The T-4081 fix (G-114) was written as "best-effort and silent" by design; nothing checked that the refresh actually happened, and the only detector (`lib/watchtower_decision_revert.py`) runs on demand, after the revert has already landed. The T-4081 test only covered the happy path (index refresh succeeds), so the failure branch had no test.
+
+**Prevention:** (1) `_refresh_real_index` returns the failure reason; it retries transient lock contention (6 attempts, ~4s total). (2) A final failure returns `_index_refresh_failed` — `ok=False`, with the exact `git reset -q -- <paths>` command to run — so every decide surface shows it, and the runner's follow-up commit re-attempts the refresh and heals it. (3) Regression tests in `tests/unit/test_t4081_watchtower_commit_keeps_real_index.py`: held lock → surfaced + follow-up heals; lock released mid-retry → decision survives the next commit. Pre-fix proof (fix reverted, in a scratch clone): both lock tests FAIL, the other three PASS.
 
 ## Evolution
 
@@ -395,22 +398,6 @@ git merge-base --is-ancestor b82294243 hotfix/v1.8.10
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-13 — stop review rounds after codex round 4
-- **Chose:** ship candidate 704c9988f with codex round 4's MEDIUM residual stated as a known limitation (operator: "Agree, stop the rounds, proceed as suggested", 2026-10-13).
-- **Residual:** if the task file disappears concurrently in the instant before `git commit --only`, the follow-up commit fails visibly; the decision stays committed; nothing is reverted or lost.
-- **Why:** rounds 2-4 each found a narrower edge; this one is visible and lossless; the emergency lane is meant to stay small.
-- **Rejected:** round 5 with a bounded pathspec revalidation/retry (can go to bleeding-edge later as its own task).
-
-### 2026-10-13 — release authorisation for v1.8.10
-- **Chose:** release v1.8.10 to master without a further operator yes/no, because positive field tests are in (operator, verbatim: "Okay, if you got that in from positive tests in from other agents, then doesn't need my decision.").
-- **Conditions the agent holds itself to:** ring20-dashboard live re-check PASS (recorded); full-suite comparison 704c9988f vs master shows no failure attributed to the hotfix diff; `fw release` dry-run clean and reported to the operator with the result.
-- **Scope:** this release. Whether this replaces T-4020's explicit-question rule for future releases is asked separately.
-
-### 2026-10-13 — release v1.8.10 despite armed entries from before the fix
-- **Chose:** option 1 (operator: "1, proceed as suggested") — release v1.8.10 once the fresh full suite is green; follow quickly with v1.8.11 carrying the one-time reconcile (T-4166); the announcement tells every consumer to check `git diff --cached --name-only -- .tasks .context/episodic` before their next commit.
-- **Why:** ring20 (msg 05d50237) showed the fix is forward-only: entries staged by pre-fix decisions survive an upgrade. Releasing does not arm anything and stops new arming; holding leaves every consumer exposed to new damage.
-- **Rejected:** hold v1.8.10 until the reconcile is built and field-tested.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -423,10 +410,37 @@ git merge-base --is-ancestor b82294243 hotfix/v1.8.10
 
 ## Updates
 
-### 2026-10-12T11:13:15Z — task-created [task-create-agent]
+### 2026-10-12T13:56:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4092-hotfix-v1810-emergency-lane-t-4035-t-408.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4112-t-4081-index-refresh-fails-silently-a-he.md
 - **Context:** Initial task creation
 
-### 2026-11-23T17:35:23Z — status-update [task-update-agent]
+### 2026-10-12T13:58:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-12T17:30Z — pre-fix proof and hotfix rebuild [worker t4112-c]
+- **Pre-fix proof:** bleeding-edge commit 1a7eae801 with web/blueprints/inception.py reverted to 1a7eae801^ (scratch clone `.context/scratch/hotfix/proof`, deleted after): `test_t4081_watchtower_commit_keeps_real_index.py` 2 failed / 3 passed — `test_held_index_lock_is_surfaced_not_a_silent_success` and `test_lock_released_during_retries_keeps_the_decision` (the decision is reverted by the next commit).
+- **With the fix:** same file 5 passed on bleeding-edge and on the hotfix rebuild.
+- **Hotfix rebuild:** master b82294243 → T-4081 (ff82b31b0 cherry-picked) → T-4112 (1a7eae801 cherry-picked, applied clean) → VERSION (4cb700f99 cherry-picked, same content 1.8.10). Full report: docs/reports/T-4092-hotfix-v1810.md.
+
+### 2026-11-23T17:35:22Z — status-update [task-update-agent]
 - **Change:** tags: +arc:parallel-execution-aef
+
+### 2026-11-24T09:03:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** operator ruling 2026-11-23 (3): superseded - the v1.8.10 hotfix lane was overtaken by v1.8.15, released from bleeding-edge, which carries the T-4081/T-4127 fix
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4144c1d1
+- **Timestamp:** 2026-11-24T09:03:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Regression test: with `.git/index.lock` held through the retries, the failure is surfaced; with the lock released during the retries, the decision survives the next ordinary commit. The test fails on 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=git/index.lock in: Regression test: with `.git/index.lock` held through the retries, the failure is surfaced; with the lock released during the retries, the decision sur`

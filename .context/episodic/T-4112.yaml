@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4112: T-4081 index refresh fails silently: a held .git/index.lock lets the next commit revert a Watchtower decision (codex DO-NOT-SHIP on hotfix v1.8.10)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T09:03:55Z
+# ============================================================================
+
+task_id: T-4112
+task_name: "T-4081 index refresh fails silently: a held .git/index.lock lets the next commit revert a Watchtower decision (codex DO-NOT-SHIP on hotfix v1.8.10)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T13:56:38Z
+completed: 2026-11-24T09:03:30Z
+duration_days: 43
+updates_count: 5
+first_commit: 2026-10-12T16:02:50+02:00
+last_commit: 2026-10-12T20:19:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file T-4112..T-4117 — codex DO-NOT-SHIP on hotfix (silent index-refresh failure; detector value gap), peer field-test intake (tee boundary bypass, fw task stale, doc title twice, WM- refs in consumer). index refresh checks git's exit code, retries a held index.lock, and surfaces an unrefreshed index (not ok + logged) instead of a silent success; the follow-up commit heals it (codex DO-NOT-SHIP finding 1 on hotfix v1.8.10). ignore .context/scratch/ — persistent in-boundary scratch for hotfix clones (/tmp was wiped by the crash). hotfix v1.8.10 rebuild report + T-4112 task RCA and pre-fix proof
+
+# Key outcomes
+outcomes:
+  - '`_refresh_real_index` checks `git reset`''s exit code, retries transient `index.lock` contention (bounded), and on a final failure returns/logs it so the decision response tells the operator the decision may be reverted by the next commit (not a silent success)'
+  - 'Regression test: with `.git/index.lock` held through the retries, the failure is surfaced; with the lock released during the retries, the decision survives the next ordinary commit. The test fails on the current code'
+  - 'Landed on bleeding-edge with vendored copies synced (`bin/fw vendor self --check` clean); test_t4081 + the new test green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'hotfix v1.8.10 rebuild report + T-4112 task RCA and pre-fix proof'
+    source: git-mined
+  - description: 'index refresh checks git''s exit code, retries a held index.lock, and surfaces an unrefreshed index (not ok + logged) instead of a silent success; the follow-up commit heals it (codex DO-NOT-SHIP finding 1 on hotfix v1.8.10)'
+    source: git-mined
+  - description: 'ignore .context/scratch/ — persistent in-boundary scratch for hotfix clones (/tmp was wiped by the crash)'
+    source: git-mined
+  - description: 'index refresh checks git''s exit code, retries a held index.lock, and surfaces an unrefreshed index (not ok + logged) instead of a silent success; the follow-up commit heals it (codex DO-NOT-SHIP finding 1 on hotfix v1.8.10)'
+    source: git-mined
+  - description: 'file T-4112..T-4117 — codex DO-NOT-SHIP on hotfix (silent index-refresh failure; detector value gap), peer field-test intake (tee boundary bypass, fw task stale, doc title twice, WM- refs in consumer)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/inception.py'
+  - 'docs/reports/T-4092-hotfix-v1810.md'
+  - '.gitignore'
+  - '.tasks/active/T-4112-t-4081-index-refresh-fails-silently-a-he.md'
+  - '.tasks/active/T-4113-watchtowerdecisionrevert-detector-any-de.md'
+  - '.tasks/active/T-4114-security-project-boundary-hook-misses-te.md'
+  - '.tasks/active/T-4115-fw-task-stale-is-gated-as-a-write-with-n.md'
+  - '.tasks/active/T-4116-file-doc-renders-its-title-twice-when-th.md'
+  - '.tasks/active/T-4117-commit-msg-hook-in-a-consumer-refuses-wm.md'
+  - 'tests/unit/test_t4081_watchtower_commit_keeps_real_index.py'
+  - 'web/blueprints/inception.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T16:02:50'
+    action: 'T-4112: file T-4112..T-4117 — codex DO-NOT-SHIP on hotfix (silent index-refresh failure; detector value gap), peer field-test intake (tee boundary bypass, fw task stale, doc title twice, WM- refs in consumer)'
+  - time: '2026-10-12T17:05:25'
+    action: 'T-4112: index refresh checks git''s exit code, retries a held index.lock, and surfaces an unrefreshed index (not ok + logged) instead of a silent success; the follow-up commit heals it (codex DO-NOT-SHIP finding 1 on hotfix v1.8.10)'
+  - time: '2026-10-12T20:02:17'
+    action: 'T-4112: ignore .context/scratch/ — persistent in-boundary scratch for hotfix clones (/tmp was wiped by the crash)'
+  - time: '2026-10-12T17:05:25'
+    action: 'T-4112: index refresh checks git''s exit code, retries a held index.lock, and surfaces an unrefreshed index (not ok + logged) instead of a silent success; the follow-up commit heals it (codex DO-NOT-SHIP finding 1 on hotfix v1.8.10)'
+  - time: '2026-10-12T20:19:34'
+    action: 'T-4112: hotfix v1.8.10 rebuild report + T-4112 task RCA and pre-fix proof'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 61626 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, g-114, hotfix, arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 61626
+  commits: 6
+  files_changed: 16
+  lines_added: 2895
+  lines_removed: 58
+  footprint_refreshed_at: '2026-11-24T09:04:42Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4112-t-4081-index-refresh-fails-silently-a-he.md
+generated_by: context-agent-hybrid

@@ -59146,3 +59146,39 @@ scan_id: R-418ecba9
 task_id: T-3594
 payload:
   task_file: .tasks/active/T-3594-t-3576-build-b-git-pre-push-refuses-a-no.md
+---
+kind: scan_emitted
+timestamp: '2026-11-24T09:03:40Z'
+scan_id: R-4144c1d1
+task_id: T-4112
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-24T09:03:40Z'
+scan_id: R-4144c1d1
+task_id: T-4112
+payload:
+  task_file: .tasks/active/T-4112-t-4081-index-refresh-fails-silently-a-he.md
+---
+kind: scan_emitted
+timestamp: '2026-11-24T09:04:05Z'
+scan_id: R-43f95853
+task_id: T-4092
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-24T09:04:05Z'
+scan_id: R-43f95853
+task_id: T-4092
+payload:
+  task_file: .tasks/active/T-4092-hotfix-v1810-emergency-lane-t-4035-t-408.md

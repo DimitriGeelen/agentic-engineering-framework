@@ -1,0 +1,143 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4092: Hotfix v1.8.10 (emergency lane T-4035): T-4081 only — Watchtower decision commits no longer reverted by the next ordinary commit, plus the revert detector
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T09:04:20Z
+# ============================================================================
+
+task_id: T-4092
+task_name: "Hotfix v1.8.10 (emergency lane T-4035): T-4081 only — Watchtower decision commits no longer reverted by the next ordinary commit, plus the revert detector"
+workflow_type: build
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-10-12T11:13:15Z
+completed: 2026-11-24T09:03:58Z
+duration_days: 43
+updates_count: 3
+first_commit: 2026-10-12T13:14:22+02:00
+last_commit: 2026-10-13T18:41:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope emergency hotfix v1.8.10 (T-4081 only) per the T-4035 lane. hotfix — T-4081 Watchtower refreshes the real index after its scratch-index decision commit; revert detector (G-114). hotfix — T-4127 decision commits via git commit --only on the real index (replaces the T-4112 scratch-index refresh; codex round-2 DO-NOT-SHIP). round 3 — hotfix/v1.8.10 tip 63eb125aa (T-4127 appended); codex round 3 SHIP-WITH-CHANGES saved verbatim (finding 2 still open for a plain move followed by an extra write). v1.8.11 upgrade-notes draft — two consumer-test-visible behaviour changes (832 field test). field-test results matrix for ed683536a (832 parts 1+2, dimitri-mint-dev, ring20-dashboard). hotfix — commit pathspec rebuilt after staging (codex round-3 finding 2; T-4127 follow-up). round 4 — hotfix tip 704c9988f; codex round 4 SHIP-WITH-CHANGES (bounded pathspec retry requested). decision — stop review rounds; ship 704c9988f with codex round-4 residual stated (operator 2026-10-13). full-suite comparison 704c9988f vs b82294243 — 0 hotfix-attributable differences. ring20-dashboard live re-check of T-4127 — PASS on all three points (field evidence for v1.8.10). operator authorises v1.8.10 release on positive field tests (conditions recorded). decision — release v1.8.10, fast-follow v1.8.11 with the T-4166 reconcile, announcement carries the staged-entry check (operator option 1). operator accepted 6 load-flaky unit reds into the baseline until 2026-10-27 (owner T-4138) via runme. merge-back v1.8.10 (master) into bleeding-edge. v1.8.10 released — master ff, tag, GitHub release, merge-back, announcement
+
+# Key outcomes
+outcomes:
+  - 'Task completed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'full-suite comparison 704c9988f vs b82294243 — 0 hotfix-attributable differences'
+    source: git-mined
+  - description: 'round 4 — hotfix tip 704c9988f; codex round 4 SHIP-WITH-CHANGES (bounded pathspec retry requested)'
+    source: git-mined
+  - description: 'hotfix — commit pathspec rebuilt after staging (codex round-3 finding 2; T-4127 follow-up)'
+    source: git-mined
+  - description: 'round 3 — hotfix/v1.8.10 tip 63eb125aa (T-4127 appended); codex round 3 SHIP-WITH-CHANGES saved verbatim (finding 2 still open for a plain move followed by an extra write)'
+    source: git-mined
+  - description: 'hotfix — T-4127 decision commits via git commit --only on the real index (replaces the T-4112 scratch-index refresh; codex round-2 DO-NOT-SHIP)'
+    source: git-mined
+  - description: 'hotfix — T-4081 Watchtower refreshes the real index after its scratch-index decision commit; revert detector (G-114)'
+    source: git-mined
+  - description: 'scope emergency hotfix v1.8.10 (T-4081 only) per the T-4035 lane'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-13 — stop review rounds after codex round 4'
+    chose: 'ship candidate 704c9988f with codex round 4''s MEDIUM residual stated as a known limitation (operator: "Agree, stop the rounds, proceed as suggested", 2026-10-13).'
+    rationale: 'rounds 2-4 each found a narrower edge; this one is visible and lossless; the emergency lane is meant to stay small.'
+    alternatives_rejected: ['round 5 with a bounded pathspec revalidation/retry (can go to bleeding-edge later as its own task).']
+  - decision: '2026-10-13 — release authorisation for v1.8.10'
+    chose: 'release v1.8.10 to master without a further operator yes/no, because positive field tests are in (operator, verbatim: "Okay, if you got that in from positive tests in from other agents, then doesn''t need my decision."). - **Conditions the agent holds itself to:** ring20-dashboard live re-check PASS (recorded); full-suite comparison 704c9988f vs master shows no failure attributed to the hotfix diff; `fw release` dry-run clean and reported to the operator with the result.'
+  - decision: '2026-10-13 — release v1.8.10 despite armed entries from before the fix'
+    chose: 'option 1 (operator: "1, proceed as suggested") — release v1.8.10 once the fresh full suite is green; follow quickly with v1.8.11 carrying the one-time reconcile (T-4166); the announcement tells every consumer to check `git diff --cached --name-only -- .tasks .context/episodic` before their next commit.'
+    rationale: 'ring20 (msg 05d50237) showed the fix is forward-only: entries staged by pre-fix decisions survive an upgrade. Releasing does not arm anything and stops new arming; holding leaves every consumer exposed to new damage.'
+    alternatives_rejected: ['hold v1.8.10 until the reconcile is built and field-tested.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/watchtower_decision_revert.py'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - 'agents/audit/audit.sh'
+  - '.context/audits/unit-suite/baseline.yaml'
+  - 'docs/releases/v1.8.11-upgrade-notes.md'
+  - 'docs/reports/field-test-ed683536a-results.md'
+  - 'docs/reports/T-4092-codex-review-round3.md'
+  - 'docs/reports/T-4092-codex-review-round4.md'
+  - 'docs/reports/T-4092-hotfix-v1810.md'
+  - 'lib/watchtower_decision_revert.py'
+  - '.tasks/active/T-4092-hotfix-v1810-emergency-lane-t-4035-t-408.md'
+  - 'tests/unit/test_decide_commit.py'
+  - 'tests/unit/test_t4081_watchtower_commit_keeps_real_index.py'
+  - 'tests/unit/test_t4127_decision_commit_no_window.py'
+  - 'web/blueprints/inception.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T13:14:22'
+    action: 'T-4092: scope emergency hotfix v1.8.10 (T-4081 only) per the T-4035 lane'
+  - time: '2026-10-12T13:15:31'
+    action: 'T-4092: hotfix — T-4081 Watchtower refreshes the real index after its scratch-index decision commit; revert detector (G-114)'
+  - time: '2026-10-12T21:55:03'
+    action: 'T-4092: hotfix — T-4127 decision commits via git commit --only on the real index (replaces the T-4112 scratch-index refresh; codex round-2 DO-NOT-SHIP)'
+  - time: '2026-10-12T23:45:05'
+    action: 'T-4092: round 3 — hotfix/v1.8.10 tip 63eb125aa (T-4127 appended); codex round 3 SHIP-WITH-CHANGES saved verbatim (finding 2 still open for a plain move followed by an extra write)'
+  - time: '2026-10-12T23:49:08'
+    action: 'T-4092: v1.8.11 upgrade-notes draft — two consumer-test-visible behaviour changes (832 field test)'
+  - time: '2026-10-13T00:10:53'
+    action: 'T-4092: field-test results matrix for ed683536a (832 parts 1+2, dimitri-mint-dev, ring20-dashboard)'
+  - time: '2026-10-13T00:17:39'
+    action: 'T-4092: hotfix — commit pathspec rebuilt after staging (codex round-3 finding 2; T-4127 follow-up)'
+  - time: '2026-10-13T00:22:09'
+    action: 'T-4092: round 4 — hotfix tip 704c9988f; codex round 4 SHIP-WITH-CHANGES (bounded pathspec retry requested)'
+  - time: '2026-10-13T12:21:43'
+    action: 'T-4092: decision — stop review rounds; ship 704c9988f with codex round-4 residual stated (operator 2026-10-13)'
+  - time: '2026-10-13T13:36:35'
+    action: 'T-4092: full-suite comparison 704c9988f vs b82294243 — 0 hotfix-attributable differences'
+  - time: '2026-10-13T14:48:26'
+    action: 'T-4092: ring20-dashboard live re-check of T-4127 — PASS on all three points (field evidence for v1.8.10)'
+  - time: '2026-10-13T15:38:25'
+    action: 'T-4092: operator authorises v1.8.10 release on positive field tests (conditions recorded)'
+  - time: '2026-10-13T17:52:32'
+    action: 'T-4092: decision — release v1.8.10, fast-follow v1.8.11 with the T-4166 reconcile, announcement carries the staged-entry check (operator option 1)'
+  - time: '2026-10-13T18:24:30'
+    action: 'T-4092: operator accepted 6 load-flaky unit reds into the baseline until 2026-10-27 (owner T-4138) via runme'
+  - time: '2026-10-13T18:40:33'
+    action: 'T-4092: merge-back v1.8.10 (master) into bleeding-edge'
+  - time: '2026-10-13T18:41:20'
+    action: 'T-4092: v1.8.10 released — master ff, tag, GitHub release, merge-back, announcement'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 16 commit(s), 61790 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [emergency, hotfix, release, arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 61790
+  commits: 17
+  files_changed: 21
+  lines_added: 1651
+  lines_removed: 312
+  footprint_refreshed_at: '2026-11-24T09:04:42Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4092-hotfix-v1810-emergency-lane-t-4035-t-408.md
+generated_by: context-agent-hybrid
