@@ -167,7 +167,7 @@ bvp_scores_proposed:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
 
-- [ ] [REVIEW] Outside PR #116 is fit to merge into bleeding-edge (CONTRIBUTING step 6 read review)
+- [x] [REVIEW] Outside PR #116 is fit to merge into bleeding-edge (CONTRIBUTING step 6 read review)
   **Steps:**
   1. Read the PR's description `.context/working/judge-evidence/T-5301/pr116-description.md` and its full diff `.context/working/judge-evidence/T-5301/pr116.diff` (PR https://github.com/DimitriGeelen/agentic-engineering-framework/pull/116, head 0cc9951d8).
   2. Check the diff changes only the two Watchtower remedy lines in `bin/fw` and its identical vendored copy `.agentic-framework/bin/fw` to `Run: $(_emit_user_command "watchtower restart")`, and adds `tests/unit/issue68_doctor_watchtower_remedy.bats`. Check there are no other changes, no secrets and no new commands run at doctor time.
@@ -175,6 +175,7 @@ bvp_scores_proposed:
   4. Compare with `bin/fw` at the reviewed revision: the two lines it replaces still print `bin/watchtower.sh …`, which does not exist in a vendored project (#68).
   **Expected:** The change does exactly what #68 needs and nothing else, its test pins the defect, and it is safe to merge.
   **If not:** Name each problem; it goes back to the contributor on the PR as "change requested".
+  **Reviewer verdict:** green V-20261124-bb8ac760 — reviewer-judge-t-5301-r5-antigravity-19ca6951bc5d:antigravity (rung rung-5-panel:antigravity), digest ae398e001cf4; dispatch judge-t-5301-r5-antigravity-19ca6951bc5d; evidence: .context/reviews/evidence/T-5301/AC1-judge-t-5301-r5-antigravity-19ca6951bc5d.md; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -384,6 +385,14 @@ bvp_scores_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO — merge PR #116 into bleeding-edge
+**Rationale:** CONTRIBUTING steps 1–6 are complete. The change is small (bin/fw + vendored copy + one bats file, +35/−4), it does exactly what #68 asks, and every independent check is green; the only red GitHub checks fail identically on bleeding-edge itself.
+**Evidence:**
+- Isolated test host on the PR branch: 83 ok, 0 not ok, incl. the three #68 tests (.context/working/judge-evidence/T-5301/pr116-testhost.log).
+- Rung-5 panel (outside contributor, one level higher): claude-code, codex, antigravity all green (V-20261124-bb8ac760), criterion ticked by fw reviewer verdict apply. Earlier runs: claude-code and codex green twice; opencode green in substance but refused three times on citation format, so antigravity was moved ahead of it in the registry (operator 2026-11-24, f8163216a).
+- GitHub: PR checks and E2E pass; bats/pytest/Playwright fail the same way on bleeding-edge (T-5363, T-5365).
+- Post-merge (step 8): grep for bin/watchtower.sh stop|restart in bin/fw must be 0, vendor check clean, #68 stage → fixed, ships in the next be-tag.
 
 ## Decisions
 
