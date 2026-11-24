@@ -1,0 +1,149 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5392: Nightly unit suite on node1: build+stage bundle, submit node1-compatible files, collect into the nightly report
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T17:40:31Z
+# ============================================================================
+
+task_id: T-5392
+task_name: "Nightly unit suite on node1: build+stage bundle, submit node1-compatible files, collect into the nightly report"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-24T12:09:59Z
+completed: 2026-11-24T17:36:46Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-11-24T13:10:34+01:00
+last_commit: 2026-11-24T18:33:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  spec — nightly unit suite on node1 (operator 2026-11-24). record ring20's submit wrapper (msg 8d386759) and the switch-over plan. node1 nightly unit-suite run — script, exclusion list (45), hermetic tests, cron entry (generated, not installed). missing exclusion list is a named setup error; vendored copies. write node1 reports atomically (temp + os.replace) — caught by the first node1 run (atomic_yaml_write_lint NEW red). Agent criteria ticked (small node1 run 20 files: 19 pass + 1 real red fixed, re-run 2/2 green); decisions; verification lines. external review (codex, opencode) — NO-GO as built: ring20 specifics in vendored paths; summary. on hold — review NO-GO recorded in task. on hold — node1 cron entry removed (cron back in sync with deployed); report temp name pid+random (T-5067 lint red). option 1 criteria (operator 2026-11-24); cron criterion unticked and restated; T-5400 inception filed for the generic remote test pool. option 1 — node1 runner out of vendored paths, provider-neutral bundle, incomplete runs never green. option-1 criteria verified by parent; T-5400 filed. node1 nightly back on, project-local (scripts/node1/), operator 2026-11-24 option 2: turn it on now, tell ring20. node1 run weekly (Sat 03:30 host / 02:30Z) at ring20's request (msg e869a338) until files are batched per job. back to nightly 02:33Z with at most 10 open (ring20 correction msg 1c9ce548: run ~1-1.5 h, 10 leaves room on node1)
+
+# Key outcomes
+outcomes:
+  - 'One script (e.g. agents/audit/node1-nightly.sh) does: build the bundle (lib/test-bundle.sh) at HEAD; stage it once (pool-client ref-put / pool:stage per §7); submit each file via `pool-client.py submit-cmd` with entry aef.bats/aef.pytest and env aef-unit-2, at most 12 open; collect every result (or name its absence); never sends while feed.health is not healthy (checks first, retries later, gives up for the night with a logged reason).'
+  - 'The node1-incompatible list (the 29 T-5073 node1-only files plus the T-5069 local-only lists) lives in ONE committed file read by the script; the excluded count is reported each night.'
+  - 'Results land in a dated file next to the nightly unit-suite report, with counts (submitted, passed, failed, not collected, excluded) and failing file names; a failure not on the exclusion list is marked NEW.'
+  - 'Cron registry entry (project-local, pointing at `scripts/node1/node1-nightly.sh`) added and `bin/fw cron generate` run, with `fw doctor` reporting the registry in sync with the deployed crontab (the operator runs `fw cron install` via runme); `--dry-run` lists what would be submitted without sending; one real small run (≤ 20 files) succeeded end to end (2026-11-24: 20 files, 19 pass + 1 real red fixed). (Restated 2026-11-24: the entry was removed when the task went on hold, so this was unticked.)'
+  - 'Nothing ring20- or node1-specific is in a vendored path: the runner, its settings and the exclusion list live under `scripts/node1/` (not shipped by `fw vendor`); `agents/audit/node1*` and their `.agentic-framework/` copies are gone; `grep -rIl "node1\|ring20\|aef2\.\|aef-unit-2\|pool-client" agents lib bin web policy` names no file of this feature.'
+  - '`lib/test-bundle.sh` / `fw test bundle` is provider-neutral: generic default output path, size cap only when the caller passes one, no node1/relay/task references in code or help; the node1 runner passes its own path and 64 MB cap.'
+  - 'An incomplete run is never green: any `not_sent` or `not_collected` file gives the run status `incomplete` and a non-zero exit, shown in the report; the report names the exclusion file actually used and its sha256; pinned by tests.'
+  - 'The generic "remote test pool" capability is filed as its own inception (one question: what adapter contract would a framework-level, off-by-default runner need), not built here. (T-5400)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'Agent criteria ticked (small node1 run 20 files: 19 pass + 1 real red fixed, re-run 2/2 green); decisions; verification lines'
+    source: git-mined
+  - description: 'missing exclusion list is a named setup error; vendored copies'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-24 — entries aef2.* (not aef.*)'
+    chose: 'entries `aef2.bats` / `aef2.pytest` with env `aef-unit-2` (overridable: NODE1_ENTRY_BATS / NODE1_ENTRY_PYTEST / NODE1_ENV).'
+    rationale: 'what the T-5073 full run used and proved, and the names in ring20''s msg 6218a382; node1''s feed lists both pairs.'
+    alternatives_rejected: ['`aef.*` from spec §7: it pairs with env `aef-unit-1`, which lacks ruamel.yaml/openai (§9).']
+  - decision: '2026-11-24 — feed.health source and staging route'
+    chose: 'node1''s own `pool:feed` (hub profile `node1-pool`), field `health.state` == `healthy` and document younger than its `stale_after_s`; stage via `pool:stage` on the relay (profile `ring20-management`), falling back to `pool-client ref-put`.'
+    rationale: '`pool:feed` on the local hub describes our own pool node, not node1; `pool:stage` is the relay route other clients (832) use and staged our 52 MB bundle in 18 s.'
+    alternatives_rejected: ['`pool:nodes` per-node `healthy` (the relay''s view, not ring20''s canary-driven feed state).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/node1-nightly.sh'
+  - '.agentic-framework/agents/audit/node1_nightly.py'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/test-bundle.sh'
+  - '.context/cron-registry.yaml'
+  - '.context/cron/agentic-audit.crontab'
+  - '.fabric/components/agents-audit-node1-nightly.yaml'
+  - '.fabric/components/agents-audit-node1_nightly.yaml'
+  - '.fabric/components/lib-test-bundle.yaml'
+  - '.fabric/components/scripts-node1-node1-nightly.yaml'
+  - '.fabric/components/scripts-node1-node1_nightly.yaml'
+  - '.fabric/components/tests-unit-test_t5392_node1_nightly.yaml'
+  - '.gitignore'
+  - '.tasks/active/T-5392-nightly-unit-suite-on-node1-buildstage-b.md'
+  - '.tasks/active/T-5400-generic-remote-test-pool-what-adapter-co.md'
+  - 'agents/audit/node1-incompatible.txt'
+  - 'agents/audit/node1-nightly.sh'
+  - 'agents/audit/node1_nightly.py'
+  - 'bin/fw'
+  - 'docs/reports/T-5392-external-review/SUMMARY.md'
+  - 'docs/reports/T-5392-external-review/codex.md'
+  - 'docs/reports/T-5392-external-review/independence.json'
+  - 'docs/reports/T-5392-external-review/opencode.md'
+  - 'lib/test-bundle.sh'
+  - 'scripts/node1/node1-incompatible.txt'
+  - 'scripts/node1/node1-nightly.sh'
+  - 'scripts/node1/node1_nightly.py'
+  - 'tests/unit/t5070_test_bundle.bats'
+  - 'tests/unit/test_t5392_node1_nightly.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T13:10:34'
+    action: 'T-5392: spec — nightly unit suite on node1 (operator 2026-11-24)'
+  - time: '2026-11-24T13:21:21'
+    action: 'T-5392: record ring20''s submit wrapper (msg 8d386759) and the switch-over plan'
+  - time: '2026-11-24T13:22:19'
+    action: 'T-5392: node1 nightly unit-suite run — script, exclusion list (45), hermetic tests, cron entry (generated, not installed)'
+  - time: '2026-11-24T13:23:00'
+    action: 'T-5392: missing exclusion list is a named setup error; vendored copies'
+  - time: '2026-11-24T13:27:15'
+    action: 'T-5392: write node1 reports atomically (temp + os.replace) — caught by the first node1 run (atomic_yaml_write_lint NEW red)'
+  - time: '2026-11-24T13:29:07'
+    action: 'T-5392: Agent criteria ticked (small node1 run 20 files: 19 pass + 1 real red fixed, re-run 2/2 green); decisions; verification lines'
+  - time: '2026-11-24T13:43:35'
+    action: 'T-5392: external review (codex, opencode) — NO-GO as built: ring20 specifics in vendored paths; summary'
+  - time: '2026-11-24T13:43:52'
+    action: 'T-5392: on hold — review NO-GO recorded in task'
+  - time: '2026-11-24T13:53:26'
+    action: 'T-5392: on hold — node1 cron entry removed (cron back in sync with deployed); report temp name pid+random (T-5067 lint red)'
+  - time: '2026-11-24T17:56:24'
+    action: 'T-5392: option 1 criteria (operator 2026-11-24); cron criterion unticked and restated; T-5400 inception filed for the generic remote test pool'
+  - time: '2026-11-24T18:04:44'
+    action: 'T-5392: option 1 — node1 runner out of vendored paths, provider-neutral bundle, incomplete runs never green'
+  - time: '2026-11-24T18:05:58'
+    action: 'T-5392: option-1 criteria verified by parent; T-5400 filed'
+  - time: '2026-11-24T18:24:39'
+    action: 'T-5392: node1 nightly back on, project-local (scripts/node1/), operator 2026-11-24 option 2: turn it on now, tell ring20'
+  - time: '2026-11-24T18:32:57'
+    action: 'T-5392: node1 run weekly (Sat 03:30 host / 02:30Z) at ring20''s request (msg e869a338) until files are batched per job'
+  - time: '2026-11-24T18:33:46'
+    action: 'T-5392: back to nightly 02:33Z with at most 10 open (ring20 correction msg 1c9ce548: run ~1-1.5 h, 10 leaves room on node1)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 15 commit(s), 326 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [node1, test-suite-health, ring20]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 326
+  commits: 16
+  files_changed: 33
+  lines_added: 2827
+  lines_removed: 767
+  footprint_refreshed_at: '2026-11-24T17:42:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5392-nightly-unit-suite-on-node1-buildstage-b.md
+generated_by: context-agent-hybrid

@@ -11,12 +11,12 @@ description: >
   Hold submissions while ring20's feed.health is not healthy (their 2026-11-24 node1
   canary notice).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [node1, test-suite-health, ring20]
-components: []
+components: [bin/fw, lib/test-bundle.sh, scripts/node1/node1-nightly.sh, scripts/node1/node1_nightly.py, tests/unit/test_t5392_node1_nightly.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T12:09:59Z
-last_update: 2026-11-24T16:55:47Z
-date_finished:
+last_update: 2026-11-24T17:36:46Z
+date_finished: 2026-11-24T17:36:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -106,7 +106,7 @@ cost_estimate_proposed:
 - [x] One script (e.g. agents/audit/node1-nightly.sh) does: build the bundle (lib/test-bundle.sh) at HEAD; stage it once (pool-client ref-put / pool:stage per §7); submit each file via `pool-client.py submit-cmd` with entry aef.bats/aef.pytest and env aef-unit-2, at most 12 open; collect every result (or name its absence); never sends while feed.health is not healthy (checks first, retries later, gives up for the night with a logged reason).
 - [x] The node1-incompatible list (the 29 T-5073 node1-only files plus the T-5069 local-only lists) lives in ONE committed file read by the script; the excluded count is reported each night.
 - [x] Results land in a dated file next to the nightly unit-suite report, with counts (submitted, passed, failed, not collected, excluded) and failing file names; a failure not on the exclusion list is marked NEW.
-- [ ] Cron registry entry (project-local, pointing at `scripts/node1/node1-nightly.sh`) added and `bin/fw cron generate` run, with `fw doctor` reporting the registry in sync with the deployed crontab (the operator runs `fw cron install` via runme); `--dry-run` lists what would be submitted without sending; one real small run (≤ 20 files) succeeded end to end (2026-11-24: 20 files, 19 pass + 1 real red fixed). (Restated 2026-11-24: the entry was removed when the task went on hold, so this was unticked.)
+- [x] Cron registry entry (project-local, pointing at `scripts/node1/node1-nightly.sh`) added and `bin/fw cron generate` run, with `fw doctor` reporting the registry in sync with the deployed crontab (the operator runs `fw cron install` via runme); `--dry-run` lists what would be submitted without sending; one real small run (≤ 20 files) succeeded end to end (2026-11-24: 20 files, 19 pass + 1 real red fixed). (Restated 2026-11-24: the entry was removed when the task went on hold, so this was unticked.)
 
 #### Option 1 after the external review (operator 2026-11-24, "T-5392 option 1, go ahead"; docs/reports/T-5392-external-review/SUMMARY.md)
 - [x] Nothing ring20- or node1-specific is in a vendored path: the runner, its settings and the exclusion list live under `scripts/node1/` (not shipped by `fw vendor`); `agents/audit/node1*` and their `.agentic-framework/` copies are gone; `grep -rIl "node1\|ring20\|aef2\.\|aef-unit-2\|pool-client" agents lib bin web policy` names no file of this feature.
@@ -431,3 +431,26 @@ timeout 300 bats --tap tests/unit/atomic_yaml_write_lint.bats > /tmp/.t5392-lint
 - Real defect found: an incomplete run (`not_sent` / `not_collected`, no new failure) exits 0 — a false green.
 - Proposed shape: generic off-by-default remote-test-pool runner in the framework (adapter command + project-local config; unconfigured = exit 0 "not configured", no network); ring20/node1 profile and wrapper stay project-local, wrapper sha256 checked before every run. Wrapper options: 3 (operator runme) for the trial; 2 only as a non-vendored project-local copy; 1 not recommended.
 - Do not close as built. Next: operator picks the redesign route.
+
+### 2026-11-24T17:36:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-470f5d0b
+- **Timestamp:** 2026-11-24T17:40:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — One script (e.g. agents/audit/node1-nightly.sh) does: build the bundle (lib/test-bundle.sh) at HEAD; stage it once (pool-client ref-put / pool:stage per §7); submit each file via `pool-client.py submi
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=aef.bats/aef.pytest in: One script (e.g. agents/audit/node1-nightly.sh) does: build the bundle (lib/test-bundle.sh) at HEAD; stage it once (pool-client ref-put / pool:stage p`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_t5392_node1_nightly.py -q -p no:cacheprovider > /tmp/.t5392.out 2>&1 && grep -q passed /tmp/.t5392.out`
