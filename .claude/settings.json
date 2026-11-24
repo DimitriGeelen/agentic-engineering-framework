@@ -321,5 +321,16 @@
         ]
       }
     ]
+  },
+  "permissions": {
+    "deny": [
+      "Artifact",
+      "ArtifactComments",
+      "ArtifactData",
+      "ArtifactCheck",
+      "DesignSync",
+      "mcp__claude-artifacts",
+      "mcp__claude_ai_Claude_Docs"
+    ]
   }
 }
