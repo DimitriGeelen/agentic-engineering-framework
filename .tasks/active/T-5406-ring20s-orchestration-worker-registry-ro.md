@@ -71,8 +71,17 @@ Ring20 Manager built a substantial orchestration capability (arc-009): a registr
 ## Open Questions
 
 - **IW-1: Inventory: which of ring20's orchestration components exist, where is their code, and which does AEF already have an equivalent of?**
+  confidence: 3
+  disposition: answered
+  rationale: ring20 T-2868 inventory (paths, ~4,900 + 4,700 test lines, parked since 2026-10-20); AEF comparison table in docs/reports/T-5406-orchestration-module.md.
 - **IW-2: Which parts are generic (any AEF project) and which are ring20-specific?**
+  confidence: 3
+  disposition: answered
+  rationale: T-2868 boundary sketch — generic core (supervisor state machine, ledger, gates 4.1-4.11, halts, registry/admission schema, view, contract tests) vs ring20 adapters (uid/containment, preflight hosts, routes/logins, entries, role chain).
 - **IW-3: Separate plug-in module (own repo, versioned, pinned by AEF like the designer) or integral to AEF — and who owns it?**
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-11-24 chose option 2 on both sides (ring20 msg babd07bb; AEF "3 ok"): separate versioned module, ring20 as producer, after ring20 specifics move into config.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -150,11 +159,15 @@ Ring20 Manager built a substantial orchestration capability (arc-009): a registr
 
 ## Recommendation
 
-**Recommendation:** EXPLORING
+**Recommendation:** GO — option 2: ring20's orchestration engine becomes a separate, versioned module, with ring20 as producer and AEF pinning a version (as with the workflow designer).
 
-**Rationale:**
+**Rationale:** The operator chose option 2 on both sides on 2026-11-24 (ring20 msg babd07bb; AEF: "3 ok"). Ring20's inventory (T-2868) shows a generic core: supervisor state machine, ledger, gates 4.1-4.11, halts, registry/admission schema, view and contract tests. Its ring20 parts (worker uid range, containment, preflight hosts, launcher list, cap defaults, routes and logins, entries) can move into config. A module keeps those out of what every AEF consumer receives, which is the lesson of T-5392.
 
-Operator 2026-11-24: ring20 built a large orchestration capability (http://192.168.10.122:3000/orchestration, arc-009); unclear how much AEF has incorporated. Explore with ring20: inventory, overlap with AEF's dispatch substrate and the shared worker contract (T-4435, wc v0.3.4), then decide module vs integral.
+**Evidence:**
+- Ring20 inventory: http://192.168.10.122:3000/file/docs/reports/T-2868-arc009-orchestration-inventory.md
+- AEF comparison and options: `docs/reports/T-5406-orchestration-module.md`
+- Ring20 first: move hard-coded values into config, then split out the module (their task). AEF afterwards: a pickup task pins the first module release and connects it through the shared worker contract (wc v0.3.4).
+- Accepted risk: the engine is parked (no runs since 2026-10-20) and AEF has no second user yet, so the module starts dormant.
 
 **Evidence:**
 
