@@ -59326,3 +59326,21 @@ scan_id: R-261b750f
 task_id: T-5363
 payload:
   task_file: .tasks/active/T-5363-github-ci-red-on-bleeding-edge-pytest-jo.md
+---
+kind: scan_emitted
+timestamp: '2026-11-24T16:14:40Z'
+scan_id: R-32003534
+task_id: T-5394
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-24T16:14:40Z'
+scan_id: R-32003534
+task_id: T-5394
+payload:
+  task_file: .tasks/active/T-5394-gate-mcp-tools-that-move-data-off-host-d.md

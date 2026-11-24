@@ -1,0 +1,130 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5394: Gate MCP tools that move data off-host: default-deny PreToolUse, operator-only approval
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T16:14:56Z
+# ============================================================================
+
+task_id: T-5394
+task_name: "Gate MCP tools that move data off-host: default-deny PreToolUse, operator-only approval"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-24T13:28:58Z
+completed: 2026-11-24T16:12:35Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-11-24T14:30:26+01:00
+last_commit: 2026-11-24T17:09:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-140 — MCP egress tools ungated (050-email-archive escalation); task scoped. record 050's interim hook logic; TermLink exemption too wide. 050's per-tool TermLink classification recorded. MCP egress gate — default-deny PreToolUse hook, operator-only approval, audit. self-vendor ships policy/mcp-egress.yaml (the egress hook fails closed without it). vendor self — MCP egress gate files. agent criteria verified and ticked; verification, decisions
+
+# Key outcomes
+outcomes:
+  - 'A PreToolUse hook refuses (exit 2) an MCP tool call classified as egress-capable unless an unused operator approval exists for that exact action, and allows non-egress MCP tools; pinned by hermetic tests for both legs plus an unreadable payload (fails closed).'
+  - 'Classification is data, not code: one policy file lists egress-capable MCP tool patterns, and an unknown MCP tool whose name matches publish/upload/post/send/share/write/copy/delete is treated as egress until classified.'
+  - 'Approval is operator-only: the approve verb refuses under CLAUDECODE=1 even with an agent flag, and the hook refuses agent writes to the approval ledger.'
+  - '`fw audit` lists every registered MCP tool classified egress-capable with its gate, and FAILs when one has no gate.'
+  - '`fw init` writes the hook and `fw upgrade` delivers it; `tests/unit/upgrade_fresh_machine_simulation.bats` stays green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-24 — TermLink: per-tool classes, not a blanket exemption'
+    chose: '050''s per-tool TermLink egress list (remote_*, file_send, dispatch, exec/inject/interact/run/send/spawn, broadcasts, emit, request, kv_set, channel/agent post/reply/quote/edit/ask/contact), plus hub_export_secret and poll_start; every other termlink tool local.'
+    rationale: 'hubs can sit on other hosts (ring20), so a send through TermLink can leave the host.'
+    alternatives_rejected: ['050''s first blanket `mcp__termlink__` exemption (too wide); gating every termlink tool (blocks reads for no gain).']
+  - decision: '2026-11-24 — Project policy can only tighten'
+    chose: '`.context/project/mcp-egress.yaml` may add `egress` rules; `local` rules there are ignored and WARNed by the audit.'
+    rationale: 'the file is agent-writable; an agent that could write `local` could ungate itself.'
+    alternatives_rejected: ['full project overrides (self-ungating); no project file at all (consumers'' own servers, e.g. claude-artifacts variants, could not be gated without a framework release).']
+  - decision: '2026-11-24 — Approval ledger is gitignored, per host'
+    chose: '`.context/working/mcp-egress-approvals.jsonl` + `mcp-egress-uses.jsonl`, gitignored; approvals guarded by the Write/Edit/Bash operator-records guard.'
+    rationale: 'approvals are short-lived (TTL, single use) and host-specific; committing them would dirty the tree on every approval.'
+    alternatives_rejected: ['a committed ledger (noise, and a commit is not what makes it operator-only).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/check-human-ac-tick.py'
+  - '.agentic-framework/agents/context/check-mcp-egress.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/mcp_egress.py'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/policy/mcp-egress.yaml'
+  - '.claude/settings.json'
+  - '.context/project/concerns.yaml'
+  - '.context/project/enforcement-baseline.sha256'
+  - '.fabric/components/agents-context-check-mcp-egress.yaml'
+  - '.fabric/components/lib-mcp_egress.yaml'
+  - '.fabric/components/policy-mcp-egress.yaml'
+  - '.fabric/components/tests-unit-t5394_mcp_egress.yaml'
+  - '.gitignore'
+  - '.tasks/active/T-5394-gate-mcp-tools-that-move-data-off-host-d.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/check-human-ac-tick.py'
+  - 'agents/context/check-mcp-egress.sh'
+  - 'bin/fw'
+  - 'lib/init.sh'
+  - 'lib/mcp_egress.py'
+  - 'lib/shell_write_scan.py'
+  - 'lib/upgrade.sh'
+  - 'policy/mcp-egress.yaml'
+  - 'tests/unit/t5394_mcp_egress.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T14:30:26'
+    action: 'T-5394: register G-140 — MCP egress tools ungated (050-email-archive escalation); task scoped'
+  - time: '2026-11-24T14:41:06'
+    action: 'T-5394: record 050''s interim hook logic; TermLink exemption too wide'
+  - time: '2026-11-24T14:54:17'
+    action: 'T-5394: 050''s per-tool TermLink classification recorded'
+  - time: '2026-11-24T16:50:16'
+    action: 'T-5394: MCP egress gate — default-deny PreToolUse hook, operator-only approval, audit'
+  - time: '2026-11-24T16:51:16'
+    action: 'T-5394: self-vendor ships policy/mcp-egress.yaml (the egress hook fails closed without it)'
+  - time: '2026-11-24T16:51:45'
+    action: 'T-5394: vendor self — MCP egress gate files'
+  - time: '2026-11-24T17:09:51'
+    action: 'T-5394: agent criteria verified and ticked; verification, decisions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 163 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, egress, mcp]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 163
+  commits: 8
+  files_changed: 31
+  lines_added: 2853
+  lines_removed: 21
+  footprint_refreshed_at: '2026-11-24T16:15:11Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5394-gate-mcp-tools-that-move-data-off-host-d.md
+generated_by: context-agent-hybrid

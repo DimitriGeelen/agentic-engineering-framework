@@ -8,12 +8,12 @@ description: >
   verbs are gated (T-2548), MCP egress tools are not. Asks: default-deny gate, Tier-0
   class; audit of egress-capable MCP tools; delivered to every consumer.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [security, egress, mcp]
-components: []
+components: [C-009, agents/audit/audit.sh, agents/context/check-human-ac-tick.py, agents/context/check-mcp-egress.sh, bin/fw, lib/init.sh, lib/mcp_egress.py, lib/shell_write_scan.py, lib/upgrade.sh, policy/mcp-egress.yaml, tests/unit/t5394_mcp_egress.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T13:28:58Z
-last_update: '2026-11-24T13:45:23Z'
-date_finished:
+last_update: 2026-11-24T16:12:35Z
+date_finished: 2026-11-24T16:12:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -425,3 +425,20 @@ bin/fw vendor self --check --task T-5394
 - Their own weakness: neutral-named egress tools slip past name matching; our policy file + unknown-is-egress covers it.
 - 050 follow-up (msg fa7ea16a): exemption removed. Now gated: termlink_(remote_*, file_send, dispatch, batch_exec/run, exec, inject, interact, run, send, spawn, broadcast, chat_arc_broadcast, emit, emit_to, request, kv_set, channel_post/reply/forward/quote/edit, agent_post/reply/quote/edit/ask/contact, agent_send_auto_discover); read/list/status open; 22 tests. Use as the starting TermLink classification.
 - Our note: a blanket TermLink exemption is too wide. TermLink's remote_*, file_send, channel/agent post and dispatch can reach hubs on other hosts (ring20 is remote). Classify per tool: local-host traffic allowed, cross-host sends gated or at least listed.
+
+### 2026-11-24T16:12:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-32003534
+- **Timestamp:** 2026-11-24T16:14:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
