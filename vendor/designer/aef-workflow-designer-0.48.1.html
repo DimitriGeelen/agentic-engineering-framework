@@ -758,6 +758,8 @@ font-family: 'Outfit';
   .phase-divider { stroke: var(--text-faint); stroke-width: 1; stroke-dasharray: 6 4; opacity: 0.7; }
   .phase-bracket { fill: none; stroke: var(--text-dim); stroke-width: 1.2; }
   .phase-label { fill: var(--text); font-size: 11px; font-weight: 600; text-rendering: geometricPrecision; }
+  /* T-1498: a phase row's own name (its category), at the row's left: quieter than a phase name, so it reads as the row */
+  .phase-row-label { fill: var(--text-dim); font-size: 11px; font-weight: 500; font-style: italic; text-rendering: geometricPrecision; }
   .node-id-badge { fill: var(--text-hint); font-family: var(--mono); font-size: 9px; pointer-events: none; letter-spacing: 0.02em; }
   /* T-893 (T-888 clause 4): authority marker on the element. Two classes for two states that
      must read DIFFERENTLY — a differing authority is a choice (faint, like the id badge), a
@@ -1134,6 +1136,11 @@ font-family: 'Outfit';
     align-items: center;
     gap: 8px;
   }
+  /* T-1492: a step's (or lane's) bpmn:documentation, read-only, one block per line prefix */
+  .doc-block { margin-bottom: 10px; }
+  .doc-label { font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 3px; }
+  .doc-item { font-size: 12.5px; line-height: 1.45; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere;
+              padding: 2px 0 2px 8px; border-left: 2px solid var(--border); margin-bottom: 4px; }
   .props-section-title .ns-tag {
     background: var(--accent-soft);
     color: var(--accent);
@@ -3665,7 +3672,7 @@ function setZoom(f, anchorX, anchorY) {
 // and the minimum is over every class of map text a person reads, not node names alone: flow labels, id captions and
 // lane captions too (OPEN_TEXT_SEL), so none of them opens below the floor when it is drawn smaller than the names.
 const OPEN_MIN_TEXT_PX = 9;
-const OPEN_TEXT_SEL = 'text.node-label, text.edge-label, text.node-id-badge, text.lane-label, text.phase-label';   // T-1473: phase names too
+const OPEN_TEXT_SEL = 'text.node-label, text.edge-label, text.node-id-badge, text.lane-label, text.phase-label, text.phase-row-label';   // T-1473/T-1498: phase and row names too
 let _zoomFromOpen = false;
 function openingZoom() {
   if (zoomFactor != null && !_zoomFromOpen) return;
@@ -8595,6 +8602,8 @@ function _renderPropsInto(props, details) {
     sBpmn.appendChild(heightWrap);
 
     props.appendChild(sBpmn);
+    // T-1492: the lane's documentation (Greenfield: its owner role), read-only; kept on save since T-1500
+    { const sDoc = docSection(lane.documentation); if (sDoc) props.appendChild(sDoc); }
 
     // Ordering
     const secO = section('Order');
@@ -8761,6 +8770,8 @@ function _renderPropsInto(props, details) {
     if (!lensBpmn(t)) f.remove();
   }
   if (lensSection('BPMN')) props.appendChild(sBpmn);
+  // T-1492: the element's documentation, read-only, under every lens (it is the map's content for a business reader)
+  { const sDoc = docSection(n.documentation); if (sDoc) props.appendChild(sDoc); }
 
   // AEF extensions
   // T-308: a bare catch event has no aef:link, so the link schema's target fields
@@ -9179,6 +9190,65 @@ function typeBadgeSvg(t) {
   if (t === 'sequence flow') return '<svg viewBox="0 0 28 28"><path d="M4 14 H22" stroke="var(--text-dim)" stroke-width="2"/><path d="M18 10 L22 14 L18 18" stroke="var(--text-dim)" stroke-width="2" fill="none"/></svg>';
   if (t === 'lane') return '<svg viewBox="0 0 28 28"><rect x="3" y="6" width="22" height="16" rx="2" fill="none" stroke="var(--text-dim)" stroke-width="1.5"/><line x1="9" y1="6" x2="9" y2="22" stroke="var(--text-dim)" stroke-width="1.5"/></svg>';
   return '';
+}
+// T-1492 (Greenfield msg 2e879869): an element's <bpmn:documentation>, shown read-only. Greenfield writes one line per
+// fact, prefixed "Instruction:", "Rule:", "Keys:", "Mapping:", "Open:", "Detail:", "Decision:" (106 lines over 23
+// steps on their workshop map); each prefix becomes a labelled block, in that order, items in file order. Another
+// short label (one or two words, as a lane's "Owner:") becomes its own block after those, in first-seen order. A line
+// that starts with whitespace or a bullet continues the item above it; any other line goes under Notes, last.
+// Nothing here writes: the documentation is saved back exactly as read (T-602 nodes, T-1500 lanes).
+const DOC_PREFIXES = ['Instruction', 'Rule', 'Keys', 'Mapping', 'Open', 'Detail', 'Decision'];
+function docBlocks(docs) {
+  const by = new Map(DOC_PREFIXES.map(p => [p, []]));
+  const other = [];                                    // labels outside the known list, first-seen order
+  const notes = [];
+  const re = /^([A-Za-zÀ-ÿ][\wÀ-ÿ.&/-]*(?: [A-Za-zÀ-ÿ][\wÀ-ÿ.&/-]*)?)\s*:\s*(.*)$/;   // one or two words, then a colon
+  for (const d of docs || []) {
+    let last = null;
+    for (const raw of String(d.text || '').split(/\r?\n/)) {
+      if (!raw.trim()) continue;
+      const m = re.exec(raw.trim());
+      if (m && m[1].length <= 20 && !/^https?$/i.test(m[1])) {
+        const known = DOC_PREFIXES.find(p => p.toLowerCase() === m[1].toLowerCase());
+        const isNote = /^notes?$/i.test(m[1]);
+        const key = known || (isNote ? null : m[1]);
+        last = { text: m[2] };
+        if (!key) notes.push(last);
+        else { if (!by.has(key)) { by.set(key, []); other.push(key); } by.get(key).push(last); }
+      } else if (last && /^(\s|[-•*·])/.test(raw)) {
+        last.text += '\n' + raw.trim();
+      } else {
+        last = { text: raw.trim() };
+        notes.push(last);
+      }
+    }
+  }
+  const out = DOC_PREFIXES.concat(other).filter(p => by.get(p).length).map(p => ({ label: p, items: by.get(p).map(x => x.text) }));
+  if (notes.length) out.push({ label: 'Notes', items: notes.map(x => x.text) });
+  return out;
+}
+function docSection(docs) {
+  const blocks = docBlocks(docs);
+  if (!blocks.length) return null;
+  const s = section('Documentation');
+  s.dataset.testid = 'props-documentation';
+  for (const b of blocks) {
+    const w = document.createElement('div');
+    w.className = 'doc-block';
+    w.dataset.docLabel = b.label;
+    const l = document.createElement('div');
+    l.className = 'doc-label';
+    l.textContent = b.label;
+    w.appendChild(l);
+    for (const t of b.items) {
+      const it = document.createElement('div');
+      it.className = 'doc-item';
+      it.textContent = t;
+      w.appendChild(it);
+    }
+    s.appendChild(w);
+  }
+  return s;
 }
 function section(title, isAef) {
   const s = document.createElement('div');
@@ -15144,7 +15214,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.47.0';
+const APP_VERSION = '0.48.1';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -15358,6 +15428,10 @@ function buildBpmnXml(s) {
   if (lanesToEmit.length) lines.push(`    <bpmn:laneSet id="LaneSet_1">`);
   for (const lane of lanesToEmit) {
     lines.push(`      <bpmn:lane id="${escAttr(lane.id)}" name="${escAttr(lane.name)}">`);
+    for (const d of (lane.documentation || [])) {   // T-1500: documentation first (tBaseElement order), as nodes (T-602)
+      const attrs = (d.id ? ` id="${escAttr(d.id)}"` : '') + (d.textFormat ? ` textFormat="${escAttr(d.textFormat)}"` : '');
+      lines.push(`        <bpmn:documentation${attrs}>${escText(d.text)}</bpmn:documentation>`);
+    }
     lines.push(`        <bpmn:extensionElements>`);
     // T-890: additive, same shape as uuid/pageWidth/kind — absent when unset, so a map
     // that declares no authoring default exports byte-identically.
@@ -16006,20 +16080,29 @@ function captureProcessLevelKept(doc, proc, displayIdToUid, flowIdToUid, partEl)
   const laneIds = new Set(Array.from(proc.getElementsByTagNameNS(B, 'lane')).map(l => l.getAttribute('id')).filter(Boolean));
   const boundsOf = el => { const b = Array.from(el.children).find(c => c.localName === 'Bounds');
     const r = b && [parseFloat(b.getAttribute('y')), parseFloat(b.getAttribute('height'))]; return r && r.every(Number.isFinite) ? r : null; };
-  const laneBands = [];
+  const laneBands = [], stepBands = [];
   for (const el of doc.getElementsByTagNameNS(IO_EXPORT_ROOT_NS.bpmndi, '*')) {
     if ((el.localName === 'BPMNShape' || el.localName === 'BPMNEdge') && keptIds.has(el.getAttribute('bpmnElement'))) {
       di.push({ ref: el.getAttribute('bpmnElement'), xml: keptElementXml(el) });
     }
     if (categories.length && el.localName === 'BPMNShape') {
-      const ref = el.getAttribute('bpmnElement'), r = (ref === partId || laneIds.has(ref)) ? boundsOf(el) : null;
+      const ref = el.getAttribute('bpmnElement');
+      const r = (ref === partId || laneIds.has(ref) || displayIdToUid.has(ref)) ? boundsOf(el) : null;
       if (r && ref === partId) band = { y: r[0], h: r[1] };
-      else if (r) laneBands.push(r);
+      else if (r && laneIds.has(ref)) laneBands.push(r);
+      else if (r) stepBands.push(r);
     }
   }
   if (categories.length && !band && laneBands.length) {
     const y0 = Math.min(...laneBands.map(r => r[0])), y1 = Math.max(...laneBands.map(r => r[0] + r[1]));
     band = { y: y0, h: y1 - y0 };
+  }
+  // T-1510: a file with neither a participant nor a lane shape (the designer's own save writes the steps' shapes and the
+  // kept group shapes, but no pool or lane outline) is judged against the band its steps occupy: a group spanning every
+  // step top to bottom is a phase. Before, there was no band and every phase vanished after a save and reopen.
+  if (categories.length && !band && stepBands.length) {
+    const y0 = Math.min(...stepBands.map(r => r[0])), y1 = Math.max(...stepBands.map(r => r[0] + r[1]));
+    band = { y: y0, h: y1 - y0, from: 'steps' };
   }
   const procDocs = Array.from(proc.children).filter(c => c.namespaceURI === B && c.localName === 'documentation').map(keptElementXml);
   // T-1327 (F11): a comment among the process's children is kept before the element that followed it (a node or flow
@@ -16547,6 +16630,12 @@ function renderPhases() {
   const left = px + LANE_HEADER, right = px + pw, top = py + POOL_HEADER, bottom = py + ph;
   rows.forEach((r, ri) => {
     const by = py - 8 - ri * PHASE_ROW_H;   // this row's bracket line; its names sit just above it
+    // T-1498 (Greenfield msg ee60b420): the row's category name, right-aligned just left of where its brackets start,
+    // on the phase names' baseline. It may reach left of the pool: the view grows to fit (fitViewBox, minX <= 0).
+    if ((r.name || '').trim()) {
+      g.appendChild(el('text', { x: left - 8, y: by - 4, class: 'phase-row-label', 'text-anchor': 'end', 'data-phase-row-label': ri },
+        [text(r.name.trim())]));
+    }
     r.phases.forEach((p, pi) => {
       const x1 = Math.max(left, p.x), x2 = Math.min(right, p.x + p.w);
       if (x2 - x1 < 8) return;
@@ -16878,7 +16967,17 @@ function parseBpmnXml(text) {
   if (laneSets.length) {
     for (const laneEl of byBpmn(laneSets[0], 'lane')) {
       const laneMeta = byAef(laneEl, 'laneMeta')[0];
+      // T-1500: a lane's own <bpmn:documentation> (Greenfield keeps the owner role there), read as T-602 reads a
+      // node's: direct children only, text with id/textFormat; written back first in the lane. Before, never read,
+      // so every save dropped it.
+      const laneDocs = byBpmn(laneEl, 'documentation').filter(d => d.parentNode === laneEl).map(d => {
+        const entry = { text: d.textContent || '' };
+        if (d.hasAttribute('id')) entry.id = d.getAttribute('id');
+        if (d.hasAttribute('textFormat')) entry.textFormat = d.getAttribute('textFormat');
+        return entry;
+      });
       lanes.push({
+        ...(laneDocs.length ? { documentation: laneDocs } : {}),
         id: laneEl.getAttribute('id') || generateUid('l').slice(2),
         name: laneEl.getAttribute('name') || laneEl.getAttribute('id') || 'lane',
         abbr: laneMeta?.getAttribute('abbr') || deriveLaneAbbr(laneEl.getAttribute('name') || laneEl.getAttribute('id') || 'lane'),

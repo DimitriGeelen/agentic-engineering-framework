@@ -304,6 +304,21 @@ bin/fw vendor self --check --task T-5390
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
 
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| designer | host page + Open project map picker | ok | ok | ok | header reads v0.48.1; picker lists the stored maps (saved · vN). Thumbnails were still loading at capture: none drawn at 1024, some at 1440/1920 (the ones drawn look right), so the shots do not show whether every thumbnail renders |
+| app | /designer/app starter map | ok | ok | ok | header reads v0.48.1; lanes, steps, gateways and flows draw as under 0.47.0; no phases in the starter map, so T-1510 (phases survive save and reopen) is not exercised here |
+
+Captures (`fw ux shots T-5390`, full page, read 2026-11-24):
+- .context/visual/T-5390/designer@1024.png
+- .context/visual/T-5390/designer@1440.png
+- .context/visual/T-5390/designer@1920.png
+- .context/visual/T-5390/app@1024.png
+- .context/visual/T-5390/app@1440.png
+- .context/visual/T-5390/app@1920.png
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
