@@ -1,7 +1,12 @@
 ---
 id: T-5390
-name: "Pick up Workflow Designer 0.48.0 (832 release; pin 0.47.0 -> 0.48.0)"
+name: "Pick up Workflow Designer 0.48.1 (832 release; pin 0.47.0 -> 0.48.1, skipping 0.48.0)"
 description: >
+  RETARGETED 2026-11-24 to 0.48.1 (832 msg 8ce4853f): tag designer-v0.48.1 (c1a2af11),
+  dist/aef-workflow-designer-0.48.1.html sha256
+  c7e69ba6f0e79a7abaf8816e453bb47ca6252d623c06794b3a9275d3de01b1a1, 1457639 bytes; kit
+  dist/aef-authoring-kit-0.48.1; notes docs/releases/RELEASE-NOTES-0.48.1.md. One fix over 0.48.0:
+  phases survive save and reopen (832 T-1510). Stored maps unchanged. Original 0.48.0 brief:
   832 msg 60d0659a (2026-11-24): tag designer-v0.48.0 (95f53ae7), artifact sha256
   c0e0a18b8bef43871520f4fee0509448c525b161d613e52aea978fdaa034c212, 1456958 bytes,
   authoring kit 0.48.0. Keeps lane bpmn:documentation on save (T-1500), documentation
