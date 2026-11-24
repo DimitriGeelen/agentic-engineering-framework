@@ -106,9 +106,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw designer sync --from-tag designer-v0.48.1` verifies the artifact (sha256 c7e69ba6f0e7…, 1457639 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way.
-- [ ] `policy/designer-pin.yaml` pins 0.48.1; `fw designer status` reports the pin valid; `/designer/app` serves APP_VERSION 0.48.1 after a Watchtower restart; designer tests pass; the vendored copy is synced.
-- [ ] Stored maps unchanged: every map under .context/designer/projects validates exactly as before the pickup (same clean/error counts as measured before), and none gained a bpmn:group or bpmn:category.
+- [x] `fw designer sync --from-tag designer-v0.48.1` verifies the artifact (sha256 c7e69ba6f0e7…, 1457639 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way.
+- [x] `policy/designer-pin.yaml` pins 0.48.1; `fw designer status` reports the pin valid; `/designer/app` serves APP_VERSION 0.48.1 after a Watchtower restart; designer tests pass; the vendored copy is synced.
+- [x] Stored maps unchanged: every map under .context/designer/projects validates exactly as before the pickup (same clean/error counts as measured before), and none gained a bpmn:group or bpmn:category. (Measured: 52 maps, 49 clean; aef-dispatch-loop v1 E-XML-NODE-UNASSIGNED, draft-inception-readiness v1 and v2 E-INCEPTION-NOT-SOVEREIGN, same as before; per-map rules identical before/after, map files byte-identical; validator 98e199b6 identical in 0.47.0 and 0.48.1.)
 - [ ] 832 is told the result on its thread (conversation 832-designer-release-0.48.1).
 
 ### Human
