@@ -754,6 +754,10 @@ font-family: 'Outfit';
   svg[data-lsize="s"] .lane-label { font-size: 9px; }
   svg[data-lsize="l"] .lane-label { font-size: 11.5px; }
   .node-io-badge { fill: var(--text-dim); font-family: var(--mono); font-size: 8px; pointer-events: none; }
+  /* T-1473: phases, read-only — a divider through the lanes, a named bracket above the pool per phase */
+  .phase-divider { stroke: var(--text-faint); stroke-width: 1; stroke-dasharray: 6 4; opacity: 0.7; }
+  .phase-bracket { fill: none; stroke: var(--text-dim); stroke-width: 1.2; }
+  .phase-label { fill: var(--text); font-size: 11px; font-weight: 600; text-rendering: geometricPrecision; }
   .node-id-badge { fill: var(--text-hint); font-family: var(--mono); font-size: 9px; pointer-events: none; letter-spacing: 0.02em; }
   /* T-893 (T-888 clause 4): authority marker on the element. Two classes for two states that
      must read DIFFERENTLY — a differing authority is a choice (faint, like the id badge), a
@@ -890,6 +894,9 @@ font-family: 'Outfit';
     stroke-dasharray: 4 3;
     opacity: 0.7;
   }
+  /* T-1474: the node texts the flow-label search avoids are measured unhinted too; hinted, their boxes changed with the
+     zoom at render time and 16 corpus flow labels took another place at fit than at 100% */
+  .node-label, .node-id-badge, .node-io-badge { text-rendering: geometricPrecision; }
   .edge-label { fill: var(--text-dim); font-family: var(--mono); font-size: 10px; pointer-events: none;
     text-rendering: geometricPrecision; /* T-1256: unhinted, so a label's width does not change with zoom or engine */
     paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
@@ -1852,6 +1859,8 @@ font-family: 'Outfit';
           </marker>
         </defs>
         <g id="g-pool"></g>
+        <!-- T-1473: phases (bpmn:group + bpmn:category) read-only: dividers through the lanes, named brackets above -->
+        <g id="g-phases" pointer-events="none"></g>
         <!-- T-1120: the other pools of a collaboration and the message flows, read-only (no pointer events) -->
         <g id="g-collab" pointer-events="none"></g>
         <!-- T-1369: documents (BPMN data objects) with their state and associations, read-only (no pointer events) -->
@@ -2982,9 +2991,20 @@ function getInvestigateWorkflow() {
   // the uid (so existing code that does `n.id` / `e.id` continues to work as
   // a stable reference key). The `slug` and computed displayId are new.
   const oldIdToUid = new Map();
+  // T-1475: the starter's uids are DERIVED from its fixed code ids (the importer's FNV-1a hash, salted on a clash), not
+  // minted from Math.random: display ids order equal-x steps by uid, so random uids renumbered the stacked search tasks
+  // on every page load. Imported maps were already deterministic (uid from the file, or deriveUid of the element id).
+  const starterUids = new Set();
+  const starterUid = (prefix, seed) => {
+    const h = s => { let x = 0x811c9dc5; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; } return x.toString(16).padStart(8, '0'); };
+    let uid = `${prefix}_${h(seed)}`;
+    for (let salt = 1; starterUids.has(uid); salt++) uid = `${prefix}_${h(`${seed}#${salt}`)}`;
+    starterUids.add(uid);
+    return uid;
+  };
   for (const node of result.nodes) {
     const oldId = node.id;
-    node.uid = generateUid('n');
+    node.uid = starterUid('n', oldId);
     // Slug derives from the display name — first significant word, lowercased.
     // Consistent with the runtime deriveSlug() used for renames.
     node.slug = deriveSlug(node.name);
@@ -3004,7 +3024,7 @@ function getInvestigateWorkflow() {
     slugCounts.set(key, seen + 1);
   }
   for (const edge of result.edges) {
-    edge.uid = generateUid('e');
+    edge.uid = starterUid('e', edge.id);
     edge.source = oldIdToUid.get(edge.source) || edge.source;
     edge.target = oldIdToUid.get(edge.target) || edge.target;
     edge.id = edge.uid;
@@ -3645,7 +3665,7 @@ function setZoom(f, anchorX, anchorY) {
 // and the minimum is over every class of map text a person reads, not node names alone: flow labels, id captions and
 // lane captions too (OPEN_TEXT_SEL), so none of them opens below the floor when it is drawn smaller than the names.
 const OPEN_MIN_TEXT_PX = 9;
-const OPEN_TEXT_SEL = 'text.node-label, text.edge-label, text.node-id-badge, text.lane-label';
+const OPEN_TEXT_SEL = 'text.node-label, text.edge-label, text.node-id-badge, text.lane-label, text.phase-label';   // T-1473: phase names too
 let _zoomFromOpen = false;
 function openingZoom() {
   if (zoomFactor != null && !_zoomFromOpen) return;
@@ -4604,8 +4624,9 @@ function renderNodes() {
       if ((inN || outN) && lensDeco('io')) {
         const badge = `${inN}→${outN}`;
         const bw = badge.length * 5.4 + 8;
-        g.appendChild(el('rect', { x: n.x + def.w - bw - 4, y: n.y + 4, width: bw, height: 12, rx: 2, fill: 'var(--surface-3)', stroke: 'var(--border)', 'stroke-width': '0.5' }));
-        g.appendChild(el('text', { x: n.x + def.w - bw / 2 - 4, y: n.y + 12, class: 'node-io-badge', 'text-anchor': 'middle' }, [text(badge)]));
+        // data-iob: clearIoBadges() (T-1469) moves the badge off the name when the fitted name reaches it
+        g.appendChild(el('rect', { x: n.x + def.w - bw - 4, y: n.y + 4, width: bw, height: 12, rx: 2, fill: 'var(--surface-3)', stroke: 'var(--border)', 'stroke-width': '0.5', 'data-iob': n.uid }));
+        g.appendChild(el('text', { x: n.x + def.w - bw / 2 - 4, y: n.y + 12, class: 'node-io-badge', 'text-anchor': 'middle', 'data-iob': n.uid }, [text(badge)]));
       }
       // ID below the rectangle, centered — or just right of a bottom-centre flow (T-1090)
       if (labelPrefs.showIds && lensDeco('ids')) g.appendChild(el('text', bottomFlow.has(n.id)
@@ -4944,6 +4965,29 @@ function fitNodeLabels() {
       }
     }
     g.appendChild(el('title', {}, [text(n.name)]));
+  }
+  clearIoBadges();
+}
+
+// T-1469 (Greenfield msg bfd033c1): the io badge sits inside the task's top-right corner (y 4-16); a 4-line name's first
+// line starts at ~6.5 and, when long, runs under it. The name block fills the task, so the name cannot move: the BADGE
+// does, up to straddle the top edge (its bottom 1 px above the highest name line), only when a fitted name line meets it.
+function clearIoBadges() {
+  for (const rect of gNodes.querySelectorAll('rect[data-iob]')) {
+    const uid = rect.getAttribute('data-iob');
+    const label = gNodes.querySelector(`text.node-io-badge[data-iob="${uid}"]`);
+    const lines = Array.from(gNodes.querySelectorAll(`text[data-fitn="${uid}"]`));
+    if (!label || !lines.length) continue;
+    let b, boxes;
+    try { b = rect.getBBox(); boxes = lines.map(t => t.getBBox()); }
+    catch (err) { aefRecordFault('io-badge:bbox', err); continue; }
+    const meets = boxes.some(r => r.width && r.x < b.x + b.width + 1 && r.x + r.width > b.x - 1 && r.y < b.y + b.height + 1 && r.y + r.height > b.y - 1);
+    if (!meets) continue;
+    const top = Math.min(...boxes.map(r => r.y));
+    const dy = Math.min(0, (top - 1) - (b.y + b.height));   // only ever up
+    rect.setAttribute('y', b.y + dy);
+    label.setAttribute('y', parseFloat(label.getAttribute('y')) + dy);
+    rect.setAttribute('data-iob-moved', '1');
   }
 }
 
@@ -5466,11 +5510,15 @@ function clearFlowLabels() {
     const out = [];
     for (const lines of variants) {
       const lift = (lines.length - 1) * 11;
-      for (const [above, below, side] of [[-6 - lift, 13, 8], [-17 - lift, 24, 20]]) {
+      // T-1474: a third, wider side offset for a VERTICAL drop (32): with node texts measured truly (unhinted), a short
+      // drop below a gateway whose name sits beside it had no place clear of that name ("not found" | "found?" on
+      // review-emission, 7-11 px apart); 8 and 20 px beside the flow both stay within 3 em of it. Horizontal flows get no
+      // farther rows (tried: a long label on verification-gate then took a farther row another flow crosses).
+      for (const [above, below, side] of [[-6 - lift, 13, 8], [-17 - lift, 24, 20], [null, null, 32]]) {
         for (const s of segList) {
           for (const f of [0.5, 0.3, 0.7, 0.15, 0.85, 0.05, 0.95]) {
             const mx = s.a.x + (s.b.x - s.a.x) * f, my = s.a.y + (s.b.y - s.a.y) * f;
-            if (s.horiz) out.push({ lines, x: mx, y: my + above, a: 'middle' }, { lines, x: mx, y: my + below, a: 'middle' });
+            if (s.horiz) { if (above !== null) out.push({ lines, x: mx, y: my + above, a: 'middle' }, { lines, x: mx, y: my + below, a: 'middle' }); }
             else out.push({ lines, x: mx + side, y: my + 3 - lift / 2, a: 'start' }, { lines, x: mx - side, y: my + 3 - lift / 2, a: 'end' });
           }
         }
@@ -5774,6 +5822,7 @@ function renderEdges() {
   renderCollab();   // T-1120: kept pools + message flows; on every edge redraw, so a flow follows a dragged node
   renderData();     // T-1369: documents and their associations, on every edge redraw, so a line follows a dragged task
   renderNotes();    // T-1447: text annotations and associations, the same way
+  renderPhases();   // T-1473: phases (groups + categories), read-only, against the pool as drawn
   gEdges.innerHTML = '';
   gHandles.innerHTML = '';
   for (const e of state.edges) {
@@ -8609,8 +8658,12 @@ function _renderPropsInto(props, details) {
   // actually is — the underlying n.type is unchanged and still exports as
   // <bpmn:intermediateCatchEvent>.
   // T-1366: a plain event with a marked native kind (conditional, signal) is headed by that kind.
-  props.appendChild(propsHeader(PLAIN_KIND_TYPE[plainEventKind(n)] || (isBareCatchEvent(n) ? 'intermediateEvent' : n.type), lensDeco('ids') ? displayIdOf(n) : '',
-    details ? null : () => deleteNode(n.id)));   // T-1127: no delete from inside the details view
+  // T-1494 (Greenfield msg 2e879869, 2b): an element of a kind the designer does not edit natively (a plain bpmn:task,
+  // a manualTask, …) is held as a serviceTask with its own tag kept as foreignTag, written back verbatim (T-337). The
+  // header names the kind the file says, as the canvas caption does; the badge keeps the shape the canvas draws.
+  const headType = n.foreignTag || PLAIN_KIND_TYPE[plainEventKind(n)] || (isBareCatchEvent(n) ? 'intermediateEvent' : n.type);
+  props.appendChild(propsHeader(headType, lensDeco('ids') ? displayIdOf(n) : '',
+    details ? null : () => deleteNode(n.id), n.foreignTag ? n.type : undefined));   // T-1127: no delete from inside the details view
   if (!details) {   // T-1127: every element can open its full details (a handoff's double-click jumps instead)
     const all = document.createElement('button');
     all.type = 'button';
@@ -8681,7 +8734,14 @@ function _renderPropsInto(props, details) {
   uidField.appendChild(uidValue);
   sBpmn.appendChild(uidField);
 
-  sBpmn.appendChild(selectField('Lane', n.lane, getLanes().map(l => l.id), v => {
+  // T-1493 (Greenfield msg 2e879869, 2a): each lane shown by its name, as on the canvas, its id still the value; a lane
+  // without a name shows its id, and two lanes sharing a name are told apart by their ids.
+  const laneOpts = (() => {
+    const ls = getLanes(), seen = {};
+    for (const l of ls) { const k = (l.name || '').trim(); if (k) seen[k] = (seen[k] || 0) + 1; }
+    return ls.map(l => { const k = (l.name || '').trim(); return { value: l.id, label: !k ? l.id : seen[k] > 1 ? `${k} (${l.id})` : k }; });
+  })();
+  sBpmn.appendChild(selectField('Lane', n.lane, laneOpts, v => {
     n.lane = v;
     // snap to the new lane's row line nearest the node's current centre —
     // in a tall lane the centre can sit BETWEEN rows (T-079)
@@ -9071,12 +9131,12 @@ const LENS_TYPE_WORD = {
   eventError: 'Error event', eventTimer: 'Timer event', eventMessage: 'Message event', intermediateEvent: 'Event',
   conditionalEvent: 'Conditional event', signalEvent: 'Signal event',   // T-1366: plain events with a marked kind
 };
-function propsHeader(typeName, id, onDelete) {
+function propsHeader(typeName, id, onDelete, badgeType) {
   const h = document.createElement('div');
   h.className = 'props-header';
   const badge = document.createElement('div');
   badge.className = 'props-type-badge';
-  badge.innerHTML = typeBadgeSvg(typeName);
+  badge.innerHTML = typeBadgeSvg(badgeType || typeName);
   const info = document.createElement('div');
   info.className = 'props-type-info';
   const name = document.createElement('div');
@@ -9262,11 +9322,12 @@ function selectField(label, value, options, onInput, hint) {
   wrap.appendChild(lbl);
   const sel = document.createElement('select');
   sel.className = 'field-select';
-  for (const o of options) {
+  for (const o of options) {   // T-1493: an option is a value, or { value, label } where the shown text differs
     const opt = document.createElement('option');
-    opt.value = o;
-    opt.textContent = o;
-    if (o === value) opt.selected = true;
+    const v = (o && typeof o === 'object') ? o.value : o;
+    opt.value = v;
+    opt.textContent = (o && typeof o === 'object') ? o.label : o;
+    if (v === value) opt.selected = true;
     sel.appendChild(opt);
   }
   sel.addEventListener('change', e => { onInput(e.target.value); renderProperties(); });
@@ -11328,7 +11389,10 @@ function maybeShowLaneFixNotice() {
     // T-1447: annotations and associations are drawn now (renderNotes); groups, and an association whose ends are not
     // on this map, are still only kept
     const NL = notesLayout(state);
-    const kinds = [[count('group'), 'group'], [NL ? NL.undrawn.length : count('association'), 'association']]
+    // T-1473: a group that is a phase (its categoryValueRef names a category value, its shape has an x range) is drawn
+    // as a phase bracket; only the other groups are still "not shown yet"
+    const phaseGroups = (pk.categories || []).length ? phasesParse(pk).reduce((a, r) => a + r.phases.length, 0) : 0;
+    const kinds = [[Math.max(0, count('group') - phaseGroups), 'group'], [NL ? NL.undrawn.length : count('association'), 'association']]
       .filter(([n]) => n).map(([n, w]) => plural(n, w));
     if (kinds.length) parts.push(`${kinds.join(', ')} kept unchanged and saved back, not shown yet`);
   }
@@ -15080,7 +15144,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.46.0';
+const APP_VERSION = '0.47.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -15934,10 +15998,28 @@ function captureProcessLevelKept(doc, proc, displayIdToUid, flowIdToUid, partEl)
   const categories = Array.from(doc.documentElement.children).filter(c => c.namespaceURI === B && c.localName === 'category'
     && Array.from(c.children).some(v => categoryRefs.has(v.getAttribute('id')))).map(keptElementXml);
   const di = [];
+  // T-1473 (T-1461 F3): the file's pool band (y, height of our participant's shape, else the union of our lanes'), so
+  // a group can be told to span the pool's full height (a phase) or not (a box, kept undrawn). View data only: never
+  // written; recorded only when there are categories, so a map without them keeps exactly what it kept before.
+  let band = null;
+  const partId = partEl && partEl.getAttribute('id');
+  const laneIds = new Set(Array.from(proc.getElementsByTagNameNS(B, 'lane')).map(l => l.getAttribute('id')).filter(Boolean));
+  const boundsOf = el => { const b = Array.from(el.children).find(c => c.localName === 'Bounds');
+    const r = b && [parseFloat(b.getAttribute('y')), parseFloat(b.getAttribute('height'))]; return r && r.every(Number.isFinite) ? r : null; };
+  const laneBands = [];
   for (const el of doc.getElementsByTagNameNS(IO_EXPORT_ROOT_NS.bpmndi, '*')) {
     if ((el.localName === 'BPMNShape' || el.localName === 'BPMNEdge') && keptIds.has(el.getAttribute('bpmnElement'))) {
       di.push({ ref: el.getAttribute('bpmnElement'), xml: keptElementXml(el) });
     }
+    if (categories.length && el.localName === 'BPMNShape') {
+      const ref = el.getAttribute('bpmnElement'), r = (ref === partId || laneIds.has(ref)) ? boundsOf(el) : null;
+      if (r && ref === partId) band = { y: r[0], h: r[1] };
+      else if (r) laneBands.push(r);
+    }
+  }
+  if (categories.length && !band && laneBands.length) {
+    const y0 = Math.min(...laneBands.map(r => r[0])), y1 = Math.max(...laneBands.map(r => r[0] + r[1]));
+    band = { y: y0, h: y1 - y0 };
   }
   const procDocs = Array.from(proc.children).filter(c => c.namespaceURI === B && c.localName === 'documentation').map(keptElementXml);
   // T-1327 (F11): a comment among the process's children is kept before the element that followed it (a node or flow
@@ -15956,6 +16038,7 @@ function captureProcessLevelKept(doc, proc, displayIdToUid, flowIdToUid, partEl)
   const rk = elementKept(doc.documentElement, ROOT_READ_ATTRS, () => true);
   const out = {
     ...(artifacts.length ? { artifacts } : {}), ...(categories.length ? { categories } : {}), ...(di.length ? { di } : {}),
+    ...(band ? { poolBand: band } : {}),
     ...(procDocs.length ? { procDocs } : {}), ...(comments.length ? { comments } : {}),
     ...(pk && pk.attrs.length ? { procAttrs: pk.attrs } : {}), ...(pk && pk.ext.length ? { procExt: pk.ext } : {}),
     ...(rk && rk.attrs.length ? { rootAttrs: rk.attrs } : {}),
@@ -16405,6 +16488,81 @@ function noteObstacles() {
     if (b.width) out.boxes.push({ x1: b.x - 1, y1: b.y - 1, x2: b.x + b.width + 1, y2: b.y + b.height + 1 });
   }
   return out;
+}
+// T-1473 (T-1461 GO, slice 1): phases drawn read-only from the kept groups and categories (T-1326, state.procKept), as
+// T-1447 draws the notes: nothing here writes state, and save keeps emitting the kept XML exactly as before. A phase is
+// a bpmn:group whose categoryValueRef names a value of a root bpmn:category AND whose shape spans the pool's full height
+// in the file (T-1461 F3: any other group is a box, kept and undrawn); its x range is its shape's. The FIRST
+// category in document order is row 1: a dashed divider through all lanes at each boundary between two of its phases,
+// and a named bracket per phase just above the pool. Every further category is a further row of brackets above, with no
+// dividers (Greenfield msgs 6ae1899a / 42171201: 'Fase' row 1, 'Fase in Salesforce' row 2). Bands are clamped to the
+// lanes as drawn (the file's first band starts at its own lane strip, which the designer draws elsewhere).
+const PHASE_ROW_H = 24, PHASE_TICK = 6;
+const _phasesParsed = new WeakMap();   // procKept -> parsed rows
+function phasesParse(pk) {
+  if (_phasesParsed.has(pk)) return _phasesParsed.get(pk);
+  const NS = 'xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"'
+    + ' xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI"';
+  const parse = xml => {
+    const d = new DOMParser().parseFromString(`<r ${NS}>${xml}</r>`, 'application/xml');
+    return d.getElementsByTagName('parsererror').length ? null : d.documentElement.firstElementChild;
+  };
+  const shapes = new Map();
+  for (const d of pk.di || []) {
+    const e = parse(d.xml); if (!e || e.localName !== 'BPMNShape') continue;
+    const b = Array.from(e.children).find(c => c.localName === 'Bounds');
+    const r = b && ['x', 'width', 'y', 'height'].map(a => parseFloat(b.getAttribute(a)));
+    if (r && r.every(Number.isFinite) && r[1] > 0) shapes.set(d.ref, { x: r[0], w: r[1], y: r[2], h: r[3] });
+  }
+  // F3: a group is a phase only when it spans the pool's full height (Greenfield's phases do; a bpmn.io box around a
+  // few elements, as the kitchen-sink's three, does not and stays a kept, undrawn group). No pool band, no phases.
+  const band = pk.poolBand, TOL = 2;
+  const spans = s => !!band && s.y <= band.y + TOL && s.y + s.h >= band.y + band.h - TOL;
+  const valueRow = new Map(), rows = [];   // categoryValue id -> { row, name }
+  for (const xml of pk.categories || []) {
+    const c = parse(xml); if (!c) continue;
+    const row = rows.length;
+    rows.push({ name: c.getAttribute('name') || '', phases: [] });
+    for (const v of Array.from(c.children)) if (v.localName === 'categoryValue' && v.getAttribute('id')) valueRow.set(v.getAttribute('id'), { row, name: v.getAttribute('value') || '' });
+  }
+  for (const a of pk.artifacts || []) {
+    const e = parse(a.xml); if (!e || e.localName !== 'group') continue;
+    const v = valueRow.get(e.getAttribute('categoryValueRef') || ''), s = shapes.get(e.getAttribute('id') || '');
+    if (v && s && spans(s)) rows[v.row].phases.push({ id: e.getAttribute('id'), name: v.name, x: s.x, w: s.w });
+  }
+  const out = rows.filter(r => r.phases.length).map(r => ({ ...r, phases: r.phases.sort((p, q) => p.x - q.x) }));
+  _phasesParsed.set(pk, out);
+  return out;
+}
+function renderPhases() {
+  const g = $('g-phases'); if (!g) return;
+  g.innerHTML = '';
+  const pk = state && state.procKept;
+  if (!pk || !(pk.categories || []).length) return;
+  const rows = phasesParse(pk);
+  const pb = gPool.querySelector('.pool-border');
+  if (!rows.length || !pb) return;
+  const px = parseFloat(pb.getAttribute('x')), py = parseFloat(pb.getAttribute('y'));
+  const pw = parseFloat(pb.getAttribute('width')), ph = parseFloat(pb.getAttribute('height'));
+  const left = px + LANE_HEADER, right = px + pw, top = py + POOL_HEADER, bottom = py + ph;
+  rows.forEach((r, ri) => {
+    const by = py - 8 - ri * PHASE_ROW_H;   // this row's bracket line; its names sit just above it
+    r.phases.forEach((p, pi) => {
+      const x1 = Math.max(left, p.x), x2 = Math.min(right, p.x + p.w);
+      if (x2 - x1 < 8) return;
+      if (ri === 0 && pi > 0) g.appendChild(el('line', { x1, y1: top, x2: x1, y2: bottom, class: 'phase-divider', 'data-phase-divider': p.id }));
+      const pg = el('g', { 'data-phase': p.id, 'data-phase-row': ri });
+      pg.appendChild(el('path', { d: `M${x1 + 2},${by + PHASE_TICK} V${by} H${x2 - 2} V${by + PHASE_TICK}`, class: 'phase-bracket' }));
+      const t = el('text', { x: (x1 + x2) / 2, y: by - 4, class: 'phase-label', 'text-anchor': 'middle' }, [text(p.name)]);
+      pg.appendChild(t);
+      g.appendChild(pg);
+      // a name wider than its bracket is trimmed to it, the full name in a tooltip
+      const maxW = x2 - x1 - 6;
+      let s = p.name;
+      while (s.length > 1 && t.getComputedTextLength() > maxW) { s = s.slice(0, -1); t.textContent = s + '…'; }
+      if (s !== p.name) pg.appendChild(el('title', {}, [text(p.name)]));
+    });
+  });
 }
 function renderNotes() {
   const g = $('g-notes'); if (!g) return;
