@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T12:09:59Z
-last_update: '2026-11-24T12:30:35Z'
+last_update: 2026-11-24T16:55:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -106,7 +106,13 @@ cost_estimate_proposed:
 - [x] One script (e.g. agents/audit/node1-nightly.sh) does: build the bundle (lib/test-bundle.sh) at HEAD; stage it once (pool-client ref-put / pool:stage per §7); submit each file via `pool-client.py submit-cmd` with entry aef.bats/aef.pytest and env aef-unit-2, at most 12 open; collect every result (or name its absence); never sends while feed.health is not healthy (checks first, retries later, gives up for the night with a logged reason).
 - [x] The node1-incompatible list (the 29 T-5073 node1-only files plus the T-5069 local-only lists) lives in ONE committed file read by the script; the excluded count is reported each night.
 - [x] Results land in a dated file next to the nightly unit-suite report, with counts (submitted, passed, failed, not collected, excluded) and failing file names; a failure not on the exclusion list is marked NEW.
-- [x] Cron registry entry added and `bin/fw cron generate` run (the operator runs `fw cron install` via runme); a dry-run mode (`--dry-run`) lists what would be submitted without sending; one real small run (≤ 20 files) succeeds end to end before the nightly entry is enabled.
+- [ ] Cron registry entry (project-local, pointing at `scripts/node1/node1-nightly.sh`) added and `bin/fw cron generate` run, with `fw doctor` reporting the registry in sync with the deployed crontab (the operator runs `fw cron install` via runme); `--dry-run` lists what would be submitted without sending; one real small run (≤ 20 files) succeeded end to end (2026-11-24: 20 files, 19 pass + 1 real red fixed). (Restated 2026-11-24: the entry was removed when the task went on hold, so this was unticked.)
+
+#### Option 1 after the external review (operator 2026-11-24, "T-5392 option 1, go ahead"; docs/reports/T-5392-external-review/SUMMARY.md)
+- [ ] Nothing ring20- or node1-specific is in a vendored path: the runner, its settings and the exclusion list live under `scripts/node1/` (not shipped by `fw vendor`); `agents/audit/node1*` and their `.agentic-framework/` copies are gone; `grep -rIl "node1\|ring20\|aef2\.\|aef-unit-2\|pool-client" agents lib bin web policy` names no file of this feature.
+- [ ] `lib/test-bundle.sh` / `fw test bundle` is provider-neutral: generic default output path, size cap only when the caller passes one, no node1/relay/task references in code or help; the node1 runner passes its own path and 64 MB cap.
+- [ ] An incomplete run is never green: any `not_sent` or `not_collected` file gives the run status `incomplete` and a non-zero exit, shown in the report; the report names the exclusion file actually used and its sha256; pinned by tests.
+- [ ] The generic "remote test pool" capability is filed as its own inception (one question: what adapter contract would a framework-level, off-by-default runner need), not built here.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
