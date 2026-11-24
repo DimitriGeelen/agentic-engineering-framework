@@ -147,7 +147,7 @@ The operator said to fix it ("yes, please fix that").
 - [x] The Pytest job in `.github/workflows/test.yml` installs Pillow, and so does any other job that runs those tests. A local check shows the 8 files import and pass with the CI's install set.
 - [x] The Playwright job's failure is diagnosed from a real run log (`gh run view <id> --log`), with the cause written here, and fixed or filed as its own task.
 - [x] The bats job's 6 h overrun is diagnosed (which file or test hangs, from the run log), with the cause written here, and fixed or filed as its own task.
-- [ ] After the change is pushed, a bleeding-edge run is checked and its job results are recorded here.
+- [x] After the change is pushed, a bleeding-edge run is checked and its job results are recorded here.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -448,3 +448,9 @@ Run 45252098987 (bleeding-edge, head includes 757951d85). Run 45363251065 was st
 - **Bats:** the hang is fixed (the job completes, 3 h 7 m). 40 failed of 10674. Fixed here: the T-4200 two-line `rc=$?` in `lib/arc.sh` arc_resume (red locally); the working-ignore rail now ignores `agent-notices.jsonl`, `watchtower-extensions.json` and `watchtower.host` (red locally); t4706 `BATS_TEST_FILENAME` is readonly in bats-core HEAD, which CI installs, so it is now set through `env` (11/11 locally). Filed the rest, by cause: T-5382 (fw doctor exits 2 on the runner, 9 tests), T-5383 (tests assume a root runner, 3), T-5384 (tools missing on the runner with no probe-and-skip: termlink, MCP server, ollama, docker, tmux, opencode, unshare, 17), T-5385 (git 2.56 verbs `history`/`repo`, 1), T-5386 (4 CI-only reds, cause not yet read).
 - **Playwright:** setup works (922 passed). 14 failed: page-height caps (/, /approvals, /approvals/content, /bvp, /config, /metrics, /risks, /tasks, /inception/T-2715), badge-ok contrast 4.09, /approvals mobile overflow, and `/api/v1/search` 503. All 14 are covered by T-5365; none fixed here.
 - Commit a7f3b694f. Criterion 4 (a bleeding-edge run checked after push) is left for the parent.
+
+### 2026-11-24 — criterion 4: bleeding-edge runs checked after the push (parent)
+- Run 45399591917 (762e37f10, 13:03Z): PR checks success; E2E success; Pytest **failure**; Playwright failure; Bats failure, completed in 2 h 31 m (no hang), 42 `not ok`.
+- Run 45404905833 (5c79ca259, 13:34Z): PR checks success; E2E success; **Pytest success** (the Pillow fix holds); Playwright failure (T-5365); Bats still running at check time.
+- Bats reds are the classes filed in T-5382..T-5386 (doctor on the runner, root assumptions, missing tools, git verbs, CI-only reds); count 42 vs 40 at the fix: new names include rail-identity (5), T-1719 ollama (2), review-seat isolation (2). Not fixed here; the filed tasks own them.
+- Note for the operator: the workflow's overall conclusion reads **success** while Pytest/Playwright/Bats jobs fail (jobs do not gate the run). A green run badge is therefore not evidence of green tests.
