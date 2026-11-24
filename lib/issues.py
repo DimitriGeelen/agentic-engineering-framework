@@ -818,17 +818,19 @@ _CHECK_TEXT = {
 
 
 def pr_step(facts: dict) -> tuple:
-    """PR facts → (step 1-8, one status line). Pure. Facts: state OPEN|MERGED|CLOSED, checks (as
+    """PR facts → (step 1-9, one status line; 9 = every step done, T-5402). Pure. Facts: state OPEN|MERGED|CLOSED, checks (as
     pr_checks_state), recommendation (bool: maintainer comment with the recommendation marker),
     review (bool: review-ledger row for the task), be_tag (first v*-be.* tag holding the merge
     commit, '' when none). Steps 1-4 are done once the pull request is open."""
     state = str(facts.get("state") or "OPEN").upper()
     if state == "MERGED":
+        # T-5402: a merge completes step 7 (ticked); the pull request then waits at step 8.
+        # Once a be-tag carries it, every step is done: step 9 = past the list, all ticked.
         tag = facts.get("be_tag") or ""
         if tag:
-            return 8, (f"Shipped in `{tag}`. It is field-tested before it reaches pre-release "
-                       "and stable.")
-        return 7, "Merged into `bleeding-edge`. It ships in the next be-tag."
+            return 9, (f"Shipped in `{tag}`. It is field-tested before it reaches pre-release "
+                       "and stable. Thank you!")
+        return 8, "Merged into `bleeding-edge`; it ships in the next be-tag."
     if state == "CLOSED":
         return 7, ("Closed without merging. The maintainer's one-line reason is on this pull "
                    "request.")
@@ -871,6 +873,8 @@ def render_pr_process(step: int, status: str, repo: str, issue=None, task_link=N
             lines.append(f"- [ ] **{i}. {name} ← you are here.** {status}")
         else:
             lines.append(f"- [ ] {i}. {name}")
+    if step > len(PR_STEPS):  # T-5402: every step done; the status line closes the list
+        lines += ["", f"**Done.** {status}"]
     lines += ["", "*This comment is updated as your pull request moves.*"]
     return "\n".join(lines) + "\n"
 

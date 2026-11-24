@@ -132,9 +132,9 @@ def ledger_rows(ledger):
     ({"state": "OPEN", "checks": "success"}, 5, "passed"),
     ({"state": "OPEN", "checks": "success", "review": True}, 6, "Review in progress"),
     ({"state": "OPEN", "checks": "failure", "recommendation": True}, 6, "recommendation is posted"),
-    ({"state": "MERGED"}, 7, "Merged"),
+    ({"state": "MERGED"}, 8, "Merged"),  # T-5402: merge done = 7 ticked, waiting at 8
     ({"state": "CLOSED"}, 7, "Closed without merging"),
-    ({"state": "MERGED", "be_tag": "v1.8.16-be.9"}, 8, "v1.8.16-be.9"),
+    ({"state": "MERGED", "be_tag": "v1.8.16-be.9"}, 9, "v1.8.16-be.9"),  # all 8 done
 ])
 def test_pr_step(facts, step, needle):
     got, text = issues.pr_step(facts)
@@ -237,7 +237,8 @@ def test_closed_pr_without_our_comment_is_left_alone(env):
     assert sync(e).returncode == 0 and writes(stub) == []
 
 
-def test_merged_pr_with_our_comment_is_edited_to_step_7(env):
+def test_merged_pr_with_our_comment_ticks_7_and_waits_at_8(env):
+    # T-5402: PR #116 showed step 7 unticked as "you are here" after its merge.
     e, stub, ledger = env
     set_prs(stub, [pr(116)])
     assert sync(e).returncode == 0
@@ -246,7 +247,15 @@ def test_merged_pr_with_our_comment_is_edited_to_step_7(env):
     set_prs(stub, prs)
     assert sync(e).returncode == 0
     body = get_prs(stub)[0]["comments"][0]["body"]
-    assert "**7. The maintainer merges" in body and "Merged into `bleeding-edge`" in body
+    assert "- [x] 7. The maintainer merges" in body
+    assert "**8. Ships in the next be-tag" in body and "you are here" in body
+    assert "Merged into `bleeding-edge`" in body and "**Done.**" not in body
+
+
+def test_shipped_render_ticks_every_step_and_closes_with_done():
+    body = issues.render_pr_process(9, "Shipped in `v1.8.16-be.9`.", "o/r", 68)
+    assert all(f"- [x] {i}." in body for i in range(1, 9))
+    assert "you are here" not in body and "**Done.** Shipped in `v1.8.16-be.9`." in body
 
 
 def test_key_zero_posts_nothing(env):
