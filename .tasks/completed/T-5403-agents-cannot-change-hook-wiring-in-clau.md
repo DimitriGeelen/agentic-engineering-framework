@@ -8,12 +8,12 @@ description: >
   an advisory PostToolUse reminder that never blocks, so the T-5394 worker wired check-mcp-egress
   itself. An agent that can edit its own gates can switch them off.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [enforcement, settings, hooks]
-components: []
+components: [C-009, agents/context/check-hook-wiring.sh, bin/fw, lib/hook_wiring.py, lib/init.sh, lib/shell_write_scan.py, tests/unit/t5403_hook_wiring.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T18:52:48Z
-last_update: '2026-11-24T19:00:44Z'
-date_finished:
+last_update: 2026-11-24T23:09:18Z
+date_finished: 2026-11-24T23:09:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -411,3 +411,25 @@ bin/fw vendor self --check --task T-5403
 
 ### 2026-11-24T18:52:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-24T23:09:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-47b3a0c4
+- **Timestamp:** 2026-11-24T23:16:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — A PreToolUse hook refuses (exit 2), under agent control (same detection as `fw egress approve`: env + process ancestry), a Write/Edit to `.claude/settings.json` whose resulting `hooks` section differs
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: A PreToolUse hook refuses (exit 2), under agent control (same detection as `fw egress approve`: env + process ancestry), a Write/Edit to `.claude/sett`
+- **AC#2 (Agent)** — Bash commands that write `.claude/settings.json` (redirect, tee, sed -i, cp/mv, python -c, …) are refused under agent control by the same text-gate approach as the Human-AC tick guard; `bin/fw init`, 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: Bash commands that write `.claude/settings.json` (redirect, tee, sed -i, cp/mv, python -c, …) are refused under agent control by the same text-gate ap`
+- **AC#5 (Agent)** — Wiring this guard into this project's own `.claude/settings.json` is itself handed to the operator as a runme (not done by the agent), and `fw init`/`fw upgrade` deliver it to consumers.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: Wiring this guard into this project's own `.claude/settings.json` is itself handed to the operator as a runme (not done by the agent), and `fw init`/``
