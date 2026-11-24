@@ -104,7 +104,7 @@ cost_estimate_proposed:
 - [x] Bash commands that write `.claude/settings.json` (redirect, tee, sed -i, cp/mv, python -c, …) are refused under agent control by the same text-gate approach as the Human-AC tick guard; `bin/fw init`, `bin/fw upgrade` and `bin/fw enforcement baseline` are not blocked.
 - [x] A helper prepares the operator runme for a hook change (e.g. `bin/fw hook-wiring propose --add '<matcher>' '<command>'` or an equivalent documented recipe) that applies the change and refreshes the enforcement baseline in one script.
 - [x] Hermetic tests: hooks change refused, non-hooks edit allowed, Bash write refused, init/upgrade still write the file, refusal text names the runme route; `tests/unit/upgrade_fresh_machine_simulation.bats` green.
-- [ ] Wiring this guard into this project's own `.claude/settings.json` is itself handed to the operator as a runme (not done by the agent), and `fw init`/`fw upgrade` deliver it to consumers.
+- [x] Wiring this guard into this project's own `.claude/settings.json` is itself handed to the operator as a runme (not done by the agent), and `fw init`/`fw upgrade` deliver it to consumers.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
