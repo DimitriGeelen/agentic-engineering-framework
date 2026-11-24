@@ -1863,6 +1863,7 @@ show_help() {
     echo -e "  ${GREEN}extension${NC} <cmd>       Project extensions register: add|remove (operator only), list (T-5259)"
     echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
     echo -e "  ${GREEN}hook-enable${NC} <args>   Register a hook in .claude/settings.json (idempotent)"
+    echo -e "  ${GREEN}hook-wiring${NC} propose  Prepare a hook wiring change as an operator runme (T-5403)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
     echo -e "  ${GREEN}consumer-recover${NC} <host> [path]  Recover legacy vendored consumer (pre-T-2232). Dry-run default; --apply executes."
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
@@ -11773,6 +11774,12 @@ PYSEARCH
         # bin/fw also runs it from the fast path near the top when this file does not parse.
         source "$FW_LIB_DIR/hook-dispatch.sh"
         fw_hook_run "$@"
+        ;;
+    hook-wiring)
+        # T-5403: the operator wires hooks (ruling 2026-11-24); agents prepare a runme.
+        # propose → writes the operator runme; apply → what the runme runs (operator-only).
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            exec python3 "$FW_LIB_DIR/hook_wiring.py" "$@"
         ;;
     hook-enable)
         # fw hook-enable — register a framework hook in .claude/settings.json (T-1189)

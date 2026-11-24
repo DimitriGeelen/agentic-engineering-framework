@@ -165,6 +165,8 @@ def _command_cwds(command: str, cwd: str | None) -> list:
 def _seg_mentions(seg_text: str, ctx: "_Ctx") -> bool:
     """A segment's mention: the text, or (T-4859) what the segment's tracked cwd reveals."""
     text = normalised(seg_text)
+    if ctx.mention is not None:
+        return ctx.mention(text)
     return _mentions(text) or _mentions_from(text, [ctx.cwd], ctx.guarded or is_guarded_path)
 
 SEPARATORS = {";", ";;", "&&", "||", "|", "|&", "&", "(", ")", "\n", "!", "{", "}"}
@@ -212,6 +214,9 @@ class _Ctx:
     # T-4983 boundary mode: a write target only known at run time (`echo x >> "$p"`); judged
     # like pending_output — refused when the command names a guarded path anywhere.
     pending_unresolved: str = ""
+    # T-5403: a caller-supplied mention predicate (on normalised text) that replaces the
+    # task-file mention rules, for a scan with its own guarded set (scan(guarded=, mention=)).
+    mention: Optional[Callable[[str], bool]] = None
 
 
 # T-4149: bash's `\cX` (control-X) consumes the character after `c` — a quote included —
@@ -1696,12 +1701,24 @@ def _blank_data_args(command: str) -> tuple[str, bool]:
     return _blank(command, spans), live
 
 
-def scan(command: str, cwd: str | None = None, project_root: str | None = None) -> list[Hit]:
+def scan(command: str, cwd: str | None = None, project_root: str | None = None,
+         guarded: Optional[Callable[[str], bool]] = None,
+         mention: Optional[Callable[[str], bool]] = None) -> list[Hit]:
     """Every reason `command` writes (or may write) a guarded path. Empty list = no write seen.
 
     `project_root` (T-4336): when given, a `.tasks` target provably outside it is not a
     guarded write. Without it every `.tasks` target is guarded, as before.
+
+    `guarded` + `mention` (T-5403): scan for a DIFFERENT guarded set with the same reading
+    of the command. `guarded(path)` judges a resolved write target; `mention(text)` decides,
+    on quote-stripped text, whether the command names the guarded file, which is what makes
+    an opaque write (inline code, an unresolvable target) count. Used by the hook wiring
+    gate for `.claude/settings*.json` (lib/hook_wiring.py).
     """
+    if guarded is not None and mention is not None:
+        mentions = mention(normalised(command))
+        command, _ = _blank_data_args(command)
+        return _scan_ctx(command, _Ctx(cwd=cwd, mentions=mentions, guarded=guarded, mention=mention))
     # T-4857: the mention is read from the ORIGINAL command. Blanking a message only stops
     # its text being parsed as commands; a path in it is still in the shell's hands (`$_`
     # is the previous command's last argument, a substitution's $F may be that path).
@@ -1711,7 +1728,10 @@ def scan(command: str, cwd: str | None = None, project_root: str | None = None) 
     mentions = mentions_guarded(command) or \
         _mentions_from(normalised(command), _command_cwds(command, cwd), guarded or is_guarded_path)
     command, _ = _blank_data_args(command)
-    ctx = _Ctx(cwd=cwd, mentions=mentions, guarded=guarded)
+    return _scan_ctx(command, _Ctx(cwd=cwd, mentions=mentions, guarded=guarded))
+
+
+def _scan_ctx(command: str, ctx: "_Ctx") -> list[Hit]:
     unlexed = "command does not tokenise (unbalanced quote) and names a guarded path"
     try:
         # T-4763: the lexer's reading, when the text lexes. It knows `'```'` is literal;

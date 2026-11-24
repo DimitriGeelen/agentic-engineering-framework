@@ -1327,6 +1327,15 @@ generate_claude_code_config() {
         ]
       },
       {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-hook-wiring"
+          }
+        ]
+      },
+      {
         "matcher": "mcp__termlink__termlink_channel_post",
         "hooks": [
           {
