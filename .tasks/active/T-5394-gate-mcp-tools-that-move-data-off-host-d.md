@@ -100,11 +100,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A PreToolUse hook refuses (exit 2) an MCP tool call classified as egress-capable unless an unused operator approval exists for that exact action, and allows non-egress MCP tools; pinned by hermetic tests for both legs plus an unreadable payload (fails closed).
-- [ ] Classification is data, not code: one policy file lists egress-capable MCP tool patterns, and an unknown MCP tool whose name matches publish/upload/post/send/share/write/copy/delete is treated as egress until classified.
-- [ ] Approval is operator-only: the approve verb refuses under CLAUDECODE=1 even with an agent flag, and the hook refuses agent writes to the approval ledger.
-- [ ] `fw audit` lists every registered MCP tool classified egress-capable with its gate, and FAILs when one has no gate.
-- [ ] `fw init` writes the hook and `fw upgrade` delivers it; `tests/unit/upgrade_fresh_machine_simulation.bats` stays green.
+- [x] A PreToolUse hook refuses (exit 2) an MCP tool call classified as egress-capable unless an unused operator approval exists for that exact action, and allows non-egress MCP tools; pinned by hermetic tests for both legs plus an unreadable payload (fails closed).
+- [x] Classification is data, not code: one policy file lists egress-capable MCP tool patterns, and an unknown MCP tool whose name matches publish/upload/post/send/share/write/copy/delete is treated as egress until classified.
+- [x] Approval is operator-only: the approve verb refuses under CLAUDECODE=1 even with an agent flag, and the hook refuses agent writes to the approval ledger.
+- [x] `fw audit` lists every registered MCP tool classified egress-capable with its gate, and FAILs when one has no gate.
+- [x] `fw init` writes the hook and `fw upgrade` delivers it; `tests/unit/upgrade_fresh_machine_simulation.bats` stays green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +291,17 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5394_mcp_egress.bats > /tmp/.t5394.out 2>&1 && ! grep -q "^not ok" /tmp/.t5394.out  # needs: fixture
+test "$(grep -c '# skip' /tmp/.t5394.out)" -eq 0
+python3 -c "import yaml; yaml.safe_load(open('policy/mcp-egress.yaml'))"
+d=$(mktemp -d); out=$(printf '%s' '{"tool_name":"mcp__claude-artifacts__publish_files","tool_input":{}}' | PROJECT_ROOT="$d" bash agents/context/check-mcp-egress.sh 2>&1); rc=$?; rm -rf "$d"; test $rc -eq 2 && grep -q "BLOCKED: mcp__claude-artifacts__publish_files" <<<"$out"
+printf '%s' 'not json' | bin/fw hook check-mcp-egress >/dev/null 2>&1; test $? -eq 2
+out=$(CLAUDECODE=1 bin/fw egress approve mcp__x__send --reason r --i-am-human 2>&1); test $? -ne 0 && grep -q "REFUSED" <<<"$out"
+bin/fw egress status > /tmp/.t5394-st.out 2>&1 && grep -q "wired" /tmp/.t5394-st.out
+bin/fw egress audit > /tmp/.t5394-au.out 2>&1 && ! grep -q "^FAIL" /tmp/.t5394-au.out
+grep -q 'fw_prefix hook check-mcp-egress' lib/init.sh
+bin/fw enforcement baseline
+bin/fw vendor self --check --task T-5394
 
 ## RCA
 
@@ -371,6 +382,21 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-24 — TermLink: per-tool classes, not a blanket exemption
+- **Chose:** 050's per-tool TermLink egress list (remote_*, file_send, dispatch, exec/inject/interact/run/send/spawn, broadcasts, emit, request, kv_set, channel/agent post/reply/quote/edit/ask/contact), plus hub_export_secret and poll_start; every other termlink tool local.
+- **Why:** hubs can sit on other hosts (ring20), so a send through TermLink can leave the host.
+- **Rejected:** 050's first blanket `mcp__termlink__` exemption (too wide); gating every termlink tool (blocks reads for no gain).
+
+### 2026-11-24 — Project policy can only tighten
+- **Chose:** `.context/project/mcp-egress.yaml` may add `egress` rules; `local` rules there are ignored and WARNed by the audit.
+- **Why:** the file is agent-writable; an agent that could write `local` could ungate itself.
+- **Rejected:** full project overrides (self-ungating); no project file at all (consumers' own servers, e.g. claude-artifacts variants, could not be gated without a framework release).
+
+### 2026-11-24 — Approval ledger is gitignored, per host
+- **Chose:** `.context/working/mcp-egress-approvals.jsonl` + `mcp-egress-uses.jsonl`, gitignored; approvals guarded by the Write/Edit/Bash operator-records guard.
+- **Why:** approvals are short-lived (TTL, single use) and host-specific; committing them would dirty the tree on every approval.
+- **Rejected:** a committed ledger (noise, and a commit is not what makes it operator-only).
 
 ## Decision
 
