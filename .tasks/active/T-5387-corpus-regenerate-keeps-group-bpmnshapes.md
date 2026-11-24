@@ -1,8 +1,17 @@
 ---
 id: T-5387
-name: "Corpus regenerate keeps group BPMNShapes so designer phases stay drawn; prove refuses phased maps until it does"
+name: "Corpus regenerate keeps group BPMNShapes so designer phases stay drawn; prove
+  refuses phased maps until it does"
 description: >
-  832 msg 2a8733d3 (T-1491): the designer finds a phase's extent ONLY from its group's BPMNShape (full-height rectangle over the phase's steps; groups have no member list). T-5381 carries bpmn:group/category through fw corpus spec, but generate emits no DI, so a regenerated map keeps phases that the designer no longer draws. Routine paths do not regenerate stored maps (designer draft new seeds a new phase-free draft; generate --save is manual); fw corpus spec prove <map> deletes a live map's versions and regenerates it — that path would undraw phases. Agreed with 832 (option 2a, plain BPMN): carry each group's BPMNShape (bounds) through parse_map/generate verbatim; until then prove refuses a map that carries bpmn:group.
+  832 msg 2a8733d3 (T-1491): the designer finds a phase's extent ONLY from its group's
+  BPMNShape (full-height rectangle over the phase's steps; groups have no member list).
+  T-5381 carries bpmn:group/category through fw corpus spec, but generate emits no
+  DI, so a regenerated map keeps phases that the designer no longer draws. Routine
+  paths do not regenerate stored maps (designer draft new seeds a new phase-free draft;
+  generate --save is manual); fw corpus spec prove <map> deletes a live map's versions
+  and regenerates it — that path would undraw phases. Agreed with 832 (option 2a,
+  plain BPMN): carry each group's BPMNShape (bounds) through parse_map/generate verbatim;
+  until then prove refuses a map that carries bpmn:group.
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T10:59:25Z
-last_update: 2026-11-24T10:59:25Z
-date_finished: null
+last_update: '2026-11-24T11:00:31Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T11:00:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5387: Corpus regenerate keeps group BPMNShapes so designer phases stay drawn; prove refuses phased maps until it does
