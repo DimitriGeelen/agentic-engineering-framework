@@ -6,10 +6,10 @@ description: >
   Operator 2026-11-24: make the PR/bug-submission workflow part of the standard repository,
   so a contributor sees it before they start. Child of T-5393.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [outside-contributor-flow, github-contributions]
 components: []
 related_tasks: []
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T13:36:19Z
-last_update: '2026-11-24T13:45:23Z'
-date_finished:
+last_update: 2026-11-24T13:47:16Z
+date_finished: 2026-11-24T13:47:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,10 +99,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `docs/contributing/pr-workflow-map.png` is the designer's own PNG export (2x) of `aef-github-pr-intake`, tracked in git, under 10 MB (GitHub's image limit).
-- [ ] CONTRIBUTING.md "Pull Request Process" embeds the image by relative path and names the lanes (Contributor, GitHub CI, agents, review panel, maintainer).
-- [ ] `.github/ISSUE_TEMPLATE/bug-report.yml`, `feature-request.yml` and `.github/pull_request_template.md` each link to the CONTRIBUTING.md "Pull Request Process" section; both YAML templates still parse.
-- [ ] Pushed: the image and the CONTRIBUTING.md section return HTTP 200 on GitHub, branch `bleeding-edge`.
+- [x] `docs/contributing/pr-workflow-map.png` is the designer's own PNG export (2x) of `aef-github-pr-intake`, tracked in git, under 10 MB (GitHub's image limit).
+- [x] CONTRIBUTING.md "Pull Request Process" embeds the image by relative path and names the lanes (Contributor, GitHub CI, agents, review panel, maintainer).
+- [x] `.github/ISSUE_TEMPLATE/bug-report.yml`, `feature-request.yml` and `.github/pull_request_template.md` each link to the CONTRIBUTING.md "Pull Request Process" section; both YAML templates still parse.
+- [x] Pushed: the image and the CONTRIBUTING.md section return HTTP 200 on GitHub, branch `bleeding-edge`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -396,3 +396,16 @@ grep -q "CONTRIBUTING.md#pull-request-process" .github/ISSUE_TEMPLATE/bug-report
 
 ### 2026-11-24T13:36:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-24T13:47:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-38fa0dc5
+- **Timestamp:** 2026-11-24T13:47:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
