@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5406: Ring20's orchestration (worker registry, routes, commissions, gates, supervisor): separate plug-in module like designer/TermLink/ontology, or an integral part of AEF?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T23:07:02Z
+# ============================================================================
+
+task_id: T-5406
+task_name: "Ring20's orchestration (worker registry, routes, commissions, gates, supervisor): separate plug-in module like designer/TermLink/ontology, or an integral part of AEF?"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-24T19:11:24Z
+completed: 2026-11-24T23:06:40Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-24T20:12:19+01:00
+last_commit: 2026-11-25T00:06:43+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — ring20 orchestration as module or integral; first inventory and options. ring20 claimed the question (their T-2868); inventory to follow as a document. ring20 inventory (T-2868) — engine parked since 10-20, arc-009 closed 11-21; options and recommendation. IW-1..3 disposed; recommendation GO option 2 (separate module, ring20 producer) per operator. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-5406-ring20s-orchestration-worker-registry-ro.md'
+  - '.tasks/completed/T-5406-ring20s-orchestration-worker-registry-ro.md'
+  - 'docs/reports/T-5406-orchestration-module.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T20:12:19'
+    action: 'T-5406: inception — ring20 orchestration as module or integral; first inventory and options'
+  - time: '2026-11-24T20:19:09'
+    action: 'T-5406: ring20 claimed the question (their T-2868); inventory to follow as a document'
+  - time: '2026-11-24T20:50:59'
+    action: 'T-5406: ring20 inventory (T-2868) — engine parked since 10-20, arc-009 closed 11-21; options and recommendation'
+  - time: '2026-11-25T00:04:04'
+    action: 'T-5406: IW-1..3 disposed; recommendation GO option 2 (separate module, ring20 producer) per operator'
+  - time: '2026-11-25T00:06:43'
+    action: 'T-5406: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 235 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 235
+  commits: 6
+  files_changed: 6
+  lines_added: 427
+  lines_removed: 12
+  footprint_refreshed_at: '2026-11-24T23:07:11Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5406-ring20s-orchestration-worker-registry-ro.md
+generated_by: context-agent-hybrid
