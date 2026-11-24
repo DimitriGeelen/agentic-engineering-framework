@@ -1,8 +1,16 @@
 ---
 id: T-5388
-name: "fw upgrade can follow a ref: --ref <tag|branch> and the install channel recorded at install"
+name: "fw upgrade can follow a ref: --ref <tag|branch> and the install channel recorded
+  at install"
 description: >
-  010-termlink msg 587a1e05 relaying 1409-sprind: fw upgrade clones the upstream default branch (GitHub master = 1.8.15); a consumer cannot pick a tag or branch, so following the be line needs 'clone at the tag + run that clone's fw upgrade' by hand. T-5372 (be.62) made an equal-version older source refuse instead of downgrading, and deferred 'follow the channel the project was installed from'. Proposal: fw upgrade --ref <tag|branch> for the auto-clone path (full clone, checkout the ref, same origin/downgrade guards), and record the install channel/ref in .framework.yaml so a plain fw upgrade follows it.
+  010-termlink msg 587a1e05 relaying 1409-sprind: fw upgrade clones the upstream default
+  branch (GitHub master = 1.8.15); a consumer cannot pick a tag or branch, so following
+  the be line needs 'clone at the tag + run that clone's fw upgrade' by hand. T-5372
+  (be.62) made an equal-version older source refuse instead of downgrading, and deferred
+  'follow the channel the project was installed from'. Proposal: fw upgrade --ref
+  <tag|branch> for the auto-clone path (full clone, checkout the ref, same origin/downgrade
+  guards), and record the install channel/ref in .framework.yaml so a plain fw upgrade
+  follows it.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T11:16:50Z
-last_update: 2026-11-24T11:16:50Z
-date_finished: null
+last_update: '2026-11-24T11:30:25Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T11:30:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5388: fw upgrade can follow a ref: --ref <tag|branch> and the install channel recorded at install
