@@ -124,13 +124,13 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-3014
   status: active
-  description: Incrementally re-embeds changed/added/removed corpus files and replants
-    the freshness canaries every hour, so index_freshness() age actually drops between
-    runs instead of only being watched (T-3005 slice 5). Since T-4351 the minute 20
-    is the seeded default and is NOT used as-is — fw cron generate derives a per-project
-    minute (lib/cron_schedule.py) so projects on one host do not reindex together;
-    any other minute, or schedule_pinned true, is kept. Hours between runs come from
-    INDEX_REINDEX_INTERVAL_HOURS (default 1).
+  description: "Incrementally re-embeds changed/added/removed corpus files and replants\
+    \ the freshness canaries every hour, so index_freshness() age actually drops between\
+    \ runs instead of only being watched (T-3005 slice 5). Since T-4351 the minute\
+    \ 20 is the seeded default and is NOT used as-is \u2014 fw cron generate derives\
+    \ a per-project minute (lib/cron_schedule.py) so projects on one host do not reindex\
+    \ together; any other minute, or schedule_pinned true, is kept. Hours between\
+    \ runs come from INDEX_REINDEX_INTERVAL_HOURS (default 1)."
 - id: oe-fast-30m
   name: OE fast checks (30 min)
   schedule: 15,45 * * * *
@@ -235,9 +235,9 @@ jobs:
   origin_task: T-1256
   status: paused
   paused_by: T-4364
-  paused_reason: "2026-10-19: ran unattended and nearly published untested bleeding-edge as v1.8.12 (stopped
-    before any push). Contradicts the release rule (operator yes or positive field tests). Do not re-enable without
-    an operator decision."
+  paused_reason: '2026-10-19: ran unattended and nearly published untested bleeding-edge
+    as v1.8.12 (stopped before any push). Contradicts the release rule (operator yes
+    or positive field tests). Do not re-enable without an operator decision.'
   description: "Cuts a new patch-level tag (vX.Y.Z+1), pushes to all remotes with\
     \ --follow-tags, and creates a GitHub Release with auto-generated notes. Idempotent\
     \ \u2014 skips if no commits since last tag. Offset from OE weekly (Monday 09:00)\
@@ -272,10 +272,10 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-4706
   status: active
-  description: "T-4706: Watchtower was killed on 2026-10-23 and stayed down ~1h47m;\
-    \ the only ensure ran at session start. This starts it when dead (no-op while\
-    \ running) and appends the outage to .context/working/watchtower-outages.jsonl,\
-    \ which fw doctor WARNs on for 7 days. Disable with FW_WATCHTOWER_ENSURE=0."
+  description: 'T-4706: Watchtower was killed on 2026-10-23 and stayed down ~1h47m;
+    the only ensure ran at session start. This starts it when dead (no-op while running)
+    and appends the outage to .context/working/watchtower-outages.jsonl, which fw
+    doctor WARNs on for 7 days. Disable with FW_WATCHTOWER_ENSURE=0.'
 - id: pending-remind-daily
   name: Pending-updates reminder (daily)
   schedule: 0 10 * * *
@@ -409,9 +409,9 @@ jobs:
     \ flips, and the window before an operator wires the T-2205 hook into .claude/settings.json.\
     \ Calls `fw inception retrofit-recommendations --apply` (lib/inception.sh do_inception_retrofit_recommendations,\
     \ T-1716 Stream C) \u2014 idempotent and side-effect-free on already-clean state;\
-    \ injects EXPLORING stubs (T-5226: not ready for decision) with self-retrofit attribution when an active inception's\
-    \ ## Recommendation block is empty or template-only AND no `**Recommendation:**`\
-    \ line exists."
+    \ injects EXPLORING stubs (T-5226: not ready for decision) with self-retrofit\
+    \ attribution when an active inception's ## Recommendation block is empty or template-only\
+    \ AND no `**Recommendation:**` line exists."
 - id: resolver-loop-autonomous
   name: "Autonomous dispatch loop (PAUSED \u2014 operator enables)"
   schedule: 11,41 * * * *
@@ -444,7 +444,7 @@ jobs:
   - .context/audits/unit-suite/LATEST.yaml
   - .context/audits/unit-suite/LAST-COMPLETE.yaml
   - .context/audits/unit-suite/runs.log
-  - '.context/audits/unit-suite/2*.yaml'
+  - .context/audits/unit-suite/2*.yaml
   description: "T-3302 (OBS-361) \u2014 runs the full tests/unit corpus (615 bats\
     \ + 191 pytest files) once nightly via agents/audit/unit-suite.sh and writes a\
     \ machine-readable report to .context/audits/unit-suite/LATEST.yaml (+ dated sibling)\
@@ -456,24 +456,6 @@ jobs:
     \ 'audit.sh --section structure', which contends the shared audit lock (T-3070\
     \ collision class) \u2014 the runner takes its OWN overlap lock (.context/locks/unit-suite.lock,\
     \ skip-if-held logged exit 0) and never holds the audit lock itself."
-- id: node1-unit-suite-nightly
-  name: Unit-suite run on node1 (ring20 pool, nightly)
-  schedule: 33 3 * * *
-  command: /opt/999-Agentic-Engineering-Framework/agents/audit/node1-nightly.sh
-  source_file: agentic-audit.crontab
-  origin_task: T-5392
-  status: active
-  ignore_paths:
-  - .context/audits/unit-suite/node1/*
-  description: "T-5392 \u2014 builds and stages the unit-suite bundle of HEAD (lib/test-bundle.sh),\
-    \ submits every node1-compatible tests/unit file to ring20's node1 (pool-client submit-cmd,\
-    \ entries aef2.bats/aef2.pytest, env aef-unit-2, at most 12 open; contract\
-    \ docs/reports/T-5069-node1-unit-suite-spec.md \u00a77), holds while node1's pool:feed\
-    \ health.state is not healthy (gives up after 3 h, logged), collects every result\
-    \ and writes .context/audits/unit-suite/node1/<date>.yaml + LATEST.yaml (counts,\
-    \ failures marked NEW unless on agents/audit/node1-incompatible.txt). 03:33, after\
-    \ unit-suite-nightly (03:03). A run can take most of a day; its own lock\
-    \ (.context/locks/node1-nightly.lock) makes the next night skip while one runs."
 - id: integration-suite-nightly
   name: Integration-suite corpus run (tests/integration, nightly)
   schedule: 33 1 * * *
@@ -485,15 +467,14 @@ jobs:
   - .context/audits/integration-suite/LATEST.yaml
   - .context/audits/integration-suite/LAST-COMPLETE.yaml
   - .context/audits/integration-suite/runs.log
-  - '.context/audits/integration-suite/2*.yaml'
-  description: "T-4634 — runs tests/integration (94 bats + 5 pytest files) nightly\
-    \ through the unit-suite runner (per-file cap 900s, -j4) into its OWN report\
-    \ .context/audits/integration-suite/LATEST.yaml and its own lock, which fw audit\
-    \ grades as 'Integration suite' (FAIL on red, WARN missing/>48h; not graded at\
-    \ pre-push). Before this tests/integration ran in no gate, so\
-    \ claude_fw_restart_terminator.bats broke twice unseen (T-4596). Measured 2031s\
-    \ wall; 01:33 so it finishes before unit-suite-nightly (03:03). No integration\
-    \ baseline exists: reds go to tasks."
+  - .context/audits/integration-suite/2*.yaml
+  description: "T-4634 \u2014 runs tests/integration (94 bats + 5 pytest files) nightly\
+    \ through the unit-suite runner (per-file cap 900s, -j4) into its OWN report .context/audits/integration-suite/LATEST.yaml\
+    \ and its own lock, which fw audit grades as 'Integration suite' (FAIL on red,\
+    \ WARN missing/>48h; not graded at pre-push). Before this tests/integration ran\
+    \ in no gate, so claude_fw_restart_terminator.bats broke twice unseen (T-4596).\
+    \ Measured 2031s wall; 01:33 so it finishes before unit-suite-nightly (03:03).\
+    \ No integration baseline exists: reds go to tasks."
 - id: fabric-describe-daily
   name: Fabric card describe sweep (daily)
   schedule: 26 4 * * *
@@ -541,8 +522,8 @@ jobs:
   status: active
   description: 'T-5252 (T-5224 slice 3, IW-3/IW-4). Wakes the owner of every arc switched
     on with `fw arc owner <arc> on` whose latest journal next-step deadline has passed:
-    a sidecar notice or a TermLink worker, per the arc''s owner.wake. Each passed deadline
-    wakes once (deduped through .context/arcs/<slug>.wakes.jsonl), and the per-arc daily
-    wake limit (owner.wake_limit, default 12) applies. A no-op when no arc is switched
-    on. Offset to :04/:19/:34/:49 off the audit slots (T-3070 collision class); takes
-    its own lock.'
+    a sidecar notice or a TermLink worker, per the arc''s owner.wake. Each passed
+    deadline wakes once (deduped through .context/arcs/<slug>.wakes.jsonl), and the
+    per-arc daily wake limit (owner.wake_limit, default 12) applies. A no-op when
+    no arc is switched on. Offset to :04/:19/:34/:49 off the audit slots (T-3070 collision
+    class); takes its own lock.'

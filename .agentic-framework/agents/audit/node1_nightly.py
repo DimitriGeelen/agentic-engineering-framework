@@ -220,7 +220,7 @@ def build_report(*, run_id: str, commit: str, bundle_sha: str, discovered: int,
 
 def write_atomic(path: Path, text: str) -> None:
     """Same-dir temp + os.replace: a reader never sees a half-written report (L-493)."""
-    tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    tmp = path.with_name(f".{path.name}.{os.getpid()}-{os.urandom(4).hex()}.tmp")
     tmp.write_text(text)
     os.replace(tmp, path)
 
