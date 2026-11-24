@@ -288,6 +288,12 @@ grep -q '^    "ISSUES_PR_PROCESS_COMMENT|0|' lib/config.sh
 bin/fw vendor self --check --task T-5396
 bin/fw watchtower current
 
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | FW_ISSUES_PR_PROCESS_COMMENT row (key, value 0, default 0, DEFAULT badge, description) | ok | ok | ok | one added registry row; wraps like its neighbours |
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
