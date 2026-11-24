@@ -108,6 +108,24 @@ backends:
       - '\bapply_patch\b'
       - '"type"\s*:\s*"tool_use"'
 
+  - id: antigravity
+    name: "Google Antigravity (agy CLI)"
+    harness_class: "subscription"
+    cost_class: "internal"
+    approval_required: false
+    cost_estimate_method: "unmetered"
+    description: "Antigravity 1.1.15 CLI on the operator's Google account; runs as user dimitri-mint-dev via sudo -n -u dimitri-mint-dev -H <binary> -p ... --mode plan --sandbox (operator approved 2026-09-30; the absolute path is needed because sudo's secure_path does not include ~/.local/bin). Third rung-5 panel seat: moved ahead of opencode by the operator 2026-11-23 (opencode votes were refused three times on citation format, T-5301)."
+    worker_kind: antigravity
+    vision: true   # T-5175: probe 2026-11-16 (fw reviewer probe-vision, T-5176): 8 cards + exact title via read_file; set on the operator's yes (2026-11-16)
+    vendor: google
+    credential:
+      source: cli-login
+      note: "agy CLI signed in to the operator's Google account as user dimitri-mint-dev — the CLI authenticates itself"
+    binary: /home/dimitri-mint-dev/.local/bin/agy
+    match:
+      - "\\bagy\\b"
+      - '--worker-kind[= ]antigravity\b'
+
   - id: opencode
     name: "Z.ai Coding Plan (opencode)"
     harness_class: subscription
@@ -196,22 +214,3 @@ backends:
       - '(^|[;&|]\s*|/)openrouter\s'
       - '\$\{?OPENROUTER_API_KEY'
       - '\breview\s+credential\s+openrouter\b.*--exec\b'
-
-  - id: antigravity
-    name: "Google Antigravity (agy CLI)"
-    harness_class: "subscription"
-    cost_class: "internal"
-    approval_required: false
-    cost_estimate_method: "unmetered"
-    description: "Antigravity 1.1.15 CLI on the operator's Google account; runs as user dimitri-mint-dev via sudo -n -u dimitri-mint-dev -H <binary> -p ... --mode plan --sandbox (operator approved 2026-09-30; the absolute path is needed because sudo's secure_path does not include ~/.local/bin). Spare panel seat (after claude, codex, opencode in registry order)."
-    worker_kind: antigravity
-    vision: true   # T-5175: probe 2026-11-16 (fw reviewer probe-vision, T-5176): 8 cards + exact title via read_file; set on the operator's yes (2026-11-16)
-    vendor: google
-    credential:
-      source: cli-login
-      note: "agy CLI signed in to the operator's Google account as user dimitri-mint-dev — the CLI authenticates itself"
-    binary: /home/dimitri-mint-dev/.local/bin/agy
-    match:
-      - "\\bagy\\b"
-      - '--worker-kind[= ]antigravity\b'
-
