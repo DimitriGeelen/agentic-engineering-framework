@@ -8,6 +8,8 @@ body:
       value: |
         Thanks for reporting a bug. Please fill out the sections below.
 
+        What happens next, from this report to a released fix, with the workflow map: [Pull Request Process](https://github.com/DimitriGeelen/agentic-engineering-framework/blob/bleeding-edge/CONTRIBUTING.md#pull-request-process).
+
   - type: textarea
     id: description
     attributes:

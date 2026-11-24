@@ -92,6 +92,12 @@ Check your change against the latest pre-release before you open a pull request.
 
 ### Pull Request Process
 
+Every bug report, feature request and pull request follows this workflow. The map shows who does what: your part is the top lane, **Contributor**; below it are GitHub CI, the framework's agents, the three-vendor review panel and the maintainer. The numbered steps below walk through it.
+
+[![Pull request workflow: contributor, GitHub CI, agents, review panel, maintainer](docs/contributing/pr-workflow-map.png)](docs/contributing/pr-workflow-map.png)
+
+<sub>Click the map to open it full size. Workflow ID `aef-github-pr-intake`, drawn from a real pull request (#116, issue #68).</sub>
+
 1. **Issue first.** Open or pick an issue and agree the approach in it before writing code. The maintainer's intake turns each issue into a framework task (for example #104 became T-4935); that task must exist on `bleeding-edge` before you open the pull request. A documentation-only pull request may skip the issue for form only (a typo, a broken link, layout); one that rewords a rule or describes a behaviour differently needs an issue like any other change.
 2. **Fork and branch** from `bleeding-edge`. Suggested branch names: `fix/<issue>-<keyword>` or `feat/<issue>-<keyword>`.
 3. **One pull request per issue**, opened against `bleeding-edge`, with "Fixes #N" in the description.

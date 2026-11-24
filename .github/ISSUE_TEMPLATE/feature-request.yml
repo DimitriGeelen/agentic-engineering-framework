@@ -8,6 +8,8 @@ body:
       value: |
         Thanks for suggesting a feature. Please describe the problem and your proposed solution.
 
+        What happens next, from this request to a released change, with the workflow map: [Pull Request Process](https://github.com/DimitriGeelen/agentic-engineering-framework/blob/bleeding-edge/CONTRIBUTING.md#pull-request-process).
+
   - type: textarea
     id: problem
     attributes:

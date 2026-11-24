@@ -1,3 +1,5 @@
+> How this pull request moves from here to a release, step by step and with the workflow map: [Pull Request Process](https://github.com/DimitriGeelen/agentic-engineering-framework/blob/bleeding-edge/CONTRIBUTING.md#pull-request-process).
+
 ## Issue and task
 
 Fixes #
