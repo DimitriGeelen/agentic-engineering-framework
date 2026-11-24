@@ -704,7 +704,10 @@ class TestCostIntegration:
         props = _costs(repo, "proposals.jsonl")
         assert [p["backend"] for p in props] == ["openrouter", "openrouter"]
         assert all(p["event"] == "proposed" and p["estimate_cost"] for p in props)
-        assert {p["seat"] for p in res["proposals"]} == {"codex", "opencode"}
+        # T-5301: the two non-claude seats of the LIVE registry's panel (its first three seat
+        # backends), not a hard-coded pair — the operator reorders seats (2026-11-24).
+        live_seats = [b["id"] for b in judge_cli._backends(repo)[0][:3]]
+        assert {p["seat"] for p in res["proposals"]} == set(live_seats) - {"claude-code"}
         waiting = [d for d in res["dispatches"] if d.get("proposal_id")]
         assert all(d["status"] == "awaiting-approval" and "dispatch_id" not in d for d in waiting)
         assert [r["backend"] for r in _costs(repo)] == ["claude-code"]  # no paid cost logged

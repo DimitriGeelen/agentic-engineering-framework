@@ -358,6 +358,10 @@ def _all_kinds(monkeypatch, root):
             b["worker_kind"] = b["vendor"] = kinds[b["id"]]
         elif b.get("worker_kind"):
             b.pop("worker_kind")
+    # T-5301: the fixture's panel is the three kinds above, whatever order the live registry
+    # uses (the operator moved antigravity ahead of opencode on 2026-11-24); stable sort keeps
+    # their relative order and everything else after them.
+    reg["backends"].sort(key=lambda b: b["id"] not in kinds)
     # Round 6: committed (the ledger ignores the working tree) and launchable (the ledger checks
     # the dispatcher's kinds) — as if T-3582 had shipped.
     rt.commit_registry(root, yaml.safe_dump(reg, sort_keys=False))

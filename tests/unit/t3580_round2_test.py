@@ -509,7 +509,9 @@ class TestJudgePanels:
         assert res["outcomes"] == {1: "unknown"} and "panel-incomplete" in res["why"][1]
         run = next(r for r in vl._read(vl.RUNS, repo) if r.get("kind") == "run")
         assert run["required_vendors"] == 3 and run["degraded"]
-        assert [s["seat"] for s in run["seats"]] == ["claude-code", "codex", "opencode"]
+        # T-5301: the live registry's panel (first three seat backends), not a hard-coded list —
+        # the operator reorders seats (antigravity moved ahead of opencode, 2026-11-24).
+        assert [s["seat"] for s in run["seats"]] == [b["id"] for b in judge_cli._backends(repo)[0][:3]]
         assert vl._read(vl.VERDICTS, repo)                      # the verdict itself is recorded
         assert _closed(repo).startswith("panel-incomplete")     # ... and applies to nothing
         judge_cli._print_result(res)

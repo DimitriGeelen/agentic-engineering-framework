@@ -461,18 +461,20 @@ class TestVendorProvenance:
         _three_seat_panel(hi)
         assert _ticked(hi) == [1]
 
-    def test_antigravity_is_a_google_kind_and_a_spare_seat(self):
+    def test_antigravity_is_a_google_kind_and_the_third_panel_seat(self):
         """T-3582 (operator 2026-10-01): antigravity is a real worker kind — vendor google, its
-        committed binary run through the operator-approved sudo form — and the SPARE seat: the
-        panel takes the first three seat backends in registry order (claude, codex, opencode)."""
+        committed binary run through the operator-approved sudo form. T-5301 (operator
+        2026-11-24): it is now the THIRD panel seat, ahead of opencode — the panel takes the
+        first three seat backends in registry order (claude, codex, antigravity); opencode is
+        the spare."""
         import yaml
         reg = yaml.safe_load((_HERE / "policy" / "review-backends.yaml").read_text())["backends"]
         agy = next(b for b in reg if b["id"] == "antigravity")
         assert agy["worker_kind"] == "antigravity" and agy["vendor"] == "google"
         assert agy["binary"].startswith("/") and agy["cost_class"] == "internal"
         seats, _paid = judge_cli._backends(_HERE)
-        assert [s["id"] for s in seats][:3] == ["claude-code", "codex", "opencode"]
-        assert "antigravity" in [s["id"] for s in seats][3:]
+        assert [s["id"] for s in seats][:3] == ["claude-code", "codex", "antigravity"]
+        assert "opencode" in [s["id"] for s in seats][3:]
         assert set(vl.verified_kind_vendors(_HERE)) <= vl.launchable_kinds()
 
     def test_launchable_kinds_are_what_the_dispatcher_prints(self):
