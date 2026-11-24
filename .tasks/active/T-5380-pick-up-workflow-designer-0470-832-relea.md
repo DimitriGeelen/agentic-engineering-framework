@@ -103,9 +103,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw designer sync --from-tag designer-v0.47.0` verifies the artifact (sha256 15299e56df9a…, 1451569 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way.
-- [ ] `policy/designer-pin.yaml` pins 0.47.0; `fw designer status` reports the pin valid; `/designer/app` serves APP_VERSION 0.47.0 after a Watchtower restart; designer tests pass; the vendored copy is synced.
-- [ ] Stored maps unchanged: every map under .context/designer/projects still validates through /api/validate (or the store check) after the pickup, and none gained a bpmn:group or bpmn:category.
+- [x] `fw designer sync --from-tag designer-v0.47.0` verifies the artifact (sha256 15299e56df9a…, 1451569 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way.
+- [x] `policy/designer-pin.yaml` pins 0.47.0; `fw designer status` reports the pin valid; `/designer/app` serves APP_VERSION 0.47.0 after a Watchtower restart; designer tests pass; the vendored copy is synced.
+- [x] Stored maps unchanged: every map under .context/designer/projects still validates through /api/validate (or the store check) after the pickup, and none gained a bpmn:group or bpmn:category.
 - [ ] 832 is told the result on its thread (conversation 832-designer-release-0.47.0).
 
 ### Human
