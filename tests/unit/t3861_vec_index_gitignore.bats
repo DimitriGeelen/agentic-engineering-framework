@@ -95,7 +95,7 @@ _index_names() {
 @test "end-to-end: a fresh fw init ignores the vector index" {
     proj="$TEST_TEMP_DIR/fresh"
     mkdir -p "$proj"
-    git -C "$proj" init -q
+    git -C "$proj" init -q && git -C "$proj" config gc.auto 0 && git -C "$proj" config gc.autoDetach false  # T-5399: no detached auto-gc racing teardown (T-5343 class)
     run timeout 300 "$FRAMEWORK_ROOT/bin/fw" init "$proj" --provider claude --no-first-run
     [ -f "$proj/.context/working/.gitignore" ] || { echo "$output" | tail -20; false; }
     : > "$proj/.context/working/fw-vec-index.db"

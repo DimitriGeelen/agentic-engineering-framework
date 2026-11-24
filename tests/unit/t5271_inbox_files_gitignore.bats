@@ -31,7 +31,7 @@ _repo() {
 _init_proj() {
     local proj="$TEST_TEMP_DIR/$1"
     mkdir -p "$proj"
-    git -C "$proj" init -q
+    git -C "$proj" init -q && git -C "$proj" config gc.auto 0 && git -C "$proj" config gc.autoDetach false  # T-5399: no detached auto-gc racing teardown (T-5343 class)
     timeout 300 "$FRAMEWORK_ROOT/bin/fw" init "$proj" --provider claude --no-first-run >/dev/null 2>&1 || return 1
     echo "$proj"
 }

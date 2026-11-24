@@ -1816,6 +1816,8 @@ show_help() {
     echo -e "  ${GREEN}ask${NC} <query>           Query project knowledge (RAG search)"
     echo -e "  ${GREEN}docs${NC} <cmd>            Documentation lookup (article, show)"
     echo -e "  ${GREEN}enforcement${NC} <cmd>     Enforcement baseline (status, baseline)"
+    # T-5394/T-5399: the MCP egress gate's verb shipped without a help entry (help-router-parity red at pre-push).
+    echo -e "  ${GREEN}egress${NC} <cmd>          MCP egress gate (status, list, classify, audit; approve is operator-only)"
     echo -e "  ${GREEN}fabric${NC} <cmd>          Component Fabric (overview, deps, impact, search, drift, register)"
     # T-2836: the 20 entries added across this function dispatched fine but had no
     # help entry, so `fw help` — the one place an operator or onboarding agent looks
