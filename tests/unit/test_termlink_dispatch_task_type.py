@@ -212,3 +212,26 @@ def test_dispatch_meta_json_populates_fields_from_resolution():
     # The values should land in JSON via heredoc-substituted variables, not literal "null":
     assert "$model_used_json" in dispatch_block, "meta.json must use $model_used_json"
     assert "$fallback_used_json" in dispatch_block, "meta.json must use $fallback_used_json"
+
+
+# ── T-5407: the dispatched task decides, focus is only the fallback ──────────
+
+def test_t5407_dispatched_task_wins_over_focus(tmp_path):
+    p = _seed(tmp_path, "T-9101", "inception")          # focus: an inception
+    (p / ".tasks" / "active" / "T-9102-y.md").write_text(
+        "---\nid: T-9102\nname: y\nstatus: started-work\nworkflow_type: build\nhorizon: now\n---\n")
+    r = _run_helper(p, "_derive_task_type T-9102")
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.strip() == "build"
+
+
+def test_t5407_no_task_falls_back_to_focus(tmp_path):
+    p = _seed(tmp_path, "T-9103", "inception")
+    r = _run_helper(p, '_derive_task_type ""')
+    assert r.stdout.strip() == "inception"
+
+
+def test_t5407_call_sites_pass_the_dispatched_task():
+    src = TERMLINK_SH.read_text()
+    assert src.count('_derive_task_type "$task"') == 2
+    assert "task_type=$(_derive_task_type)\n" not in src

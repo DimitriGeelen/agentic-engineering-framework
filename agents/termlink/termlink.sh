@@ -127,16 +127,21 @@ if best:
 PY
 }
 
-# _derive_task_type — read the active task's workflow_type from focus.yaml.
+# _derive_task_type — workflow_type of the dispatched task ($1), else of the focused task.
 # Echoes the derived value (e.g. "build", "inception") or empty if no focus
 # or the focused task file cannot be read. Never errors — failures are silent
 # (caller treats empty as "no derivation").
 _derive_task_type() {
+    # T-5407: $1 = the dispatched task (--task). It decides the type; focus.yaml is only
+    # the fallback when no task was given. Reading focus first mislabelled a build
+    # dispatch as 'inception' when focus sat on another task (w-t5405, 2026-11-24).
     local project_root="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
-    local focus_file="$project_root/.context/working/focus.yaml"
-    [ -f "$focus_file" ] || return 0
-    local current_task
-    current_task=$(awk -F': ' '/^current_task:/ {print $2; exit}' "$focus_file" 2>/dev/null | tr -d ' "')
+    local current_task="${1:-}"
+    if [ -z "$current_task" ]; then
+        local focus_file="$project_root/.context/working/focus.yaml"
+        [ -f "$focus_file" ] || return 0
+        current_task=$(awk -F': ' '/^current_task:/ {print $2; exit}' "$focus_file" 2>/dev/null | tr -d ' "')
+    fi
     [ -n "$current_task" ] && [ "$current_task" != "null" ] || return 0
     local task_file
     task_file=$({ ls "$project_root"/.tasks/{active,completed}/"$current_task"-*.md 2>/dev/null || true; } | head -1)
@@ -461,7 +466,7 @@ USAGE
 
     # T-1643/W2: derive task_type from active-task workflow_type when omitted.
     if [ -z "$task_type" ]; then
-        task_type=$(_derive_task_type)
+        task_type=$(_derive_task_type "$task")
     fi
 
     local wdir
@@ -1412,7 +1417,7 @@ cmd_dispatch() {
 
     # T-1643/W1: auto-derive task_type from focus.yaml when omitted.
     if [ -z "$task_type" ]; then
-        task_type=$(_derive_task_type)
+        task_type=$(_derive_task_type "$task")
     fi
     # T-3582: a harness kind is a review worker only — run.sh has no build/test path for it.
     case "$worker_kind" in
