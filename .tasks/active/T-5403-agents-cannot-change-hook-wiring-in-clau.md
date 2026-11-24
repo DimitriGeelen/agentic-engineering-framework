@@ -100,10 +100,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A PreToolUse hook refuses (exit 2), under agent control (same detection as `fw egress approve`: env + process ancestry), a Write/Edit to `.claude/settings.json` whose resulting `hooks` section differs from the current one; edits that leave `hooks` unchanged pass; the refusal message names the runme route (`bin/fw runme new …`) and the ruling.
-- [ ] Bash commands that write `.claude/settings.json` (redirect, tee, sed -i, cp/mv, python -c, …) are refused under agent control by the same text-gate approach as the Human-AC tick guard; `bin/fw init`, `bin/fw upgrade` and `bin/fw enforcement baseline` are not blocked.
-- [ ] A helper prepares the operator runme for a hook change (e.g. `bin/fw hook-wiring propose --add '<matcher>' '<command>'` or an equivalent documented recipe) that applies the change and refreshes the enforcement baseline in one script.
-- [ ] Hermetic tests: hooks change refused, non-hooks edit allowed, Bash write refused, init/upgrade still write the file, refusal text names the runme route; `tests/unit/upgrade_fresh_machine_simulation.bats` green.
+- [x] A PreToolUse hook refuses (exit 2), under agent control (same detection as `fw egress approve`: env + process ancestry), a Write/Edit to `.claude/settings.json` whose resulting `hooks` section differs from the current one; edits that leave `hooks` unchanged pass; the refusal message names the runme route (`bin/fw runme new …`) and the ruling.
+- [x] Bash commands that write `.claude/settings.json` (redirect, tee, sed -i, cp/mv, python -c, …) are refused under agent control by the same text-gate approach as the Human-AC tick guard; `bin/fw init`, `bin/fw upgrade` and `bin/fw enforcement baseline` are not blocked.
+- [x] A helper prepares the operator runme for a hook change (e.g. `bin/fw hook-wiring propose --add '<matcher>' '<command>'` or an equivalent documented recipe) that applies the change and refreshes the enforcement baseline in one script.
+- [x] Hermetic tests: hooks change refused, non-hooks edit allowed, Bash write refused, init/upgrade still write the file, refusal text names the runme route; `tests/unit/upgrade_fresh_machine_simulation.bats` green.
 - [ ] Wiring this guard into this project's own `.claude/settings.json` is itself handed to the operator as a runme (not done by the agent), and `fw init`/`fw upgrade` deliver it to consumers.
 
 ### Human
@@ -291,6 +291,11 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5403_hook_wiring.bats > /tmp/.t5403.out 2>&1 && ! grep -q "^not ok" /tmp/.t5403.out
+test "$(grep -c '# skip' /tmp/.t5403.out)" -eq 0
+timeout 300 bats tests/unit/t4859_scanner_relative_task_paths.bats > /tmp/.t5403b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5403b.out
+timeout 1500 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t5403c.out 2>&1 && ! grep -q "^not ok" /tmp/.t5403c.out  # needs: fixture
+bin/fw vendor self --check --task T-5403
 
 ## RCA
 
@@ -371,6 +376,21 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-24 — what counts as hook wiring
+- **Chose:** `hooks` and `disableAllHooks`, in both `.claude/settings.json` and `.claude/settings.local.json`.
+- **Why:** Claude Code reads hooks from both files, and `disableAllHooks: true` switches every gate off without touching `hooks`, so a hooks-only comparison would let it through.
+- **Rejected:** `hooks` in settings.json only (the brief's minimum): leaves both of those routes open.
+
+### 2026-11-24 — fw hook-enable under agent control
+- **Chose:** the Bash text gate refuses `fw hook-enable` / `hook-enable.sh` typed without `--dry-run`. The script itself is unchanged.
+- **Why:** hook-enable writes hook wiring, so typed by an agent it is the same change as an Edit. Putting an ancestry check inside the script broke its own suite (4/4 + T-3711), because that suite runs it as the operator would.
+- **Rejected:** an env/ancestry check inside bin/hook-enable.sh.
+
+### 2026-11-24 — Bash leg reader
+- **Chose:** `shell_write_scan.scan(guarded=, mention=)`, a new parameter pair on the existing scanner, so the Human-AC tick guard's guarded set and messages are unchanged.
+- **Why:** this is one reader with a different guard. Adding the path to the tick guard's set would print "task file" refusals.
+- **Rejected:** `scan_boundary` (worktree semantics, no inline-code mention rule); adding the path to `is_guarded_path`.
 
 ## Decision
 
