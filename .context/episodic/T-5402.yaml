@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5402: PR process comment: after merge, tick step 7 and point at step 8; after the be-tag, tick all 8
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T18:21:14Z
+# ============================================================================
+
+task_id: T-5402
+task_name: "PR process comment: after merge, tick step 7 and point at step 8; after the be-tag, tick all 8"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-24T18:17:40Z
+completed: 2026-11-24T18:20:35Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-24T19:19:41+01:00
+last_commit: 2026-11-24T19:20:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  PR process comment ticks step 7 after a merge and all 8 once shipped. vendored copy of lib/issues.py
+
+# Key outcomes
+outcomes:
+  - '`pr_step` returns 8 for merged-without-tag and 9 (past the list) for shipped; the renderer ticks 1-7 and marks 8 for merged, ticks all 8 and adds a "Done." line for shipped; closed-unmerged unchanged.'
+  - '`tests/unit/t5396_pr_process_comment_test.py` updated for both states and green; issue-sync tests green; vendored copy synced.'
+  - '7.` and step 8 as "you are here".'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendored copy of lib/issues.py'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.tasks/active/T-5402-pr-process-comment-after-merge-tick-step.md'
+  - 'lib/issues.py'
+  - 'tests/unit/t5396_pr_process_comment_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T19:19:41'
+    action: 'T-5402: PR process comment ticks step 7 after a merge and all 8 once shipped'
+  - time: '2026-11-24T19:20:34'
+    action: 'T-5402: vendored copy of lib/issues.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [outside-contributor-flow, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 3
+  files_changed: 7
+  lines_added: 541
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-24T18:21:27Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5402-pr-process-comment-after-merge-tick-step.md
+generated_by: context-agent-hybrid
