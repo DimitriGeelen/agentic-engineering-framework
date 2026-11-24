@@ -453,7 +453,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"node1 feed: {why}")
         return 0 if ok else 1
 
-    exclusions = load_exclusions(Path(o.exclude_file))
+    try:
+        exclusions = load_exclusions(Path(o.exclude_file))
+    except OSError as e:
+        print(f"node1-nightly: cannot read the exclusion list {o.exclude_file}: {e}", file=sys.stderr)
+        return 2
     files = discover(root / "tests/unit", root)
     only = [s.strip() for s in o.files.split(",")] if o.files else None
     to_send, excluded = select(files, exclusions, only, o.limit, o.include_excluded)
