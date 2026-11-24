@@ -381,3 +381,10 @@ bvp_scores_proposed:
 
 ### 2026-11-24T13:29:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-24 — 050's interim hook logic (msg c50f2f8c), input for the design
+- PreToolUse matcher `mcp__.*`; reads `tool_name` from stdin JSON; non-MCP allowed.
+- Blocks (exit 2): `^mcp__claude-artifacts__(publish_files|publish_version|edit_version|create_from_type|upload_asset|copy_file|copy_asset|db_write|db_str_replace|reply_comment|reply_shared_comment|resolve_comment|pin_artifact|declare_capabilities|watch)$`, or a name containing publish|upload|share|_post$|_post_|send_message|create_issue|create_comment|create_page|create_file|push.
+- Passes: artifact read/list/guide/delete (delete = clean-up); `^mcp__termlink__` exempt from the name rule ("LAN agent bus"). No agent override.
+- Their own weakness: neutral-named egress tools slip past name matching; our policy file + unknown-is-egress covers it.
+- Our note: a blanket TermLink exemption is too wide. TermLink's remote_*, file_send, channel/agent post and dispatch can reach hubs on other hosts (ring20 is remote). Classify per tool: local-host traffic allowed, cross-host sends gated or at least listed.
