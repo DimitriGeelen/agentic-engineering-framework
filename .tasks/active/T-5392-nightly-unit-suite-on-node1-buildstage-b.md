@@ -93,10 +93,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] One script (e.g. agents/audit/node1-nightly.sh) does: build the bundle (lib/test-bundle.sh) at HEAD; stage it once (pool-client ref-put / pool:stage per §7); submit each file via `pool-client.py submit-cmd` with entry aef.bats/aef.pytest and env aef-unit-2, at most 12 open; collect every result (or name its absence); never sends while feed.health is not healthy (checks first, retries later, gives up for the night with a logged reason).
-- [ ] The node1-incompatible list (the 29 T-5073 node1-only files plus the T-5069 local-only lists) lives in ONE committed file read by the script; the excluded count is reported each night.
-- [ ] Results land in a dated file next to the nightly unit-suite report, with counts (submitted, passed, failed, not collected, excluded) and failing file names; a failure not on the exclusion list is marked NEW.
-- [ ] Cron registry entry added and `bin/fw cron generate` run (the operator runs `fw cron install` via runme); a dry-run mode (`--dry-run`) lists what would be submitted without sending; one real small run (≤ 20 files) succeeds end to end before the nightly entry is enabled.
+- [x] One script (e.g. agents/audit/node1-nightly.sh) does: build the bundle (lib/test-bundle.sh) at HEAD; stage it once (pool-client ref-put / pool:stage per §7); submit each file via `pool-client.py submit-cmd` with entry aef.bats/aef.pytest and env aef-unit-2, at most 12 open; collect every result (or name its absence); never sends while feed.health is not healthy (checks first, retries later, gives up for the night with a logged reason).
+- [x] The node1-incompatible list (the 29 T-5073 node1-only files plus the T-5069 local-only lists) lives in ONE committed file read by the script; the excluded count is reported each night.
+- [x] Results land in a dated file next to the nightly unit-suite report, with counts (submitted, passed, failed, not collected, excluded) and failing file names; a failure not on the exclusion list is marked NEW.
+- [x] Cron registry entry added and `bin/fw cron generate` run (the operator runs `fw cron install` via runme); a dry-run mode (`--dry-run`) lists what would be submitted without sending; one real small run (≤ 20 files) succeeds end to end before the nightly entry is enabled.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,6 +285,9 @@ bvp_scores_proposed:
 -->
 out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
 bin/fw vendor self --check --task T-5392
+python3 -m pytest tests/unit/test_t5392_node1_nightly.py -q -p no:cacheprovider > /tmp/.t5392.out 2>&1 && grep -q passed /tmp/.t5392.out
+agents/audit/node1-nightly.sh --dry-run > /tmp/.t5392-dry.out 2>&1 && grep -qE "excluded=[1-9][0-9]* to_send=[1-9]" /tmp/.t5392-dry.out
+timeout 300 bats --tap tests/unit/atomic_yaml_write_lint.bats > /tmp/.t5392-lint.out 2>&1 && ! grep -q "^not ok" /tmp/.t5392-lint.out
 
 ## RCA
 
@@ -365,6 +368,16 @@ bin/fw vendor self --check --task T-5392
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-24 — entries aef2.* (not aef.*)
+- **Chose:** entries `aef2.bats` / `aef2.pytest` with env `aef-unit-2` (overridable: NODE1_ENTRY_BATS / NODE1_ENTRY_PYTEST / NODE1_ENV).
+- **Why:** what the T-5073 full run used and proved, and the names in ring20's msg 6218a382; node1's feed lists both pairs.
+- **Rejected:** `aef.*` from spec §7: it pairs with env `aef-unit-1`, which lacks ruamel.yaml/openai (§9).
+
+### 2026-11-24 — feed.health source and staging route
+- **Chose:** node1's own `pool:feed` (hub profile `node1-pool`), field `health.state` == `healthy` and document younger than its `stale_after_s`; stage via `pool:stage` on the relay (profile `ring20-management`), falling back to `pool-client ref-put`.
+- **Why:** `pool:feed` on the local hub describes our own pool node, not node1; `pool:stage` is the relay route other clients (832) use and staged our 52 MB bundle in 18 s.
+- **Rejected:** `pool:nodes` per-node `healthy` (the relay's view, not ring20's canary-driven feed state).
 
 ## Decision
 
