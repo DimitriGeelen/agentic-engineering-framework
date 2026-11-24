@@ -5,7 +5,7 @@ subsystem: tests
 location: tests/unit/test_t5392_node1_nightly.py
 tags: []
 
-purpose: "T-5392: pure parts of the node1 nightly run (agents/audit/node1_nightly.py)."
+purpose: "T-5392: the node1 nightly run (scripts/node1/node1_nightly.py — this project's ring20 adapter, outside every path fw vendor ships)."
 purpose_source: docstring
 
 depends_on:

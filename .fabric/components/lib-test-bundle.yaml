@@ -5,7 +5,7 @@ subsystem: framework-core
 location: lib/test-bundle.sh
 tags: []
 
-purpose: "lib/test-bundle.sh — T-5070: build the package node1 runs AEF's unit suite from."
+purpose: "lib/test-bundle.sh: package a commit as a one-commit git bundle so the unit suite can run somewhere else (provider-neutral; caller passes --out and --max-mb)."
 purpose_source: header-comment
 
 depends_on:

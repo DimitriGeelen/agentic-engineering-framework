@@ -1,22 +1,25 @@
 #!/bin/bash
-# agents/audit/node1-nightly.sh — T-5392: nightly unit-suite run on node1 (ring20's pool).
+# scripts/node1/node1-nightly.sh — T-5392: nightly unit-suite run on node1 (ring20's pool).
 #
 # Builds and stages the unit-suite bundle of HEAD, submits every node1-compatible unit
-# test file (agents/audit/node1-incompatible.txt lists the rest), holds while node1's
+# test file (scripts/node1/node1-incompatible.txt lists the rest), holds while node1's
 # feed health is not healthy, collects the results and writes
 # .context/audits/unit-suite/node1/<date>.yaml + LATEST.yaml. Logic: node1_nightly.py.
 #
-#   agents/audit/node1-nightly.sh --dry-run          list what would be sent (no network)
-#   agents/audit/node1-nightly.sh --health           node1's feed health only
-#   agents/audit/node1-nightly.sh --limit 20         a small real run
-#   agents/audit/node1-nightly.sh                    the nightly run (cron: node1-unit-suite-nightly)
+#   scripts/node1/node1-nightly.sh --dry-run          list what would be sent (no network)
+#   scripts/node1/node1-nightly.sh --health           node1's feed health only
+#   scripts/node1/node1-nightly.sh --limit 20         a small real run
+#   scripts/node1/node1-nightly.sh                    the nightly run (cron: node1-unit-suite-nightly)
+#
+# This project's ring20 adapter: scripts/ is not shipped by `fw vendor`, so it never
+# reaches a consumer. Exit codes: node1_nightly.py (3 = incomplete, never green).
 #
 # Overlap: a run can take most of a day (node1 is ~3x slower per core); the next night's
 # run skips, logged, while one holds the lock.
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"   # scripts/node1 → repo root
 PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 export FRAMEWORK_ROOT PROJECT_ROOT
 

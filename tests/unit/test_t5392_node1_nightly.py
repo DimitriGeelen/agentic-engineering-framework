@@ -1,4 +1,5 @@
-"""T-5392: pure parts of the node1 nightly run (agents/audit/node1_nightly.py).
+"""T-5392: the node1 nightly run (scripts/node1/node1_nightly.py — this project's ring20
+adapter, outside every path `fw vendor` ships).
 
 Hermetic: no network, no termlink, no pool-client — every external call goes through a
 fake runner, time through a fake clock.
@@ -11,7 +12,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location("node1_nightly", ROOT / "agents/audit/node1_nightly.py")
+spec = importlib.util.spec_from_file_location("node1_nightly", ROOT / "scripts/node1/node1_nightly.py")
 assert spec and spec.loader
 nn = importlib.util.module_from_spec(spec)
 sys.modules["node1_nightly"] = nn
@@ -245,3 +246,142 @@ def test_submit_loop_caps_open_jobs_and_collects_everything(tmp_path, monkeypatc
         **{f: "passed" for f in files if f != "tests/unit/f3.bats"}, "tests/unit/f3.bats": "failed"}
     assert (tmp_path / "jobs" / nn.job_name("r1", "tests/unit/test_p.py") / "target.txt").read_text() == \
         "tests/unit/test_p.py\n"
+
+
+# ── option 1 (external review): incomplete is never green, exclusion file named ─────
+
+def _report(**kw):
+    base = dict(run_id="r", commit="c", bundle_sha="s", discovered=3, excluded=[], exclusions=[],
+                to_send=["tests/unit/a.bats", "tests/unit/b.bats"],
+                outcomes={"tests/unit/a.bats": {"status": "passed"}, "tests/unit/b.bats": {"status": "passed"}},
+                not_sent={}, holds=[], started="s", finished="f", gave_up=None)
+    base.update(kw)
+    return nn.build_report(**base)
+
+
+def test_status_complete_and_exit_zero_when_everything_collected():
+    r = _report()
+    assert r["status"] == "complete" and nn.exit_code(r, False) == 0
+
+
+def test_not_collected_makes_run_incomplete_and_non_zero():
+    r = _report(outcomes={"tests/unit/a.bats": {"status": "passed"}})
+    assert r["counts"]["not_collected"] == 1
+    assert r["status"] == "incomplete" and nn.exit_code(r, False) == 3
+
+
+def test_not_sent_makes_run_incomplete_and_non_zero():
+    r = _report(outcomes={"tests/unit/a.bats": {"status": "passed"}}, not_sent={"tests/unit/b.bats": "held"})
+    assert r["status"] == "incomplete" and nn.exit_code(r, False) == 3
+
+
+def test_new_failure_on_complete_run_is_one_and_incomplete_outranks_it():
+    r = _report(outcomes={"tests/unit/a.bats": {"status": "passed"},
+                          "tests/unit/b.bats": {"status": "failed", "detail": "x"}})
+    assert r["status"] == "complete" and nn.exit_code(r, False) == 1
+    r = _report(to_send=["tests/unit/a.bats", "tests/unit/b.bats", "tests/unit/c.bats"],
+                outcomes={"tests/unit/a.bats": {"status": "passed"},
+                          "tests/unit/b.bats": {"status": "failed", "detail": "x"}})
+    assert r["status"] == "incomplete" and nn.exit_code(r, False) == 3
+    assert nn.exit_code(r, True) == 2
+
+
+class MainRun(nn.Node1Run):
+    """Node1Run with bundle build and staging stubbed: the submit loop runs on FakePool."""
+
+    def build_bundle(self):
+        return "b" * 64, self.bundles / "x.bundle", "c" * 40
+
+    def prune_bundles(self, keep, n=3):
+        pass
+
+    def stage(self, path, sha):
+        return "stub"
+
+
+def _main_env(tmp_path, monkeypatch, fail=(), max_wall=None):
+    d = tmp_path / "tests/unit"
+    d.mkdir(parents=True)
+    for n in ("a.bats", "b.bats", "test_c.py"):
+        (d / n).write_text("")
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
+    monkeypatch.setenv("NODE1_MAX_OPEN", "3")
+    if max_wall is not None:
+        monkeypatch.setenv("NODE1_MAX_WALL_S", str(max_wall))
+    clock = Clock()
+    pool = FakePool(clock, tmp_path / ".context/scratch/node1-pool-state", fail=set(fail))
+    monkeypatch.setattr(nn, "Node1Run", lambda root: MainRun(root, run=pool, sleep=clock.sleep,
+                                                             now=clock.now, log=lambda _m: None))
+    monkeypatch.setattr(nn, "git_head", lambda root: "c" * 40)
+    ex = tmp_path / "my-exclusions.txt"
+    ex.write_text("tests/unit/test_c.py\n")
+    return ex
+
+
+def _latest(tmp_path):
+    import yaml
+    return yaml.safe_load((tmp_path / ".context/audits/unit-suite/node1/LATEST.yaml").read_text())
+
+
+def test_main_complete_run_exits_zero_and_names_the_exclusion_file_used(tmp_path, monkeypatch, capsys):
+    ex = _main_env(tmp_path, monkeypatch)
+    assert nn.main(["--exclude-file", str(ex)]) == 0
+    r = _latest(tmp_path)
+    assert r["status"] == "complete"
+    assert r["excluded_list"] == "my-exclusions.txt"
+    assert r["excluded_list_sha256"] == nn.hashlib.sha256(ex.read_bytes()).hexdigest()
+    assert "status=complete" in capsys.readouterr().out
+
+
+def test_main_new_failure_exits_one(tmp_path, monkeypatch):
+    ex = _main_env(tmp_path, monkeypatch, fail={"tests/unit/b.bats"})
+    assert nn.main(["--exclude-file", str(ex)]) == 1
+    r = _latest(tmp_path)
+    assert r["status"] == "complete" and r["counts"]["new_failures"] == 1
+
+
+def test_main_incomplete_run_exits_three_and_says_so(tmp_path, monkeypatch, capsys):
+    ex = _main_env(tmp_path, monkeypatch, max_wall=1)     # the wall-clock cap hits before collection
+    assert nn.main(["--exclude-file", str(ex)]) == 3
+    r = _latest(tmp_path)
+    assert r["status"] == "incomplete"
+    assert r["counts"]["not_collected"] + r["counts"]["not_sent"] > 0
+    out = capsys.readouterr().out
+    assert "INCOMPLETE" in out and "status=incomplete" in out
+
+
+def test_exclusion_file_outside_repo_is_named_absolute(tmp_path):
+    other = tmp_path / "elsewhere" / "x.txt"
+    other.parent.mkdir()
+    other.write_text("")
+    root = tmp_path / "repo"
+    root.mkdir()
+    assert nn.display_path(other, root) == str(other.resolve())
+    assert nn.display_path(nn.DEFAULT_EXCLUDE, ROOT) == "scripts/node1/node1-incompatible.txt"
+
+
+def test_build_bundle_passes_node1_path_and_cap_explicitly(tmp_path, monkeypatch):
+    seen = []
+
+    def run(cmd, input=None, timeout=120):
+        seen.append(list(cmd))
+        out = tmp_path / "f.bundle"
+        return subprocess.CompletedProcess(cmd, 0, f"source_ref:     {'d' * 40} (x)\nsha256:         {'e' * 64}\nfile:           {out}\n", "")
+
+    monkeypatch.setattr(nn, "git_head", lambda root: "d" * 40)
+    nr = nn.Node1Run(tmp_path, run=run, log=lambda _m: None)
+    sha, path, src = nr.build_bundle()
+    cmd = seen[0]
+    assert cmd[1:3] == ["test", "bundle"]
+    assert cmd[cmd.index("--out") + 1] == str(tmp_path / ".context/scratch/node1-bundles" / f"aef-unit-suite-{'d' * 12}.bundle")
+    assert cmd[cmd.index("--max-mb") + 1] == "64"
+    assert cmd[cmd.index("--ref") + 1] == "d" * 40
+    assert sha == "e" * 64
+
+
+def test_runner_lives_outside_every_vendored_path():
+    assert nn.HERE == ROOT / "scripts/node1"
+    for gone in ("agents/audit/node1-nightly.sh", "agents/audit/node1_nightly.py",
+                 "agents/audit/node1-incompatible.txt", ".agentic-framework/agents/audit/node1_nightly.py",
+                 ".agentic-framework/agents/audit/node1-nightly.sh"):
+        assert not (ROOT / gone).exists(), gone

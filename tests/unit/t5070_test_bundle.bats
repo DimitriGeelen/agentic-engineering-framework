@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# T-5070 — fw test bundle: the package node1 runs AEF's unit suite from (T-5069 spec).
+# T-5070 / T-5392 — fw test bundle: a one-commit git bundle of a commit (provider-neutral).
 # A fixture repo stands in for AEF; nothing here touches the real repository.
 
 LIB="${BATS_TEST_DIRNAME}/../../lib/test-bundle.sh"
@@ -42,7 +42,7 @@ bundle() { ( source "$LIB"; PROJECT_ROOT="$R" fw_test_bundle "$@" ); }
     run bundle --out "$T/b.bundle"
     [[ "$output" == *"source_ref:     $(git -C "$R" rev-parse HEAD)"* ]]
     [[ "$output" == *"bundle_commit:  "* ]]
-    [[ "$output" == *"size_bytes:"*"cap 64 MB"* ]]
+    [[ "$output" == *"size_bytes:"*"no cap"* ]]
     [[ "$output" == *"sha256:         $(sha256sum "$T/b.bundle" | cut -c1-64)"* ]]
 }
 
@@ -74,10 +74,37 @@ bundle() { ( source "$LIB"; PROJECT_ROOT="$R" fw_test_bundle "$@" ); }
     [[ "$output" == *"not a commit"* ]]
 }
 
-@test "T-5070: by default the bundle lands in .context/scratch/node1-bundles/ (the folder the relay copies from)" {
+@test "T-5392: by default the bundle lands in .context/scratch/test-bundles/ (no provider-specific path)" {
     run bundle
     [ "$status" -eq 0 ]
     sha=$(git -C "$R" rev-parse HEAD)
-    [ -f "$R/.context/scratch/node1-bundles/aef-unit-suite-${sha:0:12}.bundle" ]
-    [ "$(ls "$R/.context/scratch/node1-bundles" | wc -l)" -eq 1 ]
+    [ -f "$R/.context/scratch/test-bundles/unit-suite-${sha:0:12}.bundle" ]
+    [ "$(ls "$R/.context/scratch/test-bundles" | wc -l)" -eq 1 ]
+    [ ! -e "$R/.context/scratch/node1-bundles" ]
+}
+
+@test "T-5392: without --max-mb there is no cap; with it the cap is applied and reported" {
+    run bundle --out "$T/a.bundle"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"no cap"* ]]
+    run bundle --out "$T/b.bundle" --max-mb 64
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"cap 64 MB"* ]]
+}
+
+@test "T-5392: --max-mb must be a whole number (empty or missing value is a usage error)" {
+    run bundle --out "$T/b.bundle" --max-mb abc
+    [ "$status" -eq 2 ]
+    run bundle --out "$T/b.bundle" --max-mb ""
+    [ "$status" -eq 2 ]
+    run bundle --out "$T/b.bundle" --max-mb
+    [ "$status" -eq 2 ]
+    [ ! -e "$T/b.bundle" ]
+}
+
+@test "T-5392: help names no provider, relay or task" {
+    run bundle --help
+    [ "$status" -eq 0 ]
+    ! grep -Eqi 'node1|relay|ring20|T-[0-9]' <<<"$output" || false
+    ! grep -Eqi 'node1|relay|ring20' "$LIB"
 }

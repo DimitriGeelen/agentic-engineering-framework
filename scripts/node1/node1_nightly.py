@@ -1,36 +1,43 @@
 #!/usr/bin/env python3
-"""agents/audit/node1_nightly.py — T-5392: the nightly unit-suite run on node1.
+"""scripts/node1/node1_nightly.py — T-5392: the nightly unit-suite run on node1.
 
-Wrapped by agents/audit/node1-nightly.sh (overlap lock, cron entry
+This project's ring20 adapter: it lives under scripts/, which `fw vendor` does not ship,
+so nothing here reaches a consumer. Wrapped by scripts/node1/node1-nightly.sh (overlap lock, cron entry
 `node1-unit-suite-nightly`). Contract: docs/reports/T-5069-node1-unit-suite-spec.md §7;
 trial and full run: §8, §9.
 
 One run:
   1. list the unit test files exactly as agents/audit/unit-suite.sh does (tests/unit/*.bats
-     plus its pytest discovery) and drop the ones in agents/audit/node1-incompatible.txt;
+     plus its pytest discovery) and drop the ones in scripts/node1/node1-incompatible.txt (or --exclude-file);
   2. read node1's feed health (pool:feed on node1's hub, field health.state). Nothing is
      sent while it is not `healthy` or the feed is stale: hold, re-check every
      NODE1_HOLD_POLL_S, and give up for the night after NODE1_HOLD_MAX_S with the reason
      written to the report;
-  3. build the bundle of HEAD (`bin/fw test bundle`, lib/test-bundle.sh) and stage it once
+  3. build the bundle of HEAD (`bin/fw test bundle`, lib/test-bundle.sh) into
+     .context/scratch/node1-bundles/ with node1's 64 MB stage cap, and stage it once
      through the relay (pool:stage; falls back to `pool-client ref-put`, as in the trial);
   4. submit one job per file with `pool-client submit-cmd` (entry aef2.bats / aef2.pytest,
      env aef-unit-2, ref repo.bundle=<sha>), never more than NODE1_MAX_OPEN open;
   5. collect every result (`pool-client wait`, which unpacks unit.log) or name its absence;
   6. write .context/audits/unit-suite/node1/<UTC date>.yaml and LATEST.yaml: counts
      (discovered, excluded, submitted, passed, failed, timed out, not collected, not sent)
-     and the failing files, each marked NEW unless it is on the exclusion list.
+     and the failing files, each marked NEW unless it is on the exclusion list; the run
+     status (complete | incomplete) and the exclusion file used, with its sha256.
 
 --dry-run lists what would be sent and touches nothing on the network.
 
-Exit: 0 run complete, no NEW failure; 1 NEW failures; 2 setup error (nothing sent);
-3 gave up on an unhealthy feed (report still written).
+Exit: 0 run complete, no NEW failure; 1 run complete with NEW failures; 2 setup error
+(nothing sent); 3 run incomplete: some file was not sent or its result not collected
+(an unhealthy feed, the wall-clock cap, a refused submit). An incomplete run is never
+green, whatever its failures. The report is written for 1, 3 and setup errors after
+selection.
 """
 from __future__ import annotations
 
 import argparse
 import base64
 import datetime as dt
+import hashlib
 import json
 import os
 import re
@@ -56,6 +63,7 @@ CFG_DEFAULTS = {
     "NODE1_POLL_S": "30",
     "NODE1_MAX_WALL_S": "72000",                # the whole run; then remaining jobs are "not collected"
     "NODE1_STAGE_TIMEOUT_S": "1200",
+    "NODE1_BUNDLE_MAX_MB": "64",                # node1's stage limit (T-5069)
     "POOL_CLIENT": "/usr/local/bin/pool-client",
     "TERMLINK": "termlink",
 }
@@ -175,9 +183,11 @@ def job_name(run_id: str, path: str) -> str:
 def build_report(*, run_id: str, commit: str, bundle_sha: str, discovered: int,
                  excluded: Sequence[str], exclusions: Iterable[str], to_send: Sequence[str],
                  outcomes: Dict[str, dict], not_sent: Dict[str, str], holds: List[dict],
-                 started: str, finished: str, gave_up: Optional[str]) -> dict:
+                 started: str, finished: str, gave_up: Optional[str],
+                 exclude_file: str = "", exclude_sha256: str = "") -> dict:
     """outcomes: file → {status: passed|failed|timeout|not-collected, detail, name}.
-    A failed or timed-out file not on the exclusion list is NEW."""
+    A failed or timed-out file not on the exclusion list is NEW. status is `incomplete`
+    when any file was not sent or not collected: such a run is never green."""
     ex = set(exclusions)
     failures = []
     counts = {"discovered": discovered, "excluded": len(excluded), "submitted": 0, "passed": 0,
@@ -200,9 +210,11 @@ def build_report(*, run_id: str, commit: str, bundle_sha: str, discovered: int,
         else:
             counts["not_collected"] += 1
             not_collected.append({"file": f, "reason": o.get("detail", "no result"), "job": o.get("name", "")})
+    incomplete = bool(counts["not_sent"] or counts["not_collected"])
     return {
         "schema": "aef.node1-unit-suite/1",
         "task": "T-5392",
+        "status": "incomplete" if incomplete else "complete",
         "run_id": run_id,
         "started": started,
         "finished": finished,
@@ -214,8 +226,31 @@ def build_report(*, run_id: str, commit: str, bundle_sha: str, discovered: int,
         "not_sent": [{"file": f, "reason": r} for f, r in not_sent.items()],
         "health_holds": holds,
         "gave_up": gave_up,
-        "excluded_list": "agents/audit/node1-incompatible.txt",
+        "excluded_list": exclude_file,
+        "excluded_list_sha256": exclude_sha256,
     }
+
+
+def file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def display_path(path: Path, root: Path) -> str:
+    """Repo-relative when the file is inside the repo, else absolute."""
+    p = path.resolve()
+    try:
+        return str(p.relative_to(root.resolve()))
+    except ValueError:
+        return str(p)
+
+
+def exit_code(report: dict, setup_error: bool) -> int:
+    """2 setup error; 3 incomplete (never green); 1 NEW failures; 0 complete and clean."""
+    if setup_error:
+        return 2
+    if report["status"] == "incomplete":
+        return 3
+    return 1 if report["counts"]["new_failures"] else 0
 
 
 def write_atomic(path: Path, text: str) -> None:
@@ -306,7 +341,15 @@ class Node1Run:
                 return
 
     def build_bundle(self) -> Tuple[str, Path, str]:
-        r = self.run([str(self.root / "bin/fw"), "test", "bundle", "--ref", "HEAD"], timeout=900)
+        """Into .context/scratch/node1-bundles/ (the folder the relay copies from), under
+        node1's stage cap: both are node1's, so they are passed here, not defaulted in
+        lib/test-bundle.sh."""
+        head = git_head(self.root)
+        if head == "unknown":
+            raise SetupError("cannot resolve HEAD")
+        out = self.bundles / f"aef-unit-suite-{head[:12]}.bundle"
+        r = self.run([str(self.root / "bin/fw"), "test", "bundle", "--ref", head, "--out", str(out),
+                      "--max-mb", cfg("NODE1_BUNDLE_MAX_MB")], timeout=900)
         if r.returncode != 0:
             raise SetupError(f"bundle build failed: {(r.stderr or r.stdout).strip()[:300]}")
         f = dict(re.findall(r"^(\w+):\s+(\S+)", r.stdout, re.M))
@@ -460,8 +503,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"node1 feed: {why}")
         return 0 if ok else 1
 
+    exclude_path = Path(o.exclude_file)
     try:
-        exclusions = load_exclusions(Path(o.exclude_file))
+        exclusions = load_exclusions(exclude_path)
+        exclude_sha = file_sha256(exclude_path)
     except OSError as e:
         print(f"node1-nightly: cannot read the exclusion list {o.exclude_file}: {e}", file=sys.stderr)
         return 2
@@ -476,6 +521,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     nb = sum(f.endswith(".bats") for f in to_send)
     print(f"node1-nightly: discovered={len(files)} excluded={len(excluded)} to_send={len(to_send)} "
           f"(bats={nb} pytest={len(to_send) - nb})")
+    print(f"node1-nightly: exclusion list {display_path(exclude_path, root)} sha256 {exclude_sha[:12]}")
     if o.dry_run:
         for f in to_send:
             print(f"  would send  {f}")
@@ -492,12 +538,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     outcomes: Dict[str, dict] = {}
     not_sent: Dict[str, str] = {}
     gave_up: Optional[str] = None
-    rc = 0
+    setup_error = False
     try:
         gave_up = nr.wait_healthy(holds, deadline)
         if gave_up:
             not_sent = {f: gave_up for f in to_send}
-            rc = 3
         else:
             sha, path, src = nr.build_bundle()
             commit = src or commit
@@ -506,18 +551,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             nr.log(f"bundle {path.name} sha256 {sha[:12]} staged via {how}")
             outcomes, not_sent, gave_up = submit_and_collect(nr, to_send, run_id, sha, work / "jobs",
                                                              work / "results", holds, deadline)
-            if gave_up:
-                rc = 3
     except SetupError as e:
         print(f"node1-nightly: SETUP ERROR — {e}", file=sys.stderr)
         not_sent = {f: f"setup error: {e}" for f in to_send}
         gave_up = f"setup error: {e}"
-        rc = 2
+        setup_error = True
 
     report = build_report(run_id=run_id, commit=commit, bundle_sha=sha, discovered=len(files),
                           excluded=excluded, exclusions=exclusions, to_send=to_send, outcomes=outcomes,
                           not_sent=not_sent, holds=holds, started=started, finished=iso(nr.now()),
-                          gave_up=gave_up)
+                          gave_up=gave_up, exclude_file=display_path(exclude_path, root),
+                          exclude_sha256=exclude_sha)
     nr.report_dir.mkdir(parents=True, exist_ok=True)
     text = to_yaml(report)
     dated = nr.report_dir / f"{started[:10]}.yaml"
@@ -526,7 +570,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     write_atomic(dated, text)
     write_atomic(nr.report_dir / "LATEST.yaml", text)
     c = report["counts"]
-    line = (f"{started} run={run_id} commit={commit[:12]} " + " ".join(f"{k}={v}" for k, v in c.items())
+    line = (f"{started} run={run_id} status={report['status']} commit={commit[:12]} " + " ".join(f"{k}={v}" for k, v in c.items())
             + (f" gave_up={gave_up!r}" if gave_up else ""))
     with open(nr.report_dir / "runs.log", "a") as fh:
         fh.write(line + "\n")
@@ -534,8 +578,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     print(f"report: {dated.relative_to(root)}")
     for fl in report["failures"]:
         print(f"  {'NEW ' if fl['new'] else 'known'} {fl['status']:7} {fl['file']}  {fl['detail']}")
-    if rc == 0 and c["new_failures"]:
-        rc = 1
+    rc = exit_code(report, setup_error)
+    if report["status"] == "incomplete":
+        print(f"node1-nightly: INCOMPLETE — not_sent={c['not_sent']} not_collected={c['not_collected']}; "
+              f"this run is not green (exit {rc})")
     return rc
 
 

@@ -1,12 +1,12 @@
-id: agents/audit/node1-nightly.sh
-name: node1-nightly
+id: scripts/node1/node1_nightly.py
+name: node1_nightly
 type: script
-subsystem: audit
-location: agents/audit/node1-nightly.sh
+subsystem: framework-core
+location: scripts/node1/node1_nightly.py
 tags: []
 
-purpose: "agents/audit/node1-nightly.sh — T-5392: nightly unit-suite run on node1 (ring20's pool)."
-purpose_source: header-comment
+purpose: "scripts/node1/node1_nightly.py — T-5392: the nightly unit-suite run on node1."
+purpose_source: docstring
 
 depends_on:
   # Format: - target: <relative-path>

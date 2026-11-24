@@ -109,9 +109,9 @@ cost_estimate_proposed:
 - [ ] Cron registry entry (project-local, pointing at `scripts/node1/node1-nightly.sh`) added and `bin/fw cron generate` run, with `fw doctor` reporting the registry in sync with the deployed crontab (the operator runs `fw cron install` via runme); `--dry-run` lists what would be submitted without sending; one real small run (≤ 20 files) succeeded end to end (2026-11-24: 20 files, 19 pass + 1 real red fixed). (Restated 2026-11-24: the entry was removed when the task went on hold, so this was unticked.)
 
 #### Option 1 after the external review (operator 2026-11-24, "T-5392 option 1, go ahead"; docs/reports/T-5392-external-review/SUMMARY.md)
-- [ ] Nothing ring20- or node1-specific is in a vendored path: the runner, its settings and the exclusion list live under `scripts/node1/` (not shipped by `fw vendor`); `agents/audit/node1*` and their `.agentic-framework/` copies are gone; `grep -rIl "node1\|ring20\|aef2\.\|aef-unit-2\|pool-client" agents lib bin web policy` names no file of this feature.
-- [ ] `lib/test-bundle.sh` / `fw test bundle` is provider-neutral: generic default output path, size cap only when the caller passes one, no node1/relay/task references in code or help; the node1 runner passes its own path and 64 MB cap.
-- [ ] An incomplete run is never green: any `not_sent` or `not_collected` file gives the run status `incomplete` and a non-zero exit, shown in the report; the report names the exclusion file actually used and its sha256; pinned by tests.
+- [x] Nothing ring20- or node1-specific is in a vendored path: the runner, its settings and the exclusion list live under `scripts/node1/` (not shipped by `fw vendor`); `agents/audit/node1*` and their `.agentic-framework/` copies are gone; `grep -rIl "node1\|ring20\|aef2\.\|aef-unit-2\|pool-client" agents lib bin web policy` names no file of this feature.
+- [x] `lib/test-bundle.sh` / `fw test bundle` is provider-neutral: generic default output path, size cap only when the caller passes one, no node1/relay/task references in code or help; the node1 runner passes its own path and 64 MB cap.
+- [x] An incomplete run is never green: any `not_sent` or `not_collected` file gives the run status `incomplete` and a non-zero exit, shown in the report; the report names the exclusion file actually used and its sha256; pinned by tests.
 - [ ] The generic "remote test pool" capability is filed as its own inception (one question: what adapter contract would a framework-level, off-by-default runner need), not built here.
 
 ### Human
@@ -302,7 +302,12 @@ cost_estimate_proposed:
 out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
 bin/fw vendor self --check --task T-5392
 python3 -m pytest tests/unit/test_t5392_node1_nightly.py -q -p no:cacheprovider > /tmp/.t5392.out 2>&1 && grep -q passed /tmp/.t5392.out
-agents/audit/node1-nightly.sh --dry-run > /tmp/.t5392-dry.out 2>&1 && grep -qE "excluded=[1-9][0-9]* to_send=[1-9]" /tmp/.t5392-dry.out
+scripts/node1/node1-nightly.sh --dry-run > /tmp/.t5392-dry.out 2>&1 && grep -qE "excluded=[1-9][0-9]* to_send=[1-9]" /tmp/.t5392-dry.out && grep -qE "exclusion list scripts/node1/node1-incompatible.txt sha256 [0-9a-f]{12}" /tmp/.t5392-dry.out
+for f in agents/audit/node1-nightly.sh agents/audit/node1_nightly.py agents/audit/node1-incompatible.txt .agentic-framework/agents/audit/node1-nightly.sh .agentic-framework/agents/audit/node1_nightly.py .agentic-framework/agents/audit/node1-incompatible.txt; do test ! -e "$f" || exit 1; done
+! grep -rIlE "node1[-_](nightly|incompatible|bundles|pool)|aef2\.(bats|pytest)|aef-unit-2|pool-client|NODE1_" agents lib bin web policy --exclude-dir=node_modules
+! grep -Eqi "node1|relay|ring20|T-[0-9]" lib/test-bundle.sh
+timeout 300 bats --tap tests/unit/t5070_test_bundle.bats > /tmp/.t5392-bundle.out 2>&1 && ! grep -q "^not ok" /tmp/.t5392-bundle.out
+grep -q "def test_main_incomplete_run_exits_three_and_says_so" tests/unit/test_t5392_node1_nightly.py && grep -q '"status": "incomplete" if incomplete else "complete"' scripts/node1/node1_nightly.py
 timeout 300 bats --tap tests/unit/atomic_yaml_write_lint.bats > /tmp/.t5392-lint.out 2>&1 && ! grep -q "^not ok" /tmp/.t5392-lint.out
 
 ## RCA

@@ -12129,7 +12129,7 @@ PYPREDICT
 
         case "${1:-all}" in
             bundle)
-                # T-5070: the node1 unit-suite package (T-5069 spec)
+                # Package a commit as a one-commit git bundle (lib/test-bundle.sh)
                 shift
                 # shellcheck source=/dev/null
                 source "$FRAMEWORK_ROOT/lib/test-bundle.sh"
@@ -12474,7 +12474,7 @@ PYPREDICT
                 echo "  web           Pytest web tests only"
                 echo "  playwright    Playwright UI tests (alias: ui)"
                 echo "  lint          ShellCheck linting on all .sh files"
-                echo "  bundle        Build the node1 unit-suite package (git bundle, one commit; T-5070)"
+                echo "  bundle        Package a commit as a one-commit git bundle (--out, --max-mb)"
                 exit 0
                 ;;
         esac
