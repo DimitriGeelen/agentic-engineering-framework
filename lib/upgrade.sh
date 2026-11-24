@@ -455,7 +455,9 @@ _self_vendor_policy() {
     # lib/verdict_ledger.py derives every review dispatch's vendor from (it falls back to
     # FRAMEWORK_ROOT/policy/, which in a consumer is .agentic-framework/policy/).
     # T-4411: issue-areas.yaml is the area mapping the vendored lib/issues.py reads beside it.
-    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml anti-patterns.yaml escalation-patterns.yaml designer-pin.yaml driver-scoring-example.yaml review-backends.yaml issue-areas.yaml; do
+    # T-5394: mcp-egress.yaml is the classification the vendored lib/mcp_egress.py reads; without
+    # it the check-mcp-egress hook fails closed and refuses EVERY MCP tool.
+    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml anti-patterns.yaml escalation-patterns.yaml designer-pin.yaml driver-scoring-example.yaml review-backends.yaml issue-areas.yaml mcp-egress.yaml; do
         _svp_src="$FRAMEWORK_ROOT/policy/$_svp_name"
         _svp_dst="$_self_vendor/policy/$_svp_name"
         [ -f "$_svp_src" ] || continue
