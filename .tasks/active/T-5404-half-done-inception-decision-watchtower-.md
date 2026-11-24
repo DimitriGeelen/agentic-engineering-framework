@@ -1,8 +1,16 @@
 ---
 id: T-5404
-name: "Half-done inception decision: Watchtower says 'the agent session can recover this (fw inception sweep)' but the sovereignty gate refuses the agent"
+name: "Half-done inception decision: Watchtower says 'the agent session can recover
+  this (fw inception sweep)' but the sovereignty gate refuses the agent"
 description: >
-  150-skills-manager C-010 (msg 78c00e5e, 2026-11-24): when fw inception decide crashes after the decision is saved (the T-5373 lib collision, fixed in be.62), web/blueprints/inception.py:735-749 tells the operator the agent can recover via fw inception sweep; sweep closes through update-task.sh, whose sovereignty gate refuses the agent under CLAUDECODE, so the advice is a dead end. Their working path: operator runs fw inception decide T-xxx go --i-am-human. Fix: either make the recovery path an operator one-liner in the message, or make the decision write and its finalisation one step so no half-done state exists.
+  150-skills-manager C-010 (msg 78c00e5e, 2026-11-24): when fw inception decide crashes
+  after the decision is saved (the T-5373 lib collision, fixed in be.62), web/blueprints/inception.py:735-749
+  tells the operator the agent can recover via fw inception sweep; sweep closes through
+  update-task.sh, whose sovereignty gate refuses the agent under CLAUDECODE, so the
+  advice is a dead end. Their working path: operator runs fw inception decide T-xxx
+  go --i-am-human. Fix: either make the recovery path an operator one-liner in the
+  message, or make the decision write and its finalisation one step so no half-done
+  state exists.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T18:56:12Z
-last_update: 2026-11-24T18:56:12Z
-date_finished: null
+last_update: '2026-11-24T19:00:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-24T19:00:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5404: Half-done inception decision: Watchtower says 'the agent session can recover this (fw inception sweep)' but the sovereignty gate refuses the agent
