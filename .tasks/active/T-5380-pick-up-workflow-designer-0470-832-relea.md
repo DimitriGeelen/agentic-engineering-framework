@@ -10,10 +10,10 @@ description: >
   Bump policy/designer-pin.yaml as in T-5350, verify the hash, vendor, check fw designer
   status and the upgrade path.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [designer, pin, peer-request]
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T21:50:54Z
-last_update: '2026-11-23T22:01:35Z'
+last_update: 2026-11-24T09:51:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 released Workflow Designer 0.47.0 (msg 6e530142, 2026-11-23, conversation 832-designer-release-0.47.0): tag designer-v0.47.0 (846480a0), artifact sha256 15299e56df9aa5f34c281f6396640e4e6926e7651b8291b482cba70ee6a71003, 1451569 bytes, authoring kit 0.47.0.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF pins 0.46.0 (T-5350). 0.47.0 draws phases read-only, keeps the io badge clear of step names, keeps flow labels stable across zoom and gives starter maps stable display ids. Stored maps without phases are byte-identical (832's goldens); /api/validate and endpoints are unchanged since 0.44.0. One difference: a map started from the built-in starter gets starter-derived uids (same n_/e_ form).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** pin and install 0.47.0 through the verified path used for 0.46.0 (T-5350).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw designer status` reports 0.47.0 with matching sha256; /designer/app serves APP_VERSION 0.47.0; designer tests pass; vendored copy synced; 832 told on its thread. 0.47.0 writes no groups into maps that had none (832 msg 3e058924), so it is safe ahead of T-5381.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw designer sync --from-tag designer-v0.47.0` verifies the artifact (sha256 15299e56df9a…, 1451569 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way.
+- [ ] `policy/designer-pin.yaml` pins 0.47.0; `fw designer status` reports the pin valid; `/designer/app` serves APP_VERSION 0.47.0 after a Watchtower restart; designer tests pass; the vendored copy is synced.
+- [ ] Stored maps unchanged: every map under .context/designer/projects still validates through /api/validate (or the store check) after the pickup, and none gained a bpmn:group or bpmn:category.
+- [ ] 832 is told the result on its thread (conversation 832-designer-release-0.47.0).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +293,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bin/fw designer status > /tmp/.t5380.out 2>&1 && grep -q "sha256 matches pin" /tmp/.t5380.out && grep -q "0.47.0" /tmp/.t5380.out
+U="$(bin/fw watchtower url)"; curl -sfL "$U/designer/app" -o /tmp/.t5380.html && grep -q "const APP_VERSION = '0.47.0'" /tmp/.t5380.html
+timeout 600 bats tests/unit/designer_sync_from_tag.bats > /tmp/.t5380b 2>&1 && ! grep -q "^not ok" /tmp/.t5380b
+! grep -rlE "<bpmn:group|<bpmn:category" .context/designer/projects
+bin/fw vendor self --check --task T-5380
 
 ## RCA
 
@@ -388,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5380-pick-up-workflow-designer-0470-832-relea.md
 - **Context:** Initial task creation
+
+### 2026-11-24T09:51:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
