@@ -69,8 +69,17 @@ An outside contributor never sees our PR process. The workflow map (aef-github-p
 ## Open Questions
 
 - **IW-1: Who posts the process comment and its step updates: a standing routine rule (sync cron) or an operator runme per post?**
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-11-24 verbatim "a, make it routine" — the 2-hourly `fw issues sync` posts and updates it, no per-post approval.
 - **IW-2: Where does the public map live (proposed: generated `docs/contributing/pr-workflow.md`, Mermaid, linked on bleeding-edge)?**
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-11-24 — no generated page; the designer's PNG export, in CONTRIBUTING.md "Pull Request Process" (shipped by T-5395, live on GitHub).
 - **IW-3: One sticky comment edited per step, or one comment per step?**
+  confidence: 2
+  disposition: answered
+  rationale: one sticky comment edited as the PR moves (proposed in the journey doc, not contested by the operator); the review recommendation stays its own comment.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -170,6 +179,11 @@ Operator 2026-11-24: the PR workflow map was pushed as a commit and linked from 
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-24 — who posts the PR process comment
+- **Chose:** routine: `fw issues sync` (2-hourly) posts the process comment on each outside PR and edits it as the PR moves. Operator, verbatim: "a, make it routine".
+- **Why:** the contributor must see the process from the moment the PR opens; a per-post operator runme would leave the gap the journey shows.
+- **Rejected:** an operator runme per post (b).
 
 ## Decision
 
