@@ -12,10 +12,10 @@ description: >
   spec regenerate. 0 stored maps carry either today. Carry both verbatim (no aef extension)
   with a byte round-trip test, before phases reach the store.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [designer, corpus, peer-request]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T09:43:55Z
-last_update: '2026-11-24T09:46:06Z'
+last_update: '2026-11-24T09:57:54Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,6 +86,23 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-24T09:57:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5381: Corpus tooling refuses bpmn:group and drops root bpmn:category: carry designer phases verbatim before 832 T-1491 ships
@@ -93,20 +110,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 (msgs 8dccabe1, 3e058924, conversation 832-phases-editing-T-1491; design 832 docs/reports/T-1491-phases-editing.md) will let people create phases in the designer, written as plain BPMN: a root `<bpmn:category name="Fase">` with `<bpmn:categoryValue value="…"/>`, process-level `<bpmn:group categoryValueRef="…">` with optional `<bpmn:documentation>`, and a BPMNShape per group. 832 holds phase creation for maps we store until we confirm this task.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** tools/corpus_spec.py `parse_map` hard-refuses any identified process child not in TYPE_TO_TAG (~783, "unsupported BPMN element", the T-2614 anti-data-loss rule), so `fw corpus explain|overlay|conformance|lint` (all parse through it) would refuse a map with a group. A root `bpmn:category` is not read at all, so `generate` (fw corpus spec regenerate) would lose it. Measured 2026-11-24: 0 stored maps carry either.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** carry `bpmn:group` (with its documentation and categoryValueRef) and root `bpmn:category`/`categoryValue` through parse_map → spec → generate verbatim, without an aef extension and without loosening the refusal for anything else.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a map with phases parses, lints, explains and regenerates with the group and category intact (byte round-trip of those elements); maps without phases are byte-identical to today; any other unsupported element is still refused.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `parse_map` accepts process-level `bpmn:group` (id, categoryValueRef, optional name and `bpmn:documentation`) and root-level `bpmn:category` with its `bpmn:categoryValue` children, carried in the spec verbatim (no aef extension); `generate` emits them back in their original positions.
+- [x] Round trip: a fixture map with two phases (category + two categoryValues + two groups, one with documentation) → parse_map → generate reproduces the category and group elements byte-identically; `fw corpus lint`, explain and conformance accept it.
+- [x] Maps without phases are unchanged: every map in .context/designer/projects and the corpus fixtures parse → generate exactly as before (existing golden/round-trip tests unchanged); a genuinely unsupported process child (fixture) is still refused with the same "unsupported BPMN element" error.
+- [x] Hermetic tests in tests/unit/test_t5381_corpus_phases.py (pytest, no skips); existing corpus_spec/corpus_lint/corpus_explain/corpus_conformance tests keep their results.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,6 +312,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5381_corpus_phases.py
+bin/fw vendor self --check --task T-5381
 
 ## RCA
 
@@ -309,6 +330,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a designer map carrying phases (bpmn:group / bpmn:category) would be refused by every fw corpus command and lose its phase list on regenerate. Found before any such map reached the store (832 asked first).
+
+**Root cause:** parse_map's element model covers flow nodes, flows and lanes only; the T-2614 rule turns every other identified process child into a hard refusal, and root-level siblings of the process are not read.
+
+**Why structurally allowed:** the corpus model grew from the maps AEF itself authored, none of which used BPMN artifacts (group, category); the designer's feature set moved ahead of it.
+
+**Prevention:** the new tests pin a phased map's round trip; the refusal for other unsupported elements stays pinned.
 
 ## Evolution
 
@@ -374,6 +403,15 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-24 — how phases are carried and where they are emitted
+- **Chose:** keep each element's literal source text (cut out with expat byte offsets) in `spec["groups"]`, `spec["categories"]` (root, after the process) and `spec["categories_before_process"]`. A literal is used only if it means the same thing under the emitted root's namespace declarations; otherwise the stable `_raw_xml` form is used. emit_map writes the groups after the last sequenceFlow (BPMN schema order: artifacts follow flow elements, and source order among groups is kept) and each category on the side of the process it came from.
+- **Why:** `_raw_xml` alone is stable from pass to pass but not byte-identical to the source: it adds `xmlns:bpmn` and writes `/>` as ` />`. The literal text gives a true byte round trip, and the fallback keeps regenerate a fixpoint.
+- **Rejected:** an aef extension (ruled out by the task); keeping each group's exact position among nodes and flows (emit_map already rebuilds nodes and then flows, so no other element keeps its position either). Group BPMNShapes are DI, which emit_map writes for no element; that is unchanged.
+
+### 2026-11-24 — evidence
+- Corpus tests: 409 passed before, 417 passed after (the same 409 plus 8 new).
+- parse_map→emit_map on 46 maps (17 store latest versions + 29 tests/fixtures .bpmn): sha256 of the output (or of the refusal) identical before and after.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -390,3 +428,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5381-corpus-tooling-refuses-bpmngroup-and-dro.md
 - **Context:** Initial task creation
+
+### 2026-11-24T09:57:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

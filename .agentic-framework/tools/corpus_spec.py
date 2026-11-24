@@ -34,6 +34,7 @@ import subprocess
 import sys
 import urllib.request
 import xml.etree.ElementTree as ET
+import xml.parsers.expat
 from pathlib import Path
 from xml.sax.saxutils import escape, quoteattr
 
@@ -577,6 +578,80 @@ def _single_process(root):
     return procs[0]
 
 
+# ── T-5381: designer phases (832 T-1491) — plain BPMN, carried verbatim ───────
+#
+# A phase is a root <bpmn:category> whose <bpmn:categoryValue> children name the
+# phases, plus one process-level <bpmn:group categoryValueRef=…> per phase (with
+# optional name and <bpmn:documentation>). No aef extension: the spec carries the
+# elements as their literal source text and emit_map writes that text back, so the
+# elements round-trip byte for byte. Their BPMNShapes are DI, which emit_map does
+# not write for any element. Nothing else is admitted: every other identified
+# process child is still refused (T-2614).
+
+#: (parent local name, child local name) pairs carried verbatim as phases.
+_PHASE_ELEMENTS = {("definitions", "category"), ("process", "group")}
+
+_TAG_END = re.compile(rb"""<[^"'>]*(?:(?:"[^"]*"|'[^']*')[^"'>]*)*>""")
+
+
+def _phase_slices(xml_text: str) -> dict:
+    """{(local, id): literal source text} for every phase element.
+
+    ElementTree keeps no source offsets, so expat is run over the same bytes to
+    cut the element out exactly as written."""
+    data = xml_text.encode("utf-8")
+    p = xml.parsers.expat.ParserCreate(namespace_separator=" ")
+    stack, open_, out = [], [], {}
+
+    def start(name, attrs):
+        uri, _, local = name.rpartition(" ")
+        parent = stack[-1] if stack else None
+        hit = (uri == BPMN_NS and parent is not None and parent[0] == BPMN_NS
+               and (parent[1], local) in _PHASE_ELEMENTS and attrs.get("id"))
+        open_.append((local, attrs.get("id"), p.CurrentByteIndex) if hit else None)
+        stack.append((uri, local))
+
+    def end(name):
+        stack.pop()
+        rec = open_.pop()
+        if rec is None:
+            return
+        local, eid, begin = rec
+        m = _TAG_END.match(data, begin)
+        if m is None:
+            return
+        if m.group().endswith(b"/>"):  # empty element: the start tag is all of it
+            stop = m.end()
+        else:  # the end event sits on "</…>"
+            stop = data.find(b">", p.CurrentByteIndex) + 1
+        if stop > begin:
+            out[(local, eid)] = data[begin:stop].decode("utf-8")
+
+    p.StartElementHandler, p.EndElementHandler = start, end
+    try:
+        p.Parse(data, True)
+    except xml.parsers.expat.ExpatError:
+        return {}
+    return out
+
+
+def _phase_raw(el, slices: dict) -> str:
+    """The element's literal source text when it means exactly the same thing
+    under the emitted document's namespace declarations (_ROOT_NS); otherwise the
+    stable _raw_xml form (a foreign BPMN prefix, a prefix only the source root
+    declared). Either form re-parses to itself, so regenerate is a fixpoint."""
+    raw = _raw_xml(el)
+    lit = slices.get((el.tag.split("}")[-1], el.get("id")))
+    if lit is None:
+        return raw
+    decls = " ".join(f"xmlns:{k}={quoteattr(v)}" for k, v in _ROOT_NS.items())
+    try:
+        wrapped = ET.fromstring(f"<w {decls}>{lit}</w>")
+    except ET.ParseError:
+        return raw
+    return lit if len(wrapped) == 1 and _raw_xml(wrapped[0]) == raw else raw
+
+
 def parse_map(xml_text: str) -> dict:
     prefixes = _source_prefixes(xml_text)
     parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))
@@ -599,6 +674,7 @@ def parse_map(xml_text: str) -> dict:
         break
 
     proc = _single_process(root)
+    slices = _phase_slices(xml_text)
     proc_ext = _ext(proc, _PROCESS_EXT)
     wm = proc_ext.get("workflowMeta", {})
     spec = {
@@ -633,6 +709,14 @@ def parse_map(xml_text: str) -> dict:
             spec["pool_name"] = part.get("name")
     if doc:
         spec["doc"] = doc
+    # T-5381: root-level phase categories, on the side of the process they sat.
+    seen_proc = False
+    for c in root:
+        if c is proc:
+            seen_proc = True
+        elif isinstance(c.tag, str) and c.tag == _q("category"):
+            key = "categories" if seen_proc else "categories_before_process"
+            spec.setdefault(key, []).append(_phase_raw(c, slices))
 
     node_lane = {}
     lanes = []
@@ -768,6 +852,9 @@ def parse_map(xml_text: str) -> dict:
             if raw:
                 f["raw_children"] = raw
             flows.append(f)
+        elif local == "group" and el.tag == _q("group"):
+            # T-5381: a designer phase — carried verbatim, in source order.
+            spec.setdefault("groups", []).append(_phase_raw(el, slices))
         elif (local is not None and el.get("id")
                 and local not in ("laneSet", "extensionElements")):
             # T-2614: silent skips destroyed data (aef-inception-flow subProcess
@@ -1000,6 +1087,9 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
       f'processRef="Process_{mid}"/>')
     a("  </bpmn:collaboration>")
     a("")
+    for raw in spec.get("categories_before_process", []):  # T-5381
+        a(f"  {raw}")
+        a("")
     a(f'  <bpmn:process id="Process_{mid}" isExecutable="true">')
     a("    <bpmn:extensionElements>")
     a(f'      <aef:workflowMeta id={quoteattr(mid)} version="{version}" '
@@ -1131,7 +1221,16 @@ def emit_map(spec: dict, version: int = 1, compat_alias: bool | None = None) -> 
         for raw in f.get("raw_children", []):
             a(f"      {raw}")
         a("    </bpmn:sequenceFlow>")
+    # T-5381: phase groups are BPMN artifacts — schema order puts them after
+    # the flow elements; source order among them is kept.
+    if spec.get("groups"):
+        a("")
+        for raw in spec["groups"]:
+            a(f"    {raw}")
     a("  </bpmn:process>")
+    for raw in spec.get("categories", []):  # T-5381: root, after the process
+        a("")
+        a(f"  {raw}")
     a("</bpmn:definitions>")
     return "\n".join(L) + "\n"
 
