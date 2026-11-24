@@ -333,6 +333,11 @@ test -f .context/designer/projects/aef-github-pr-intake/meta.json
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-24 — as-is PR workflow drawn (arc-027 baseline)
+- **What changed:** map `aef-github-pr-intake` (spec docs/designs/aef-github-pr-intake.yaml, store v1–v3, commit bf8373472) lints clean on all three versions; /api/validate 0 errors, 3 warnings (gateway branches labelled but without conditions). The designer accepts only three lane authorities, so Contributor/Agent = initiative, GitHub CI/Review panel = authority, Operator = sovereignty. The corpus census baseline moved 49 -> 52 with the reason recorded.
+- **Plan impact:** this is the as-is baseline; arc-027's role chain (T-5022..T-5028) can now start from it and PR #116's record.
+- **Triggered:** none filed. Not yet checked: that the map renders correctly in the designer UI (only that the page returns 200).
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
