@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5381: Corpus tooling refuses bpmn:group and drops root bpmn:category: carry designer phases verbatim before 832 T-1491 ships
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T10:57:44Z
+# ============================================================================
+
+task_id: T-5381
+task_name: "Corpus tooling refuses bpmn:group and drops root bpmn:category: carry designer phases verbatim before 832 T-1491 ships"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-24T09:43:55Z
+completed: 2026-11-24T10:57:14Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-24T10:44:06+01:00
+last_commit: 2026-11-24T11:57:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — corpus tooling must carry bpmn:group/category before 832 phases editing (msg 8dccabe1). carry designer phases (bpmn:group, root bpmn:category) through parse_map/emit_map verbatim. criterion 1 restated to what was built (groups after the last flow, schema order); corpus suite 281/281, phases test 8/8
+
+# Key outcomes
+outcomes:
+  - '`parse_map` accepts process-level `bpmn:group` (id, categoryValueRef, optional name and `bpmn:documentation`) and root-level `bpmn:category` with its `bpmn:categoryValue` children, carried in the spec verbatim (no aef extension); `generate` emits categories back on their original side of the process and groups after the last flow in source order. (Restated 2026-11-24 by the parent: "in their original positions" was not built for groups — generate already rebuilds nodes and flows in a fixed order and BPMN schema order puts artifacts after flow elements; the group and category elements themselves round-trip byte-identically, criterion 2.)'
+  - 'Round trip: a fixture map with two phases (category + two categoryValues + two groups, one with documentation) → parse_map → generate reproduces the category and group elements byte-identically; `fw corpus lint`, explain and conformance accept it.'
+  - 'Maps without phases are unchanged: every map in .context/designer/projects and the corpus fixtures parse → generate exactly as before (existing golden/round-trip tests unchanged); a genuinely unsupported process child (fixture) is still refused with the same "unsupported BPMN element" error.'
+  - 'Hermetic tests in tests/unit/test_t5381_corpus_phases.py (pytest, no skips); existing corpus_spec/corpus_lint/corpus_explain/corpus_conformance tests keep their results.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-24 — how phases are carried and where they are emitted'
+    chose: 'keep each element''s literal source text (cut out with expat byte offsets) in `spec["groups"]`, `spec["categories"]` (root, after the process) and `spec["categories_before_process"]`. A literal is used only if it means the same thing under the emitted root''s namespace declarations; otherwise the stable `_raw_xml` form is used. emit_map writes the groups after the last sequenceFlow (BPMN schema order: artifacts follow flow elements, and source order among groups is kept) and each category on the side of the process it came from.'
+    rationale: '`_raw_xml` alone is stable from pass to pass but not byte-identical to the source: it adds `xmlns:bpmn` and writes `/>` as ` />`. The literal text gives a true byte round trip, and the fallback keeps regenerate a fixpoint.'
+    alternatives_rejected: ['an aef extension (ruled out by the task); keeping each group''s exact position among nodes and flows (emit_map already rebuilds nodes and then flows, so no other element keeps its position either). Group BPMNShapes are DI, which emit_map writes for no element; that is unchanged.']
+  - decision: '2026-11-24 — evidence'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/corpus_spec.py'
+  - '.fabric/components/tests-unit-test_t5381_corpus_phases.yaml'
+  - '.tasks/active/T-5381-corpus-tooling-refuses-bpmngroup-and-dro.md'
+  - 'tests/unit/test_t5381_corpus_phases.py'
+  - 'tools/corpus_spec.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T10:44:06'
+    action: 'T-5381: capture — corpus tooling must carry bpmn:group/category before 832 phases editing (msg 8dccabe1)'
+  - time: '2026-11-24T11:06:15'
+    action: 'T-5381: carry designer phases (bpmn:group, root bpmn:category) through parse_map/emit_map verbatim'
+  - time: '2026-11-24T11:57:12'
+    action: 'T-5381: criterion 1 restated to what was built (groups after the last flow, schema order); corpus suite 281/281, phases test 8/8'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 73 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, corpus, peer-request]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 73
+  commits: 4
+  files_changed: 8
+  lines_added: 970
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-24T10:58:00Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5381-corpus-tooling-refuses-bpmngroup-and-dro.md
+generated_by: context-agent-hybrid
