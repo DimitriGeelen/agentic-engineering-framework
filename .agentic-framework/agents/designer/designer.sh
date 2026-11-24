@@ -90,6 +90,27 @@ do_status() {
         echo "  status:       ${_c_yel}NOT SYNCED${_c_off}"
         _not_synced_guidance
     fi
+    _refusal_mapping_check "$ver" || return 1
+    return 0
+}
+
+# T-5398: the validator refusal mapping names the validator by versioned path, and a
+# re-pin is "one mapping edit". T-5390 re-pinned without it and the pickup's checks
+# stayed green (test_t5189 went red at a later, unrelated close). Status is what every
+# pickup runs, so it checks the mapping too. Silent where the mapping does not exist
+# (consumer projects).
+_refusal_mapping_check() {
+    local want="$1" map="$PROJECT_ROOT/docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.yaml"
+    [ -f "$map" ] || return 0
+    local mpath mver
+    mpath="$(awk '/^  validator:/{f=1;next} f&&/^    path:/{print $2;exit}' "$map")"
+    mver="$(awk '/^  validator:/{f=1;next} f&&/^    version:/{print $2;exit}' "$map")"
+    if [ "$mver" != "$want" ] || [ ! -f "$PROJECT_ROOT/$mpath" ]; then
+        echo "  refusal map:  ${_c_red}STALE — names validator ${mver:-?} (${mpath:-?}), pin is ${want}${_c_off}"
+        echo "                update sources.validator (path, version, sha256) in ${map#"$PROJECT_ROOT"/}"
+        return 1
+    fi
+    echo "  refusal map:  ${_c_grn}names validator ${mver} ✓${_c_off}"
     return 0
 }
 

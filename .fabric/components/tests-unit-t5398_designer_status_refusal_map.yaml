@@ -1,0 +1,21 @@
+id: tests/unit/t5398_designer_status_refusal_map.bats
+name: t5398_designer_status_refusal_map
+type: script
+subsystem: tests
+location: tests/unit/t5398_designer_status_refusal_map.bats
+tags: []
+
+purpose: "T-5398: `fw designer status` checks that the validator refusal mapping names the pinned validator."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-24
+created_by: unknown
