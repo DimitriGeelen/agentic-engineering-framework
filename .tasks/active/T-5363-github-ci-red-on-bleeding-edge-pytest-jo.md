@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T18:26:47Z
-last_update: 2026-11-22T18:45:39Z
+last_update: 2026-11-24T10:08:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,6 +66,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-23T15:12:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (1-fabric-paths, 0-dependents); tier=2 
+      (workflow:build); effort=8 (lines=315,acs=6)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-11-22T18:30:51Z'
@@ -109,9 +118,9 @@ The operator said to fix it ("yes, please fix that").
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The Pytest job in `.github/workflows/test.yml` installs Pillow, and so does any other job that runs those tests. A local check shows the 8 files import and pass with the CI's install set.
-- [ ] The Playwright job's failure is diagnosed from a real run log (`gh run view <id> --log`), with the cause written here, and fixed or filed as its own task.
-- [ ] The bats job's 6 h overrun is diagnosed (which file or test hangs, from the run log), with the cause written here, and fixed or filed as its own task.
+- [x] The Pytest job in `.github/workflows/test.yml` installs Pillow, and so does any other job that runs those tests. A local check shows the 8 files import and pass with the CI's install set.
+- [x] The Playwright job's failure is diagnosed from a real run log (`gh run view <id> --log`), with the cause written here, and fixed or filed as its own task.
+- [x] The bats job's 6 h overrun is diagnosed (which file or test hangs, from the run log), with the cause written here, and fixed or filed as its own task.
 - [ ] After the change is pushed, a bleeding-edge run is checked and its job results are recorded here.
 
 ### Human
@@ -300,6 +309,9 @@ The operator said to fix it ("yes, please fix that").
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
 grep -qi "pillow" .github/workflows/test.yml
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5189_validator_refusal_mapping.py tests/unit/test_decide_commit.py tests/unit/test_file_route_extensions.py tests/unit/t3580_round8_test.py > /tmp/.t5363-py.out 2>&1 && grep -q passed /tmp/.t5363-py.out
+timeout 600 bats tests/unit/t3837_doctor_errexit_captures.bats tests/unit/t4689_working_ignore_rail.bats tests/unit/t4706_watchtower_live_guard.bats > /tmp/.t5363-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t5363-bats.out
+bin/fw vendor self --check --task T-5363
 
 ## RCA
 
@@ -400,3 +412,13 @@ grep -qi "pillow" .github/workflows/test.yml
 
 ### 2026-11-22T18:45:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-24 — CI diagnosis from run 45252098987 (worker w-t5363)
+Run 45252098987 (bleeding-edge, head includes 757951d85). Run 45363251065 was still in progress.
+- **Pytest:** Pillow fix works (0 `No module named 'PIL'`; the 8 files PASS in CI). 4 failed / 7775 passed:
+  1. `test_t5189_validator_refusal_mapping.py` x2: `vendor/designer/validate-workflow-0.43.0.py` deleted by the T-5273 re-pin. Red locally too. Mapping re-pointed at 0.47.0 (same 80 codes, the only diff is a docstring); the test now reads the path from the mapping. Local: 2 failed -> 7 passed.
+  2. `test_file_route_extensions.py::test_every_linker_dir_is_viewable`: depends on test order. A reload of `web.shared` under a tmp PROJECT_ROOT drops the repo-declared `scripts/` (T-5172). Reproduced locally by running `test_arcs_routes.py` (and 3 other reloaders) first. `tests/unit/conftest.py` now also restores `VIEWABLE_DIR_PREFIXES` and `_ARTEFACT_PATH_RE` (keyed per attribute). Local: 1 failed -> 49 passed.
+  3. `t3580_round8_test.py` env.json: CI has no `claude`, so the review dispatch dies at worker-binary resolution before it writes env.json. Reproduced with claude hidden from PATH; the test now stubs claude. Local without claude: 1 failed -> 75 passed.
+- **Bats:** the hang is fixed (the job completes, 3 h 7 m). 40 failed of 10674. Fixed here: the T-4200 two-line `rc=$?` in `lib/arc.sh` arc_resume (red locally); the working-ignore rail now ignores `agent-notices.jsonl`, `watchtower-extensions.json` and `watchtower.host` (red locally); t4706 `BATS_TEST_FILENAME` is readonly in bats-core HEAD, which CI installs, so it is now set through `env` (11/11 locally). Filed the rest, by cause: T-5382 (fw doctor exits 2 on the runner, 9 tests), T-5383 (tests assume a root runner, 3), T-5384 (tools missing on the runner with no probe-and-skip: termlink, MCP server, ollama, docker, tmux, opencode, unshare, 17), T-5385 (git 2.56 verbs `history`/`repo`, 1), T-5386 (4 CI-only reds, cause not yet read).
+- **Playwright:** setup works (922 passed). 14 failed: page-height caps (/, /approvals, /approvals/content, /bvp, /config, /metrics, /risks, /tasks, /inception/T-2715), badge-ok contrast 4.09, /approvals mobile overflow, and `/api/v1/search` 503. All 14 are covered by T-5365; none fixed here.
+- Commit a7f3b694f. Criterion 4 (a bleeding-edge run checked after push) is left for the parent.
