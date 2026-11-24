@@ -101,6 +101,9 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Unit-suite corpus run (tests/unit, nightly)
 3 3 * * * root cd "/opt/999-Agentic-Engineering-Framework" && /opt/999-Agentic-Engineering-Framework/agents/audit/unit-suite.sh 2>&1 | logger -t agentic-cron; exit ${PIPESTATUS[0]}
 
+# Unit-suite run on node1 (ring20 pool, nightly)
+33 3 * * * root cd "/opt/999-Agentic-Engineering-Framework" && /opt/999-Agentic-Engineering-Framework/scripts/node1/node1-nightly.sh 2>&1 | logger -t agentic-cron; exit ${PIPESTATUS[0]}
+
 # Integration-suite corpus run (tests/integration, nightly)
 33 1 * * * root cd "/opt/999-Agentic-Engineering-Framework" && /opt/999-Agentic-Engineering-Framework/agents/audit/integration-suite.sh 2>&1 | logger -t agentic-cron; exit ${PIPESTATUS[0]}
 
