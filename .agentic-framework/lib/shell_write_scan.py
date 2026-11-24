@@ -74,7 +74,9 @@ LEDGER_NAMES = (LEDGER_NAME, "standing-delegations.jsonl", "accepted-misses.json
                 # T-5205: the operator's subscription registry change log (T-5200)
                 "subscription-changes.jsonl",
                 # T-5235: the operator's recorded rulings
-                "recorded-rulings.jsonl")
+                "recorded-rulings.jsonl",
+                # T-5394: the operator's MCP egress approvals
+                "mcp-egress-approvals.jsonl")
 # T-5205: the subscription registry itself (T-5200) is matched by path, since its basename
 # `subscriptions.yaml` is too generic to guard everywhere.
 OPERATOR_POLICY_SUFFIXES = ("policy/subscriptions.yaml",)
@@ -89,7 +91,7 @@ def _is_operator_policy(path: str) -> bool:
 MENTION_RE = re.compile(
     r"\.tasks\b|tasks/(?:active|completed|templates)\b|/(?:active|completed)/T-\d"
     r"|human-ac-ticks\.jsonl|standing-delegations\.jsonl|accepted-misses\.jsonl"
-    r"|subscription-changes\.jsonl|recorded-rulings\.jsonl|policy/subscriptions\.yaml|toggle-ac",
+    r"|subscription-changes\.jsonl|recorded-rulings\.jsonl|mcp-egress-approvals\.jsonl|policy/subscriptions\.yaml|toggle-ac",
     re.I,
 )
 # T-4159: a task-file NAME (`T-NNNN[-slug].md`) with the path word in front of it. It is

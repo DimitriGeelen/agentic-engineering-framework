@@ -1318,6 +1318,15 @@ generate_claude_code_config() {
         ]
       },
       {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-mcp-egress"
+          }
+        ]
+      },
+      {
         "matcher": "mcp__termlink__termlink_channel_post",
         "hooks": [
           {
