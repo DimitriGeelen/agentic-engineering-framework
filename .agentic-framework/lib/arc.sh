@@ -1618,9 +1618,9 @@ arc_resume() {
     fi
     id="$(_arc_normalize_input "$id")"
     _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
-    local json rc
-    json=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" brief "$id" --json)
-    rc=$?
+    local json rc=0
+    # T-5363: `|| rc=$?` — a bare `rc=$?` on the next line is dead under set -e (T-4200).
+    json=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" brief "$id" --json) || rc=$?
     if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ]; then
         return "$rc"
     fi

@@ -8,8 +8,8 @@ This file sits beside contracts v2 but is **not part of the frozen set**: it is 
 
 ## What the relation is
 
-The designer's validator (`vendor/designer/validate-workflow-0.43.0.py`, 832's, pinned at
-0.43.0) checks a **map** at design time. The runtime refuses a **proposal** against a live
+The designer's validator (`vendor/designer/validate-workflow-0.47.0.py`, 832's, pinned at
+0.47.0; first mapped against 0.43.0, whose 80 codes 0.47.0 emits unchanged — T-5363) checks a **map** at design time. The runtime refuses a **proposal** against a live
 instance and writes a refusal record (`refusal.schema.json`, v2). The two never meet as
 records: a validator finding has no instance, no requester and no ledger position, so it can
 never be a refusal record, and a refusal record can never be produced by the validator.
@@ -180,7 +180,7 @@ For some of them a design-time check could exist if the map carried the data:
 capability-profile and binding refs (`privilege_exceeds_profile`, `capability_unsupported`),
 action/script contracts (`command_substitution`, `unresolved_reference` for actions), and
 component scope (`unmeasured_component_scope`). That is a question for a later validator
-version, not a defect in 0.43.0.
+version, not a defect in 0.47.0.
 
 ## How this is checked
 

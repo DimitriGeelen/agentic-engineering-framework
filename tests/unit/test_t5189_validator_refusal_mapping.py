@@ -2,7 +2,8 @@
 
 Checks docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.{yaml,md}
 against the two sources they map: contracts v2 refusal.schema.json (reason_code enum) and
-832's vendored validator vendor/designer/validate-workflow-0.43.0.py (every code it emits).
+832's vendored validator named by the mapping's sources.validator.path (every code it emits).
+The path is read from the mapping, so a designer re-pin is one mapping edit (path, version, sha256).
 """
 import ast
 import hashlib
@@ -15,8 +16,8 @@ import yaml
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 V2 = ROOT / "docs/research/executable-workflow/contracts/v2"
 SCHEMA = V2 / "refusal.schema.json"
-VALIDATOR = ROOT / "vendor/designer/validate-workflow-0.43.0.py"
 MAP_YAML = V2 / "validator-refusal-mapping.yaml"
+VALIDATOR = ROOT / yaml.safe_load(MAP_YAML.read_text())["sources"]["validator"]["path"]
 MAP_MD = V2 / "validator-refusal-mapping.md"
 CODE_RE = re.compile(r"[EWI]-[A-Z0-9][A-Z0-9-]*")
 

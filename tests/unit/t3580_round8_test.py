@@ -321,6 +321,10 @@ class TestEnvironmentIsData:
         (stub / "termlink").chmod(0o755)
         (stub / "sleep").write_text("#!/bin/sh\nexit 0\n")
         (stub / "sleep").chmod(0o755)
+        # T-5363: a review dispatch resolves the claude worker binary from PATH and dies before
+        # writing env.json when there is none (GitHub CI has no claude). Never launched here.
+        (stub / "claude").write_text("#!/bin/sh\nexit 0\n")
+        (stub / "claude").chmod(0o755)
         proj = tmp_path / "proj"
         proj.mkdir()
         dd = tmp_path / "dd"

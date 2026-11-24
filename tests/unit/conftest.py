@@ -53,7 +53,14 @@ _REPO = Path(__file__).resolve().parents[2]
 # Module globals that a reload recomputes from the environment and that nothing
 # else restores. Keyed by attribute name so this stays a list of *names*, not a
 # list of modules — any already-imported module carrying one gets restored.
-_FRAGILE_ATTRS = ("PROJECT_ROOT",)
+#
+# T-5363: VIEWABLE_DIR_PREFIXES (and the linker regex built from it) are merged at
+# import from the project's .framework.yaml (T-5172). A reload under a tmp
+# PROJECT_ROOT drops the repo's declared folders (`scripts/`), and every later
+# test that imported the tuple by name disagrees with `is_viewable_path` — CI saw
+# test_every_linker_dir_is_viewable fail this way. Only PROJECT_ROOT is pinned to
+# the repo when it has no "before"; the others are only restored.
+_FRAGILE_ATTRS = ("PROJECT_ROOT", "VIEWABLE_DIR_PREFIXES", "_ARTEFACT_PATH_RE")
 
 
 def _fragile_modules():
@@ -85,17 +92,17 @@ def _restore_fragile_module_globals():
     because the pollution we care about most — `importlib.reload` — can introduce the
     attribute on a module that did not carry it when the test started.
     """
-    saved = {id(mod): (mod, attr, getattr(mod, attr)) for mod, attr in _fragile_modules()}
+    saved = {(id(mod), attr): (mod, attr, getattr(mod, attr)) for mod, attr in _fragile_modules()}
 
     yield
 
     for mod, attr in _fragile_modules():
-        key = id(mod)
+        key = (id(mod), attr)
         if key in saved:
             _, _, original = saved[key]
             if getattr(mod, attr, None) != original:
                 setattr(mod, attr, original)
-        else:
+        elif attr == "PROJECT_ROOT":
             # Module appeared (or gained the attribute) during the test. There is no
             # "before" to restore, so pin the repo root — a dangling tmp path here is
             # exactly the T-1995 failure.

@@ -34,8 +34,10 @@ teardown() {
 }
 
 # Run watchtower.sh as if from a test file inside the fake live checkout.
+# T-5363: through `env` — bats-core HEAD (what CI installs) makes BATS_TEST_FILENAME
+# readonly, so a shell prefix assignment fails before watchtower.sh ever runs.
 _wt_as_live_test() {
-    BATS_TEST_FILENAME="$LIVE/tests/unit/fake.bats" PROJECT_ROOT="$LIVE" FRAMEWORK_ROOT="$FWROOT" \
+    env BATS_TEST_FILENAME="$LIVE/tests/unit/fake.bats" PROJECT_ROOT="$LIVE" FRAMEWORK_ROOT="$FWROOT" \
         bash "$FWROOT/bin/watchtower.sh" "$@"
 }
 
@@ -56,8 +58,8 @@ _wt_as_live_test() {
 
 @test "t4706: a temp PROJECT_ROOT is not refused (the control leg)" {
     mkdir -p "$TEST_TEMP_DIR/other/.context/working"
-    BATS_TEST_FILENAME="$LIVE/tests/unit/fake.bats" PROJECT_ROOT="$TEST_TEMP_DIR/other" FRAMEWORK_ROOT="$FWROOT" \
-        run bash "$FWROOT/bin/watchtower.sh" stop
+    run env BATS_TEST_FILENAME="$LIVE/tests/unit/fake.bats" PROJECT_ROOT="$TEST_TEMP_DIR/other" FRAMEWORK_ROOT="$FWROOT" \
+        bash "$FWROOT/bin/watchtower.sh" stop
     [ "$status" -eq 0 ]
     [[ "$output" == *"No PID file"* ]]
 }

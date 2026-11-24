@@ -100,7 +100,10 @@ fw_working_ignore_rules() {
         'estate-push-refused.jsonl' \
         'watchtower-outages.jsonl' \
         'judge-evidence/' \
-        'vendor-backup/'
+        'vendor-backup/' \
+        'agent-notices.jsonl' \
+        'watchtower-extensions.json' \
+        'watchtower.host'
 }
 
 # fw_working_keep_tracked
