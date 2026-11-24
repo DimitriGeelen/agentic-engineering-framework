@@ -457,8 +457,8 @@ jobs:
     \ collision class) \u2014 the runner takes its OWN overlap lock (.context/locks/unit-suite.lock,\
     \ skip-if-held logged exit 0) and never holds the audit lock itself."
 - id: node1-unit-suite-nightly
-  name: Unit-suite run on node1 (ring20 pool, weekly until batched)
-  schedule: 30 3 * * 6
+  name: Unit-suite run on node1 (ring20 pool, nightly)
+  schedule: 33 3 * * *
   command: /opt/999-Agentic-Engineering-Framework/scripts/node1/node1-nightly.sh
   source_file: agentic-audit.crontab
   origin_task: T-5392
@@ -467,11 +467,10 @@ jobs:
   - .context/audits/unit-suite/node1/*
   description: "T-5392 (operator 2026-11-24: turn it on now, tell ring20) — project-local\
     \ (scripts/node1/, not vendored). Builds the unit-suite bundle of HEAD, submits every\
-    \ node1-compatible tests/unit file to ring20's node1 (at most 12 open), holds while\
+    \ node1-compatible tests/unit file to ring20's node1 (at most 10 open), holds while\
     \ node1's feed health is not healthy (gives up after 3 h), collects results into\
     \ .context/audits/unit-suite/node1/<date>.yaml + LATEST.yaml. Exit 0 clean, 1 new\
-    \ failures, 3 incomplete (not sent / not collected), 2 setup error. WEEKLY Saturday 03:30 host time (02:30Z) at ring20 request (msg e869a338: a full\
-    \ one-file-per-job run takes 12-20 h and crowds node1) until files are batched per job; its own lock makes the next night skip while one runs."
+    \ failures, 3 incomplete (not sent / not collected), 2 setup error. 03:33 host time (02:33Z), after unit-suite-nightly (03:03); nightly agreed by ring20 (msg 1c9ce548: a full run is ~1-1.5 h on a free node), 10 open at most to leave room on node1; its own lock makes the next night skip while one runs."
 - id: integration-suite-nightly
   name: Integration-suite corpus run (tests/integration, nightly)
   schedule: 33 1 * * *

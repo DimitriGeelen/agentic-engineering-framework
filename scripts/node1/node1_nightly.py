@@ -57,7 +57,7 @@ CFG_DEFAULTS = {
     "NODE1_ENTRY_BATS": "aef2.bats",
     "NODE1_ENTRY_PYTEST": "aef2.pytest",
     "NODE1_ENV": "aef-unit-2",
-    "NODE1_MAX_OPEN": "12",
+    "NODE1_MAX_OPEN": "10",  # ring20 msg 1c9ce548 (2026-11-24): 10 leaves room on node1 (its own limit is 12)
     "NODE1_HOLD_POLL_S": "300",
     "NODE1_HOLD_MAX_S": "10800",
     "NODE1_POLL_S": "30",
