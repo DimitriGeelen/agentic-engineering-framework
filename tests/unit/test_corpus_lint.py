@@ -466,12 +466,18 @@ def test_live_corpus_all_versions_census():
     T-5227 baseline move (48 -> 49 versions, flagged held at 14), 2026-11-18.
     One ADD: `aef-inception-lifecycle@v1` (the inception lifecycle map with
     instances). It lints clean (checked: lint_map returns no findings), so the
-    flagged set is the same 14 names."""
+    flagged set is the same 14 names.
+
+    T-5389 baseline move (49 -> 52 versions, flagged held at 14), 2026-11-24.
+    Three ADDs: `aef-github-pr-intake@v1..v3` (the as-is outside-PR workflow
+    drawn from PR #116; saved three times while clearing /api/validate errors).
+    All three lint clean (checked: lint_map returns no findings for v1, v2, v3),
+    so the flagged set is the same 14 names."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
     targets = corpus_lint.collect_all_versions(store)
-    assert len(targets) == 49, [n for n, _ in targets]
+    assert len(targets) == 52, [n for n, _ in targets]
 
     findings, typed = [], []
     for name, xml_text in targets:
