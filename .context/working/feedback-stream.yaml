@@ -59182,3 +59182,21 @@ scan_id: R-43f95853
 task_id: T-4092
 payload:
   task_file: .tasks/active/T-4092-hotfix-v1810-emergency-lane-t-4035-t-408.md
+---
+kind: scan_emitted
+timestamp: '2026-11-24T10:07:04Z'
+scan_id: R-d7e52c19
+task_id: T-5380
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-24T10:07:04Z'
+scan_id: R-d7e52c19
+task_id: T-5380
+payload:
+  task_file: .tasks/active/T-5380-pick-up-workflow-designer-0470-832-relea.md
