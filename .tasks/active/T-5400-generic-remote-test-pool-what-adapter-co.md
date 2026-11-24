@@ -1,8 +1,10 @@
 ---
 id: T-5400
-name: "Generic remote test pool: what adapter contract would an optional, off-by-default framework runner need, with ring20/node1 as one implementation outside the framework?"
+name: "Generic remote test pool: what adapter contract would an optional, off-by-default
+  framework runner need, with ring20/node1 as one implementation outside the framework?"
 description: >
-  Inception: Generic remote test pool: what adapter contract would an optional, off-by-default framework runner need, with ring20/node1 as one implementation outside the framework?
+  Inception: Generic remote test pool: what adapter contract would an optional, off-by-default
+  framework runner need, with ring20/node1 as one implementation outside the framework?
 
 status: captured
 workflow_type: inception
@@ -14,8 +16,8 @@ related_tasks: []
 waiting_on: agent
 revisit_at: 2026-12-01
 created: 2026-11-24T16:56:11Z
-last_update: 2026-11-24T16:56:11Z
-date_finished: null
+last_update: '2026-11-24T17:00:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -24,6 +26,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-11-24T17:00:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=120,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5400: Generic remote test pool: what adapter contract would an optional, off-by-default framework runner need, with ring20/node1 as one implementation outside the framework?
