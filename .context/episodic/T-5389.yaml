@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5389: Designer map aef-github-pr-intake: the outside-PR workflow as PR #116 actually ran (as-is)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T11:39:20Z
+# ============================================================================
+
+task_id: T-5389
+task_name: "Designer map aef-github-pr-intake: the outside-PR workflow as PR #116 actually ran (as-is)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-24T11:20:22Z
+completed: 2026-11-24T11:38:56Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-24T12:21:00+01:00
+last_commit: 2026-11-24T12:38:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  spec — as-is PR workflow map from PR #116. designer map aef-github-pr-intake — as-is outside-PR workflow from PR #116. corpus census baseline 49 -> 52 (aef-github-pr-intake v1..v3, all lint clean; flagged set held at 14). Evolution entry
+
+# Key outcomes
+outcomes:
+  - 'Map `aef-github-pr-intake` exists in .context/designer/projects (saved through /api/save, e.g. `fw corpus spec generate <spec> --save --url "$(bin/fw watchtower url)"`), with its spec committed under docs/designs/ or the corpus spec location the other aef-* maps use.'
+  - 'Five lanes (Contributor, GitHub CI, Agent, Review panel, Operator) and the 8 CONTRIBUTING steps as nodes in order, each naming its real command or artefact from PR #116 (fw issues sync, T-5301, fw testhost run --pr, fw reviewer judge rung 5, runme pr116-recommend, merge, close/stage/be-tag); operator-only steps (post comment, merge, be-tag) sit in the Operator lane.'
+  - 'The two decision points are gateways (CI red: PR-caused or pre-existing on bleeding-edge; panel: green / not green → fix or escalate), and the known failure points are noted in node documentation.'
+  - '`fw corpus lint` accepts the map and /api/validate returns no errors; it opens at http://192.168.10.107:3000/designer/app.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/designer/projects/aef-github-pr-intake/meta.json'
+  - '.context/designer/projects/aef-github-pr-intake/v1.bpmn'
+  - '.context/designer/projects/aef-github-pr-intake/v2.bpmn'
+  - '.context/designer/projects/aef-github-pr-intake/v3.bpmn'
+  - '.tasks/active/T-5389-designer-map-aef-github-pr-intake-the-ou.md'
+  - 'docs/designs/aef-github-pr-intake.yaml'
+  - 'tests/unit/test_corpus_lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T12:21:00'
+    action: 'T-5389: spec — as-is PR workflow map from PR #116'
+  - time: '2026-11-24T12:23:52'
+    action: 'T-5389: designer map aef-github-pr-intake — as-is outside-PR workflow from PR #116'
+  - time: '2026-11-24T12:38:26'
+    action: 'T-5389: corpus census baseline 49 -> 52 (aef-github-pr-intake v1..v3, all lint clean; flagged set held at 14)'
+  - time: '2026-11-24T12:38:54'
+    action: 'T-5389: Evolution entry'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:github-contributions, designer, corpus]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 18
+  commits: 5
+  files_changed: 10
+  lines_added: 2343
+  lines_removed: 10
+  footprint_refreshed_at: '2026-11-24T11:39:35Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5389-designer-map-aef-github-pr-intake-the-ou.md
+generated_by: context-agent-hybrid
