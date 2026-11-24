@@ -59416,3 +59416,21 @@ scan_id: R-7a9dc02b
 task_id: T-5407
 payload:
   task_file: .tasks/active/T-5407-fw-termlink-dispatch-derives-tasktype-fr.md
+---
+kind: scan_emitted
+timestamp: '2026-11-24T22:37:43Z'
+scan_id: R-36961d30
+task_id: T-5405
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-24T22:37:43Z'
+scan_id: R-36961d30
+task_id: T-5405
+payload:
+  task_file: .tasks/active/T-5405-publishing-to-anthropic-claudeai-artifac.md

@@ -10,12 +10,12 @@ description: >
   default: fw init/fw upgrade write the deny rules into the project's .claude/settings.json,
   a config key switches it off, the egress gate classes these tools forbidden-by-default.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [security, egress, default, consumer]
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/config-file.sh, lib/config.sh, lib/init.sh, lib/mcp_egress.py, lib/publish_ban.py, lib/upgrade.sh, policy/mcp-egress.yaml, tests/unit/t5394_mcp_egress.bats, tests/unit/t5405_publish_ban.bats, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T19:03:56Z
-last_update: '2026-11-24T19:45:25Z'
-date_finished:
+last_update: 2026-11-24T22:33:29Z
+date_finished: 2026-11-24T22:33:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,26 @@ bin/fw vendor self --check --task T-5405
 
 ### 2026-11-24T19:14:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-24T22:33:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** operator: render review skip for a registry row, as for T-5396
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-36961d30
+- **Timestamp:** 2026-11-24T22:37:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `fw init` writes `permissions.deny` entries for the publish tools (the seven above) into a new project's `.claude/settings.json`; `fw upgrade` adds the missing ones to an existing consumer, keeping ev
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: `fw init` writes `permissions.deny` entries for the publish tools (the seven above) into a new project's `.claude/settings.json`; `fw upgrade` adds th`
+- **AC#3 (Agent)** — `policy/mcp-egress.yaml` classes these tools `forbidden` (a class above `egress`); the hook refuses them with a message that names the ban, how the operator switches it off, and the one-use bypass (op
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/mcp-egress.yaml in: `policy/mcp-egress.yaml` classes these tools `forbidden` (a class above `egress`); the hook refuses them with a message that names the ban, how the op`
+- **AC#5 (Agent)** — Hermetic tests for every leg above; `tests/unit/upgrade_fresh_machine_simulation.bats` green; vendored copies synced. This project's own `.claude/settings.json` is changed only through an operator run
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: Hermetic tests for every leg above; `tests/unit/upgrade_fresh_machine_simulation.bats` green; vendored copies synced. This project's own `.claude/sett`

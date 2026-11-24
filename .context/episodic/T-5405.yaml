@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5405: Publishing to Anthropic (claude.ai artifacts, Claude Docs, design sync) blocked by default in every AEF project; operator can switch off or approve one use
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-24T22:38:13Z
+# ============================================================================
+
+task_id: T-5405
+task_name: "Publishing to Anthropic (claude.ai artifacts, Claude Docs, design sync) blocked by default in every AEF project; operator can switch off or approve one use"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-24T19:03:56Z
+completed: 2026-11-24T22:33:29Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-24T20:04:39+01:00
+last_commit: 2026-11-24T20:33:26+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scoped — publishing to Anthropic blocked by default in every AEF project (operator 2026-11-24). publishing to Anthropic blocked by default — PUBLISH_TO_ANTHROPIC key, deny rules via init/upgrade, egress class forbidden, doctor/audit line. task file — Agent criteria ticked, verification lines
+
+# Key outcomes
+outcomes:
+  - '`fw init` writes `permissions.deny` entries for the publish tools (the seven above) into a new project''s `.claude/settings.json`; `fw upgrade` adds the missing ones to an existing consumer, keeping every other deny/allow entry; idempotent.'
+  - 'Config key `PUBLISH_TO_ANTHROPIC` in `lib/config.sh` FW_CONFIG_REGISTRY (default `deny`), whose description cites the operator ruling; with `allow`, `fw upgrade` removes exactly these entries and init does not add them; setting it to `allow` is refused under agent control (operator-only, same detection as `fw egress approve`).'
+  - '`policy/mcp-egress.yaml` classes these tools `forbidden` (a class above `egress`); the hook refuses them with a message that names the ban, how the operator switches it off, and the one-use bypass (operator-only, explicit flag naming the ban). Ordinary egress approvals do not open them.'
+  - '`fw doctor` and `fw audit` report "publishing to Anthropic: blocked (default) / allowed by operator (date) / NOT blocked (rules missing)"; missing rules with the key at `deny` is a FAIL.'
+  - 'Hermetic tests for every leg above; `tests/unit/upgrade_fresh_machine_simulation.bats` green; vendored copies synced. This project''s own `.claude/settings.json` is changed only through an operator runme (T-5403 rule); the worker prepares it.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config-file.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/mcp_egress.py'
+  - '.agentic-framework/lib/publish_ban.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/policy/mcp-egress.yaml'
+  - '.agentic-framework/web/blueprints/config.py'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - '.fabric/components/lib-publish_ban.yaml'
+  - '.fabric/components/tests-unit-t5405_publish_ban.yaml'
+  - 'lib/config-file.sh'
+  - 'lib/config.sh'
+  - 'lib/init.sh'
+  - 'lib/mcp_egress.py'
+  - 'lib/publish_ban.py'
+  - 'lib/upgrade.sh'
+  - 'policy/mcp-egress.yaml'
+  - '.tasks/active/T-5405-publishing-to-anthropic-claudeai-artifac.md'
+  - 'tests/unit/t5394_mcp_egress.bats'
+  - 'tests/unit/t5405_publish_ban.bats'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T20:04:39'
+    action: 'T-5405: scoped — publishing to Anthropic blocked by default in every AEF project (operator 2026-11-24)'
+  - time: '2026-11-24T20:33:04'
+    action: 'T-5405: publishing to Anthropic blocked by default — PUBLISH_TO_ANTHROPIC key, deny rules via init/upgrade, egress class forbidden, doctor/audit line'
+  - time: '2026-11-24T20:33:26'
+    action: 'T-5405: task file — Agent criteria ticked, verification lines'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 209 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, egress, default, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 209
+  commits: 4
+  files_changed: 28
+  lines_added: 1352
+  lines_removed: 34
+  footprint_refreshed_at: '2026-11-24T22:38:22Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5405-publishing-to-anthropic-claudeai-artifac.md
+generated_by: context-agent-hybrid
