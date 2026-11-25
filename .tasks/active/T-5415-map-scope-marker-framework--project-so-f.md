@@ -1,8 +1,14 @@
 ---
 id: T-5415
-name: "Map scope marker (framework | project) so fw vendor ships only framework-process maps"
+name: "Map scope marker (framework | project) so fw vendor ships only framework-process
+  maps"
 description: >
-  T-5393 finding (operator 2026-11-24): every map in .context/designer/projects ships to every consumer, including maps about developing AEF itself (aef-github-pr-intake: our GitHub, review panel, PR #116) and scratch drafts (draft-t2584-scratch). Add a machine-readable scope on aef:workflowMeta (name to be agreed with 832, who proposed adding it to its designer skill rule 1), mark each existing map, and make fw vendor copy only scope=framework. Same class as the T-5392 genericity finding.
+  T-5393 finding (operator 2026-11-24): every map in .context/designer/projects ships
+  to every consumer, including maps about developing AEF itself (aef-github-pr-intake:
+  our GitHub, review panel, PR #116) and scratch drafts (draft-t2584-scratch). Add
+  a machine-readable scope on aef:workflowMeta (name to be agreed with 832, who proposed
+  adding it to its designer skill rule 1), mark each existing map, and make fw vendor
+  copy only scope=framework. Same class as the T-5392 genericity finding.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T09:41:18Z
-last_update: 2026-11-25T09:41:18Z
-date_finished: null
+last_update: '2026-11-25T09:45:41Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-25T09:45:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5415: Map scope marker (framework | project) so fw vendor ships only framework-process maps
