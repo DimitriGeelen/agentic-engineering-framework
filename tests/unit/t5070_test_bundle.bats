@@ -108,3 +108,11 @@ bundle() { ( source "$LIB"; PROJECT_ROOT="$R" fw_test_bundle "$@" ); }
     ! grep -Eqi 'node1|relay|ring20|T-[0-9]' <<<"$output" || false
     ! grep -Eqi 'node1|relay|ring20' "$LIB"
 }
+
+@test "T-5411: the bundle builds under a comma-decimal numeric locale (cron here runs LC_NUMERIC=de_DE)" {
+    locale -a 2>/dev/null | grep -qi '^de_DE\.utf-\?8$' || skip "de_DE.UTF-8 locale not installed on this host"
+    run env LC_NUMERIC=de_DE.UTF-8 bash -c "source '$LIB'; PROJECT_ROOT='$R' fw_test_bundle --out '$T/b.bundle'"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"size_bytes:"*" MB, no cap)"* ]]
+    [[ "$output" != *"invalid number"* ]]
+}
