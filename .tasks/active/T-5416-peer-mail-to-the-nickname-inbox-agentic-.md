@@ -1,8 +1,16 @@
 ---
 id: T-5416
-name: "Peer mail to the nickname inbox 'agentic-engineering-framework' is never read: AEF's receiver should read it (or the hub alias it) and alerts should name the senders"
+name: "Peer mail to the nickname inbox 'agentic-engineering-framework' is never read:
+  AEF's receiver should read it (or the hub alias it) and alerts should name the senders"
 description: >
-  Found 2026-11-25 via fw sidecar alerts: orphan inbox inbox:cacc73ea32b121dd/agentic-engineering-framework holds 10 unread posts no agent reads. Senders: 0909-boot-into-timeshift-snapshots (watchtower-file-links-0909, ~2026-10-21, unanswered a month; answered today), 150-skills-manager (C-010; 150 reported it got no reply), 050-email-archive (escalation + 5 nudges; also reached us on the real address). Peers derive the address from the repo/project name. Fix candidates: receiver subscribes to known alias addresses of this project; or hub-side alias; plus a session-start alert that lists orphan posts addressed to this project by sender and age, not only counts.
+  Found 2026-11-25 via fw sidecar alerts: orphan inbox inbox:cacc73ea32b121dd/agentic-engineering-framework
+  holds 10 unread posts no agent reads. Senders: 0909-boot-into-timeshift-snapshots
+  (watchtower-file-links-0909, ~2026-10-21, unanswered a month; answered today), 150-skills-manager
+  (C-010; 150 reported it got no reply), 050-email-archive (escalation + 5 nudges;
+  also reached us on the real address). Peers derive the address from the repo/project
+  name. Fix candidates: receiver subscribes to known alias addresses of this project;
+  or hub-side alias; plus a session-start alert that lists orphan posts addressed
+  to this project by sender and age, not only counts.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T11:08:21Z
-last_update: 2026-11-25T11:08:21Z
-date_finished: null
+last_update: '2026-11-25T11:15:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-25T11:15:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5416: Peer mail to the nickname inbox 'agentic-engineering-framework' is never read: AEF's receiver should read it (or the hub alias it) and alerts should name the senders
