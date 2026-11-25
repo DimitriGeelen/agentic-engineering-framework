@@ -1,5 +1,8 @@
-# scripts/node1/pool-client.sha256 — T-5410: sha256 of ring20's pool client, verified by
-# node1_nightly.py before every run. Re-pin only by operator action:
+# scripts/node1/pool-client.sha256 — T-5410/T-5417: sha256 of ring20's pool client and the
+# files it loads (`<sha256>  <absolute path>`, the client first), verified by node1_nightly.py
+# before every run and every pool-client call. Re-pin only by operator action:
 #   scripts/node1/node1-nightly.sh --repin
 # pinned 2026-11-25 (operator yes 2026-11-24; ring20's 19:28Z republish)
+# poold.py pinned 2026-11-25, T-5417 (operator yes 2026-11-25; ring20's 2026-11-24 20:58Z republish)
 37328a0b43da6ff691d3d3865ab94af4b5e47f1bed082adabc77bdfbf98cb1b2  /usr/local/lib/ring20-pool-client/pool-client.py
+f7a96c5b6f2d4a5a28f0672b1932213fc849d156d3af38624a45a4338385d9e9  /usr/local/lib/ring20-pool-client/poold.py

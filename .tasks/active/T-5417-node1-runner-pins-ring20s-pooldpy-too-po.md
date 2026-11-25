@@ -90,9 +90,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The pin file lists pool-client.py (37328a0b…) and poold.py (f7a96c5b6f2d4a5a28f0672b1932213fc849d156d3af38624a45a4338385d9e9), each verified against the installed file before pinning; the T-5410 single-file pin still reads correctly (backward compatible).
-- [ ] A changed or missing poold.py stops the run (exit 2, nothing submitted) with a message naming poold.py and both hashes; `--repin` covers both files and stays operator-only; the report carries the sha256 of each pinned file; `--dry-run` shows match/mismatch per file.
-- [ ] Hermetic tests for each leg (poold mismatch stops, poold missing stops, both match runs, repin writes both, agent repin refused); all node1 tests green.
+- [x] The pin file lists pool-client.py (37328a0b…) and poold.py (f7a96c5b6f2d4a5a28f0672b1932213fc849d156d3af38624a45a4338385d9e9), each verified against the installed file before pinning; the T-5410 single-file pin still reads correctly (backward compatible).
+- [x] A changed or missing poold.py stops the run (exit 2, nothing submitted) with a message naming poold.py and both hashes; `--repin` covers both files and stays operator-only; the report carries the sha256 of each pinned file; `--dry-run` shows match/mismatch per file.
+- [x] Hermetic tests for each leg (poold mismatch stops, poold missing stops, both match runs, repin writes both, agent repin refused); all node1 tests green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,6 +279,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5392_node1_nightly.py -q > /tmp/.t5417t 2>&1 && grep -q " passed" /tmp/.t5417t && ! grep -q "failed" /tmp/.t5417t
+grep -q "^f7a96c5b6f2d4a5a28f0672b1932213fc849d156d3af38624a45a4338385d9e9  /usr/local/lib/ring20-pool-client/poold.py$" scripts/node1/pool-client.sha256
+python3 scripts/node1/node1_nightly.py --dry-run --limit 1 > /tmp/.t5417d 2>&1 && grep -q "pinned file match: /usr/local/lib/ring20-pool-client/poold.py found f7a96c5b6f2d4a5a28f0672b1932213fc849d156d3af38624a45a4338385d9e9 pinned f7a96c5b6f2d4a5a28f0672b1932213fc849d156d3af38624a45a4338385d9e9" /tmp/.t5417d  # needs: fixture
 
 ## RCA
 
