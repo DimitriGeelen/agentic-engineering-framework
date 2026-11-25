@@ -9,8 +9,8 @@ sources:
     path: docs/research/executable-workflow/contracts/v2/refusal.schema.json
     sha256: c4148a34b54ed8bf3e3cb7c75b79aba5cb6c0923b9ca28406cb9329d7c9cb857
   validator:
-    path: vendor/designer/validate-workflow-0.48.1.py
-    version: 0.48.1
+    path: vendor/designer/validate-workflow-0.49.0.py
+    version: 0.49.0
     sha256: 98e199b617d37e82730583fdb40822f9b5ac70f9df0a5548e7781088b30dc943
 reason_codes:
   unratified_procedure:
