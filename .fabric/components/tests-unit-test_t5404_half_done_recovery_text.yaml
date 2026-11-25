@@ -1,0 +1,21 @@
+id: tests/unit/test_t5404_half_done_recovery_text.py
+name: test_t5404_half_done_recovery_text
+type: script
+subsystem: tests
+location: tests/unit/test_t5404_half_done_recovery_text.py
+tags: []
+
+purpose: "T-5404: after a half-done inception decision, Watchtower says who can finish it."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-25
+created_by: unknown

@@ -1,0 +1,21 @@
+id: tests/unit/t5404_inception_sweep_operator_owned.bats
+name: t5404_inception_sweep_operator_owned
+type: script
+subsystem: tests
+location: tests/unit/t5404_inception_sweep_operator_owned.bats
+tags: []
+
+purpose: "T-5404: `fw inception sweep` under agent control and an operator-owned inception."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-25
+created_by: unknown
