@@ -59478,3 +59478,21 @@ scan_id: R-47b3a0c4
 task_id: T-5403
 payload:
   task_file: .tasks/active/T-5403-agents-cannot-change-hook-wiring-in-clau.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T08:45:30Z'
+scan_id: R-d650daed
+task_id: T-5411
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T08:45:30Z'
+scan_id: R-d650daed
+task_id: T-5411
+payload:
+  task_file: .tasks/active/T-5411-fw-test-bundle-fails-under-a-comma-decim.md

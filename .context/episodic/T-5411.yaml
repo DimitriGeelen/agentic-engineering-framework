@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5411: fw test bundle fails under a comma-decimal locale (cron LC_NUMERIC=de_DE): printf 50.2069 invalid number — first nightly node1 run sent nothing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-25T08:45:48Z
+# ============================================================================
+
+task_id: T-5411
+task_name: "fw test bundle fails under a comma-decimal locale (cron LC_NUMERIC=de_DE): printf 50.2069 invalid number — first nightly node1 run sent nothing"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-25T08:42:09Z
+completed: 2026-11-25T08:45:15Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-25T09:44:49+01:00
+last_commit: 2026-11-25T09:45:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw test bundle formats the size in awk — bash printf %.1f failed under cron's de_DE numeric locale (first nightly node1 run sent nothing). vendored copy
+
+# Key outcomes
+outcomes:
+  - '`lib/test-bundle.sh` formats the size without bash float printf; `LC_NUMERIC=de_DE.UTF-8 bin/fw test bundle …` succeeds on this host.'
+  - '`tests/unit/t5070_test_bundle.bats` gains a test that builds under `LC_NUMERIC=de_DE.UTF-8` (skipped with a reason only where that locale is not installed); suite green.'
+  - 'A scan of `lib/ bin/ agents/` for shell `printf` with `%…f`/`%.Nf` is recorded in the RCA; each hit fixed or noted safe.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/test-bundle.sh'
+  - '.tasks/active/T-5411-fw-test-bundle-fails-under-a-comma-decim.md'
+  - 'lib/test-bundle.sh'
+  - 'tests/unit/t5070_test_bundle.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-25T09:44:49'
+    action: 'T-5411: fw test bundle formats the size in awk — bash printf %.1f failed under cron''s de_DE numeric locale (first nightly node1 run sent nothing)'
+  - time: '2026-11-25T09:45:14'
+    action: 'T-5411: vendored copy'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [node1, bug, locale]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 3
+  files_changed: 7
+  lines_added: 540
+  lines_removed: 7
+  footprint_refreshed_at: '2026-11-25T08:45:56Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5411-fw-test-bundle-fails-under-a-comma-decim.md
+generated_by: context-agent-hybrid
