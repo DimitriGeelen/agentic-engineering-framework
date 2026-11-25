@@ -1,0 +1,21 @@
+id: scripts/node1/pool-client.sha256
+name: pool-client
+type: script
+subsystem: framework-core
+location: scripts/node1/pool-client.sha256
+tags: []
+
+purpose: "scripts/node1/pool-client.sha256 — T-5410: sha256 of ring20's pool client, verified by node1_nightly.py before every run."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-25
+created_by: unknown
