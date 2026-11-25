@@ -8,10 +8,10 @@ description: >
   Phases editable and showable (832 T-1502, T-1503). Stored maps unchanged. Same procedure
   as T-5390; fw designer status now also checks the refusal mapping (T-5398).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [designer, 832]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T19:49:48Z
-last_update: '2026-11-24T20:01:25Z'
+last_update: 2026-11-25T09:38:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 released Workflow Designer 0.49.0 (msg c1e7eabc, 2026-11-24): tag designer-v0.49.0 (b21b63df), artifact sha256 bc6830534a9b9ac8168f6ae251ed218ecc3fe53f8704cfdf7a1f35fe58c1253a, 1472593 bytes. It makes phases editable on maps that carry them (832 T-1502) and lets them be shown or hidden per row (T-1503). Operator 2026-11-25: "proceed as suggested".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** We pin 0.48.1 (T-5390). 832 reports that stored maps are unchanged (none carries phases; byte-identity goldens unchanged).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Pin and serve 0.49.0, verified against 832's MANIFEST at the tag, the same way T-5390 did it.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `policy/designer-pin.yaml` pins 0.49.0; Watchtower serves it; designer tests pass; every stored map validates as before. The refusal mapping names the right validator, which `fw designer status` now checks (T-5398).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw designer sync --from-tag designer-v0.49.0` verifies the artifact (sha256 bc6830534a9b…, 1472593 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way.
+- [ ] `policy/designer-pin.yaml` pins 0.49.0; `fw designer status` reports the pin valid AND the refusal mapping current; `/designer/app` serves APP_VERSION 0.49.0 after a Watchtower restart; designer tests pass; vendored copy synced.
+- [ ] Stored maps: per-map validation identical before and after (52 maps, 49 clean, same 3 pre-existing errors as T-5390 measured), none gained bpmn:group/category.
+- [ ] 832 is told the result on its thread (conversation 832-designer-release-0.49.0).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -157,6 +159,13 @@ bvp_scores_proposed:
      Write your commands BELOW this comment, one per line.
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
+-->
+bin/fw designer status > /tmp/.t5408.out 2>&1 && grep -q "sha256 matches pin" /tmp/.t5408.out && grep -q "0.49.0" /tmp/.t5408.out && grep -q "names validator 0.49.0" /tmp/.t5408.out
+U="$(bin/fw watchtower url)"; curl -sfL "$U/designer/app" -o /tmp/.t5408.html && grep -q "const APP_VERSION = '0.49.0'" /tmp/.t5408.html
+timeout 600 bats tests/unit/designer_sync_from_tag.bats > /tmp/.t5408b 2>&1 && ! grep -q "^not ok" /tmp/.t5408b
+! grep -rlE "<bpmn:group|<bpmn:category" .context/designer/projects
+bin/fw vendor self --check --task T-5408
+<!--
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # End a line with `# needs: fixture` if it must not be re-run unattended later by the audit (CTL-013, verify-queue); the gate still runs it (T-5268).
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
@@ -386,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5408-pick-up-workflow-designer-0490-832-relea.md
 - **Context:** Initial task creation
+
+### 2026-11-25T09:38:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
