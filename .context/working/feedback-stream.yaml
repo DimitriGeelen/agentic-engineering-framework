@@ -59496,3 +59496,129 @@ scan_id: R-d650daed
 task_id: T-5411
 payload:
   task_file: .tasks/active/T-5411-fw-test-bundle-fails-under-a-comma-decim.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T08:46:27Z'
+scan_id: R-232a75d4
+task_id: T-5410
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T08:46:27Z'
+scan_id: R-232a75d4
+task_id: T-5410
+payload:
+  task_file: .tasks/active/T-5410-node1-runner-checks-ring20s-pool-client-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T08:46:43Z'
+scan_id: R-44cea420
+task_id: T-5410
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T08:46:43Z'
+scan_id: R-44cea420
+task_id: T-5410
+payload:
+  task_file: .tasks/active/T-5410-node1-runner-checks-ring20s-pool-client-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T08:47:08Z'
+scan_id: R-ede3e8ba
+task_id: T-5410
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T08:47:08Z'
+scan_id: R-ede3e8ba
+task_id: T-5410
+payload:
+  task_file: .tasks/active/T-5410-node1-runner-checks-ring20s-pool-client-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T08:47:21Z'
+scan_id: R-58a7825b
+task_id: T-5410
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T08:47:21Z'
+scan_id: R-58a7825b
+task_id: T-5410
+payload:
+  task_file: .tasks/active/T-5410-node1-runner-checks-ring20s-pool-client-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T08:47:49Z'
+scan_id: R-85f27d7c
+task_id: T-5410
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T08:47:49Z'
+scan_id: R-85f27d7c
+task_id: T-5410
+payload:
+  task_file: .tasks/active/T-5410-node1-runner-checks-ring20s-pool-client-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T08:48:07Z'
+scan_id: R-96f994d5
+task_id: T-5410
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T08:48:07Z'
+scan_id: R-96f994d5
+task_id: T-5410
+payload:
+  task_file: .tasks/active/T-5410-node1-runner-checks-ring20s-pool-client-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T08:48:22Z'
+scan_id: R-1f8e59ce
+task_id: T-5410
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T08:48:22Z'
+scan_id: R-1f8e59ce
+task_id: T-5410
+payload:
+  task_file: .tasks/active/T-5410-node1-runner-checks-ring20s-pool-client-.md

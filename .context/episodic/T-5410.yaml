@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5410: node1 runner checks ring20's pool-client sha256 before every run and stops on an unknown one
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-25T08:48:40Z
+# ============================================================================
+
+task_id: T-5410
+task_name: "node1 runner checks ring20's pool-client sha256 before every run and stops on an unknown one"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-25T08:40:01Z
+completed: 2026-11-25T08:48:15Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-25T09:40:42+01:00
+last_commit: 2026-11-25T09:44:17+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scoped — pin and verify ring20's pool-client before each node1 run. pin ring20's pool client sha256; verify before every run and every pool-client call, exit 2 on mismatch/missing; operator-only --repin. fabric card for scripts/node1/pool-client.sha256
+
+# Key outcomes
+outcomes:
+  - '`scripts/node1/pool-client.sha256` (or a key in an existing node1 config file) pins `37328a0b43da6ff691d3d3865ab94af4b5e47f1bed082adabc77bdfbf98cb1b2`; the runner verifies the actual client before any stage/submit; on mismatch or missing it exits 2 without submitting, and the message shows both hashes and the re-pin route.'
+  - 'Re-pin is an operator action: a helper (e.g. `scripts/node1/node1-nightly.sh --repin` producing a runme, or a documented runme recipe) refuses under agent control and updates the pin only after showing the new hash.'
+  - 'The nightly report records `pool_client_sha256`; `--dry-run` prints the pin state (match / mismatch / missing) with no network.'
+  - 'Hermetic tests: match runs, mismatch stops with exit 2 and no submission, missing file stops, agent re-pin refused, report field present; existing node1 tests stay green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-25 — when the client is verified'
+    chose: 'once before the run (before the feed read, staging or any submit) AND before every pool-client call; a mid-run change stops further submits and marks the rest not sent / not collected.'
+    rationale: 'a run can take most of a day and ring20 republished three times in one evening; a start-only check would run a changed client for hours.'
+    alternatives_rejected: ['start-only check (window of a day); raising SetupError mid-loop (loses already-collected outcomes).']
+  - decision: '2026-11-25 — what is pinned'
+    chose: 'the resolved file `POOL_CLIENT` points at (`/usr/local/bin/pool-client` is a symlink to `pool-client.py`, so there is no separate wrapper to pin). - **Open (not in scope, for the operator):** `pool-client.py` loads its sibling `poold.py` (`load_poold`, for `validate_job`), and that file is not pinned. ring20 republished `poold.py` twice on 2026-11-24, so pinning it too would mean a re-pin after each of those. A follow-up task can pin it if the operator wants that.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/scripts-node1-pool-client.yaml'
+  - '.tasks/active/T-5410-node1-runner-checks-ring20s-pool-client-.md'
+  - 'scripts/node1/node1-nightly.sh'
+  - 'scripts/node1/node1_nightly.py'
+  - 'scripts/node1/pool-client.sha256'
+  - 'tests/unit/test_t5392_node1_nightly.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-25T09:40:42'
+    action: 'T-5410: scoped — pin and verify ring20''s pool-client before each node1 run'
+  - time: '2026-11-25T09:44:07'
+    action: 'T-5410: pin ring20''s pool client sha256; verify before every run and every pool-client call, exit 2 on mismatch/missing; operator-only --repin'
+  - time: '2026-11-25T09:44:17'
+    action: 'T-5410: fabric card for scripts/node1/pool-client.sha256'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [node1, ring20, trust]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 4
+  files_changed: 9
+  lines_added: 1024
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-25T08:48:54Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5410-node1-runner-checks-ring20s-pool-client-.md
+generated_by: context-agent-hybrid
