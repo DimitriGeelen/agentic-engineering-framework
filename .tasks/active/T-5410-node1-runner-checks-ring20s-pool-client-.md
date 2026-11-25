@@ -91,10 +91,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `scripts/node1/pool-client.sha256` (or a key in an existing node1 config file) pins `37328a0b43da6ff691d3d3865ab94af4b5e47f1bed082adabc77bdfbf98cb1b2`; the runner verifies the actual client before any stage/submit; on mismatch or missing it exits 2 without submitting, and the message shows both hashes and the re-pin route.
-- [ ] Re-pin is an operator action: a helper (e.g. `scripts/node1/node1-nightly.sh --repin` producing a runme, or a documented runme recipe) refuses under agent control and updates the pin only after showing the new hash.
-- [ ] The nightly report records `pool_client_sha256`; `--dry-run` prints the pin state (match / mismatch / missing) with no network.
-- [ ] Hermetic tests: match runs, mismatch stops with exit 2 and no submission, missing file stops, agent re-pin refused, report field present; existing node1 tests stay green.
+- [x] `scripts/node1/pool-client.sha256` (or a key in an existing node1 config file) pins `37328a0b43da6ff691d3d3865ab94af4b5e47f1bed082adabc77bdfbf98cb1b2`; the runner verifies the actual client before any stage/submit; on mismatch or missing it exits 2 without submitting, and the message shows both hashes and the re-pin route.
+- [x] Re-pin is an operator action: a helper (e.g. `scripts/node1/node1-nightly.sh --repin` producing a runme, or a documented runme recipe) refuses under agent control and updates the pin only after showing the new hash.
+- [x] The nightly report records `pool_client_sha256`; `--dry-run` prints the pin state (match / mismatch / missing) with no network.
+- [x] Hermetic tests: match runs, mismatch stops with exit 2 and no submission, missing file stops, agent re-pin refused, report field present; existing node1 tests stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +281,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5392_node1_nightly.py -q > /tmp/.t5410.out 2>&1 && grep -q passed /tmp/.t5410.out
+grep -q '^37328a0b43da6ff691d3d3865ab94af4b5e47f1bed082adabc77bdfbf98cb1b2 ' scripts/node1/pool-client.sha256
+out=$(env -u CLAUDECODE scripts/node1/node1-nightly.sh --dry-run --limit 1 2>&1); grep -q "pool client pin " <<<"$out"
+out=$(scripts/node1/node1-nightly.sh --repin 2>&1; echo "rc=$?"); grep -q "refused under agent control" <<<"$out" && grep -q "rc=2" <<<"$out"
 
 ## RCA
 
@@ -352,6 +356,15 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+### 2026-11-25 — when the client is verified
+- **Chose:** once before the run (before the feed read, staging or any submit) AND before every pool-client call; a mid-run change stops further submits and marks the rest not sent / not collected.
+- **Why:** a run can take most of a day and ring20 republished three times in one evening; a start-only check would run a changed client for hours.
+- **Rejected:** start-only check (window of a day); raising SetupError mid-loop (loses already-collected outcomes).
+
+### 2026-11-25 — what is pinned
+- **Chose:** the resolved file `POOL_CLIENT` points at (`/usr/local/bin/pool-client` is a symlink to `pool-client.py`, so there is no separate wrapper to pin).
+- **Open (not in scope, for the operator):** `pool-client.py` loads its sibling `poold.py` (`load_poold`, for `validate_job`), and that file is not pinned. ring20 republished `poold.py` twice on 2026-11-24, so pinning it too would mean a re-pin after each of those. A follow-up task can pin it if the operator wants that.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

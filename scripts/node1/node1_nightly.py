@@ -24,7 +24,15 @@ One run:
      and the failing files, each marked NEW unless it is on the exclusion list; the run
      status (complete | incomplete) and the exclusion file used, with its sha256.
 
---dry-run lists what would be sent and touches nothing on the network.
+Before anything is staged or submitted (T-5410) the pool client is hashed and compared
+with the pin in scripts/node1/pool-client.sha256: ring20 republishes its pool software on
+this host, and this runner executes it with this project's identity. A mismatch, a missing
+client or a missing pin stops the run with exit 2, nothing sent; the client is re-hashed
+before every pool-client call, so a mid-run republish stops the rest of the run too. Only
+the operator re-pins (`--repin`, refused under agent control). The report records
+pool_client_sha256.
+
+--dry-run lists what would be sent and the pin state, and touches nothing on the network.
 
 Exit: 0 run complete, no NEW failure; 1 run complete with NEW failures; 2 setup error
 (nothing sent); 3 run incomplete: some file was not sent or its result not collected
@@ -65,6 +73,7 @@ CFG_DEFAULTS = {
     "NODE1_STAGE_TIMEOUT_S": "1200",
     "NODE1_BUNDLE_MAX_MB": "64",                # node1's stage limit (T-5069)
     "POOL_CLIENT": "/usr/local/bin/pool-client",
+    "NODE1_POOL_CLIENT_PIN": str(HERE / "pool-client.sha256"),   # T-5410: the operator's pin
     "TERMLINK": "termlink",
 }
 
@@ -184,7 +193,8 @@ def build_report(*, run_id: str, commit: str, bundle_sha: str, discovered: int,
                  excluded: Sequence[str], exclusions: Iterable[str], to_send: Sequence[str],
                  outcomes: Dict[str, dict], not_sent: Dict[str, str], holds: List[dict],
                  started: str, finished: str, gave_up: Optional[str],
-                 exclude_file: str = "", exclude_sha256: str = "") -> dict:
+                 exclude_file: str = "", exclude_sha256: str = "",
+                 pool_client_sha256: str = "") -> dict:
     """outcomes: file → {status: passed|failed|timeout|not-collected, detail, name}.
     A failed or timed-out file not on the exclusion list is NEW. status is `incomplete`
     when any file was not sent or not collected: such a run is never green."""
@@ -228,6 +238,7 @@ def build_report(*, run_id: str, commit: str, bundle_sha: str, discovered: int,
         "gave_up": gave_up,
         "excluded_list": exclude_file,
         "excluded_list_sha256": exclude_sha256,
+        "pool_client_sha256": pool_client_sha256,
     }
 
 
@@ -268,6 +279,153 @@ def to_yaml(doc: dict) -> str:
         return json.dumps(doc, indent=1) + "\n"
 
 
+# ── T-5410: the pool client is pinned ───────────────────────────────────────────────
+
+HEX64 = re.compile(r"^[0-9a-f]{64}$")
+REPIN_CMD = "scripts/node1/node1-nightly.sh --repin"
+
+
+def resolve_client(client: str) -> Optional[Path]:
+    """The file that actually runs: PATH lookup for a bare name, then symlinks resolved
+    (/usr/local/bin/pool-client is a link to ring20's pool-client.py)."""
+    import shutil
+    found = shutil.which(client) if os.sep not in client else client
+    if not found:
+        return None
+    p = Path(found).resolve()
+    return p if p.is_file() else None
+
+
+def read_pin(pin_file: Path) -> Optional[str]:
+    """The first non-comment line's first word, when it is a lower-case sha256; else None."""
+    try:
+        text = pin_file.read_text()
+    except OSError:
+        return None
+    for line in text.splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            word = line.split()[0].lower()
+            return word if HEX64.match(word) else None
+    return None
+
+
+def check_pool_client(client: Optional[str] = None, pin_file: Optional[Path] = None) -> dict:
+    """state: match | mismatch | missing (no client file) | no-pin (pin file absent or unreadable)."""
+    client = client or cfg("POOL_CLIENT")
+    pin_file = Path(pin_file or cfg("NODE1_POOL_CLIENT_PIN"))
+    path = resolve_client(client)
+    found = None
+    if path is not None:
+        try:
+            found = file_sha256(path)
+        except OSError:
+            found = None
+    pinned = read_pin(pin_file)
+    if pinned is None:
+        state = "no-pin"
+    elif found is None:
+        state = "missing"
+    else:
+        state = "match" if found == pinned else "mismatch"
+    return {"state": state, "client": client, "path": str(path) if path else "", "found": found or "",
+            "pinned": pinned or "", "pin_file": str(pin_file)}
+
+
+def pin_message(chk: dict) -> str:
+    what = {"mismatch": "does not match the pin", "missing": "is missing",
+            "no-pin": "cannot be checked: the pin file is missing or holds no sha256"}[chk["state"]]
+    return (f"pool client {chk['path'] or chk['client']} {what}. "
+            f"found sha256 {chk['found'] or '(none)'}; pinned sha256 {chk['pinned'] or '(none)'} "
+            f"in {chk['pin_file']}. Nothing was submitted. If ring20 announced this release, the "
+            f"operator re-pins with `{REPIN_CMD}` (operator only; an agent hands it over as a runme: "
+            f"bin/fw runme new node1-repin --desc \"re-pin ring20's pool client\" -- "
+            f"'cd {HERE.parent.parent} && {REPIN_CMD}').")
+
+
+def _agent_ancestry() -> bool:
+    """A Claude process among this process's ancestors (copy of lib/issues.py, T-4108):
+    `env -u CLAUDECODE` clears the variable, not the parent chain."""
+    pid = os.getppid()
+    for _ in range(64):
+        if pid <= 1:
+            return False
+        try:
+            argv = Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\0")
+            stat = Path(f"/proc/{pid}/stat").read_text()
+        except OSError:
+            return False
+        names = {os.path.basename(x.decode(errors="replace")) for x in argv[:3] if x}
+        if names & {"claude", "claude-fw", "claude-code"} or any(
+                b"@anthropic-ai/claude-code" in x for x in argv[:3]):
+            return True
+        try:
+            pid = int(stat.rsplit(")", 1)[1].split()[1])
+        except (IndexError, ValueError):
+            return False
+    return False
+
+
+def is_agent() -> bool:
+    e = os.environ
+    return (e.get("CLAUDECODE") == "1" or bool(e.get("AI_AGENT"))
+            or bool(e.get("CLAUDE_CODE_ENTRYPOINT")) or _agent_ancestry())
+
+
+def repin(root: Path, confirm: Optional[str], ask: Callable[[str], str] = input,
+          commit: bool = True) -> int:
+    """Operator only. Shows the client's current sha256 against the pin; writes it only after
+    the operator confirms (typing `yes`, or --confirm-sha naming the exact hash shown)."""
+    chk = check_pool_client()
+    if is_agent():
+        print("node1-nightly: --repin is an operator action and is refused under agent control "
+              "(T-5410). Hand it over as one line:\n"
+              f"  bin/fw runme new node1-repin --desc \"re-pin ring20's pool client\" -- "
+              f"'cd {root} && {REPIN_CMD}'", file=sys.stderr)
+        return 2
+    print(f"pool client : {chk['path'] or chk['client']}")
+    print(f"pin file    : {chk['pin_file']}")
+    print(f"pinned      : {chk['pinned'] or '(none)'}")
+    print(f"found now   : {chk['found'] or '(none: client missing)'}")
+    print(f"state       : {chk['state']}")
+    if not chk["found"]:
+        print("node1-nightly: nothing to pin: the pool client is not there.", file=sys.stderr)
+        return 2
+    if chk["state"] == "match":
+        print("node1-nightly: the pin already matches; nothing to do.")
+        return 0
+    if confirm is not None:
+        if confirm.strip().lower() != chk["found"]:
+            print("node1-nightly: --confirm-sha does not equal the hash found now; pin unchanged.",
+                  file=sys.stderr)
+            return 2
+    else:
+        try:
+            answer = ask("Pin this sha256 as ring20's pool client? Only if ring20 announced the release. Type yes: ")
+        except EOFError:
+            answer = ""
+        if answer.strip().lower() != "yes":
+            print("node1-nightly: not confirmed; pin unchanged.", file=sys.stderr)
+            return 1
+    pin_file = Path(chk["pin_file"])
+    write_atomic(pin_file, (
+        "# scripts/node1/pool-client.sha256 — T-5410: sha256 of ring20's pool client, verified by\n"
+        "# node1_nightly.py before every run. Re-pin only by operator action:\n"
+        f"#   {REPIN_CMD}\n"
+        f"# pinned {iso(time.time())} by operator; previous {chk['pinned'] or '(none)'}\n"
+        f"{chk['found']}  {chk['path']}\n"))
+    print(f"node1-nightly: pinned {chk['found']} in {pin_file}")
+    if commit:
+        r = default_runner(["git", "-C", str(root), "commit", "-m",
+                            f"T-5410: re-pin ring20 pool client sha256 {chk['found'][:12]} (operator)",
+                            "--", str(pin_file)], timeout=120)
+        print((r.stdout or r.stderr).strip()[-400:])
+        if r.returncode != 0:
+            print("node1-nightly: the pin is written but not committed; commit "
+                  f"{display_path(pin_file, root)} by hand.", file=sys.stderr)
+    return 0
+
+
 # ── side effects ────────────────────────────────────────────────────────────────────
 
 Runner = Callable[..., subprocess.CompletedProcess]
@@ -289,9 +447,17 @@ class Node1Run:
         self.state = root / ".context/scratch/node1-pool-state"
         self.bundles = root / ".context/scratch/node1-bundles"
         self.report_dir = root / ".context/audits/unit-suite/node1"
+        self.pinned: Optional[str] = None       # T-5410: set once the client matched its pin
+        self.pin_broken: Optional[str] = None   # why the client stopped matching mid-run
 
     # -- pool-client / termlink
     def pc(self, *args: str, timeout: int = 180) -> subprocess.CompletedProcess:
+        """Every call re-hashes the client first: a client that no longer matches is never run."""
+        chk = check_pool_client()
+        if self.pinned is None or chk["state"] != "match" or chk["found"] != self.pinned:
+            self.pin_broken = self.pin_broken or pin_message(chk if chk["state"] != "match"
+                                                             else {**chk, "state": "mismatch"})
+            return subprocess.CompletedProcess([cfg("POOL_CLIENT"), *args], 126, "", self.pin_broken)
         return self.run([cfg("POOL_CLIENT"), "--hub", cfg("NODE1_POOL_HUB"), "--state", str(self.state),
                          "--window", cfg("NODE1_MAX_OPEN"), *args], timeout=timeout)
 
@@ -445,6 +611,13 @@ def submit_and_collect(nr: Node1Run, to_send: List[str], run_id: str, sha: str, 
     gave_up: Optional[str] = None
     max_open = int(cfg("NODE1_MAX_OPEN"))
     while queue or open_:
+        if nr.pin_broken:                       # T-5410: the client changed mid-run; run nothing more
+            gave_up = f"pool client changed mid-run: {nr.pin_broken}"
+            for f in queue:
+                not_sent[f] = gave_up
+            for name, f in open_.items():
+                outcomes[f] = {"status": "not-collected", "name": name, "detail": gave_up}
+            break
         if nr.now() >= deadline:
             for f in queue:
                 not_sent[f] = "run wall-clock cap reached before sending"
@@ -471,6 +644,9 @@ def submit_and_collect(nr: Node1Run, to_send: List[str], run_id: str, sha: str, 
             if r.returncode == 3:                # window full (pool-client's own count): retry later
                 queue.insert(0, f)
                 break
+            if r.returncode == 126 and nr.pin_broken:
+                queue.insert(0, f)
+                break
             if r.returncode != 0:
                 not_sent[f] = f"submit-cmd exit {r.returncode}: {(r.stderr or r.stdout).strip()[:200]}"
                 continue
@@ -494,8 +670,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--include-excluded", action="store_true", help="also send files on the exclusion list")
     ap.add_argument("--exclude-file", default=str(DEFAULT_EXCLUDE))
     ap.add_argument("--health", action="store_true", help="print node1's feed health and exit (0 healthy, 1 not)")
+    ap.add_argument("--repin", action="store_true",
+                    help="operator only: pin the pool client's current sha256 (shown first, confirmed)")
+    ap.add_argument("--confirm-sha", help="with --repin: confirm without a prompt by naming the hash shown")
+    ap.add_argument("--no-commit", action="store_true", help="with --repin: write the pin, do not commit it")
     o = ap.parse_args(argv)
     root = Path(os.environ.get("PROJECT_ROOT") or HERE.parent.parent).resolve()
+    if o.repin:
+        return repin(root, o.confirm_sha, commit=not o.no_commit)
 
     nr = Node1Run(root)
     if o.health:
@@ -522,7 +704,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     print(f"node1-nightly: discovered={len(files)} excluded={len(excluded)} to_send={len(to_send)} "
           f"(bats={nb} pytest={len(to_send) - nb})")
     print(f"node1-nightly: exclusion list {display_path(exclude_path, root)} sha256 {exclude_sha[:12]}")
+    pin = check_pool_client()
+    print(f"node1-nightly: pool client pin {pin['state']}: {pin['path'] or pin['client']} "
+          f"found {pin['found'] or '(none)'} pinned {pin['pinned'] or '(none)'}")
     if o.dry_run:
+        if pin["state"] != "match":
+            print(f"node1-nightly: a real run would stop here (exit 2): {pin_message(pin)}")
         for f in to_send:
             print(f"  would send  {f}")
         return 0
@@ -540,6 +727,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     gave_up: Optional[str] = None
     setup_error = False
     try:
+        if pin["state"] != "match":
+            raise SetupError(pin_message(pin))
+        nr.pinned = pin["found"]
         gave_up = nr.wait_healthy(holds, deadline)
         if gave_up:
             not_sent = {f: gave_up for f in to_send}
@@ -561,7 +751,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                           excluded=excluded, exclusions=exclusions, to_send=to_send, outcomes=outcomes,
                           not_sent=not_sent, holds=holds, started=started, finished=iso(nr.now()),
                           gave_up=gave_up, exclude_file=display_path(exclude_path, root),
-                          exclude_sha256=exclude_sha)
+                          exclude_sha256=exclude_sha, pool_client_sha256=pin["found"])
     nr.report_dir.mkdir(parents=True, exist_ok=True)
     text = to_yaml(report)
     dated = nr.report_dir / f"{started[:10]}.yaml"

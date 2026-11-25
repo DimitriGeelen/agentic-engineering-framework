@@ -20,6 +20,28 @@ spec.loader.exec_module(nn)
 
 NOW = 1_800_000_000.0
 
+import pytest  # noqa: E402
+
+CLIENT_BODY = b"#!/usr/bin/env python3\n# fake pool client\n"
+CLIENT_SHA = nn.hashlib.sha256(CLIENT_BODY).hexdigest()
+
+
+@pytest.fixture(autouse=True)
+def pinned_client(tmp_path, monkeypatch):
+    """T-5410: every test runs against a fake pool client and its own pin, never the host's."""
+    d = tmp_path / "_pin"
+    d.mkdir()
+    client = d / "pool-client.py"
+    client.write_bytes(CLIENT_BODY)
+    pin = d / "pool-client.sha256"
+    pin.write_text(f"# test pin\n{CLIENT_SHA}  {client}\n")
+    monkeypatch.setenv("POOL_CLIENT", str(client))
+    monkeypatch.setenv("NODE1_POOL_CLIENT_PIN", str(pin))
+    for k in ("CLAUDECODE", "AI_AGENT", "CLAUDE_CODE_ENTRYPOINT"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setattr(nn, "_agent_ancestry", lambda: False)
+    return client, pin
+
 
 def feed(state="healthy", age=10, stale=180, reasons=(), now=NOW):
     return {"generated_at": nn.iso(now - age), "stale_after_s": stale,
@@ -115,7 +137,9 @@ class FakeRun:
 
 def make_run(tmp_path, states, clock):
     run = FakeRun(states, clock)
-    return nn.Node1Run(tmp_path, run=run, sleep=clock.sleep, now=clock.now, log=lambda _m: None), run
+    nr = nn.Node1Run(tmp_path, run=run, sleep=clock.sleep, now=clock.now, log=lambda _m: None)
+    nr.pinned = CLIENT_SHA
+    return nr, run
 
 
 def test_hold_never_sends_and_gives_up_with_reason(tmp_path, monkeypatch):
@@ -238,6 +262,7 @@ def test_submit_loop_caps_open_jobs_and_collects_everything(tmp_path, monkeypatc
     files = [f"tests/unit/f{i}.bats" for i in range(8)] + ["tests/unit/test_p.py"]
     pool = FakePool(clock, tmp_path / ".context/scratch/node1-pool-state", fail={"tests/unit/f3.bats"})
     nr = nn.Node1Run(tmp_path, run=pool, sleep=clock.sleep, now=clock.now, log=lambda _m: None)
+    nr.pinned = CLIENT_SHA
     outcomes, not_sent, gave_up = nn.submit_and_collect(nr, files, "r1", "a" * 64, tmp_path / "jobs",
                                                         tmp_path / "res", [], NOW + 100_000)
     assert gave_up is None and not_sent == {}
@@ -315,6 +340,7 @@ def _main_env(tmp_path, monkeypatch, fail=(), max_wall=None):
     monkeypatch.setattr(nn, "git_head", lambda root: "c" * 40)
     ex = tmp_path / "my-exclusions.txt"
     ex.write_text("tests/unit/test_c.py\n")
+    _main_env.pool = pool
     return ex
 
 
@@ -385,3 +411,141 @@ def test_runner_lives_outside_every_vendored_path():
                  "agents/audit/node1-incompatible.txt", ".agentic-framework/agents/audit/node1_nightly.py",
                  ".agentic-framework/agents/audit/node1-nightly.sh"):
         assert not (ROOT / gone).exists(), gone
+
+
+# ── T-5410: the pool client is pinned and verified before every run ─────────────────
+
+def test_committed_pin_is_the_operator_approved_hash():
+    assert nn.read_pin(nn.HERE / "pool-client.sha256") == \
+        "37328a0b43da6ff691d3d3865ab94af4b5e47f1bed082adabc77bdfbf98cb1b2"
+
+
+def test_check_states_match_mismatch_missing_no_pin(pinned_client, tmp_path):
+    client, pin = pinned_client
+    assert nn.check_pool_client()["state"] == "match"
+    assert nn.check_pool_client(str(tmp_path / "nope"))["state"] == "missing"
+    assert nn.check_pool_client(pin_file=tmp_path / "nopin")["state"] == "no-pin"
+    client.write_bytes(CLIENT_BODY + b"# changed\n")
+    c = nn.check_pool_client()
+    assert c["state"] == "mismatch" and c["pinned"] == CLIENT_SHA and c["found"] != CLIENT_SHA
+
+
+def test_symlinked_client_is_hashed_at_its_target(pinned_client, tmp_path):
+    client, _ = pinned_client
+    link = tmp_path / "pool-client"
+    link.symlink_to(client)
+    c = nn.check_pool_client(str(link))
+    assert c["state"] == "match" and c["path"] == str(client.resolve())
+
+
+def test_main_match_runs_and_report_records_client_sha(tmp_path, monkeypatch):
+    ex = _main_env(tmp_path, monkeypatch)
+    assert nn.main(["--exclude-file", str(ex)]) == 0
+    assert _latest(tmp_path)["pool_client_sha256"] == CLIENT_SHA
+    assert _main_env.pool.submitted
+
+
+def test_main_mismatch_exits_two_submits_nothing_and_names_both_hashes(tmp_path, monkeypatch, capsys,
+                                                                     pinned_client):
+    client, _ = pinned_client
+    ex = _main_env(tmp_path, monkeypatch)
+    client.write_bytes(b"#!/bin/sh\necho replaced\n")
+    found = nn.hashlib.sha256(client.read_bytes()).hexdigest()
+    assert nn.main(["--exclude-file", str(ex)]) == 2
+    err = capsys.readouterr().err
+    assert found in err and CLIENT_SHA in err and "--repin" in err and "Nothing was submitted" in err
+    assert _main_env.pool.submitted == [] and _main_env.pool.calls == [], "no feed read, no pool-client call"
+    r = _latest(tmp_path)
+    assert r["pool_client_sha256"] == found and r["counts"]["submitted"] == 0
+
+
+def test_main_missing_client_exits_two(tmp_path, monkeypatch, capsys):
+    ex = _main_env(tmp_path, monkeypatch)
+    monkeypatch.setenv("POOL_CLIENT", str(tmp_path / "gone.py"))
+    assert nn.main(["--exclude-file", str(ex)]) == 2
+    assert "is missing" in capsys.readouterr().err and _main_env.pool.submitted == []
+
+
+def test_main_missing_pin_exits_two(tmp_path, monkeypatch, capsys, pinned_client):
+    _, pin = pinned_client
+    ex = _main_env(tmp_path, monkeypatch)
+    pin.unlink()
+    assert nn.main(["--exclude-file", str(ex)]) == 2
+    assert "pin file is missing" in capsys.readouterr().err and _main_env.pool.submitted == []
+
+
+def test_client_changed_mid_run_stops_further_submits(tmp_path, monkeypatch, pinned_client):
+    client, _ = pinned_client
+    monkeypatch.setenv("NODE1_MAX_OPEN", "1")
+    clock = Clock()
+    pool = FakePool(clock, tmp_path / ".context/scratch/node1-pool-state")
+    orig = pool.__call__
+
+    def swap(cmd, input=None, timeout=120):
+        r = orig(cmd, input, timeout)
+        if "submit-cmd" in cmd:
+            client.write_bytes(b"# republished\n")
+        return r
+
+    nr = nn.Node1Run(tmp_path, run=swap, sleep=clock.sleep, now=clock.now, log=lambda _m: None)
+    nr.pinned = CLIENT_SHA
+    files = ["tests/unit/a.bats", "tests/unit/b.bats", "tests/unit/c.bats"]
+    outcomes, not_sent, gave_up = nn.submit_and_collect(nr, files, "r", "a" * 64, tmp_path / "j",
+                                                        tmp_path / "o", [], NOW + 100_000)
+    assert len(pool.submitted) == 1 and gave_up and "changed mid-run" in gave_up
+    assert set(not_sent) == {"tests/unit/b.bats", "tests/unit/c.bats"}
+    assert outcomes["tests/unit/a.bats"]["status"] == "not-collected"
+
+
+def test_dry_run_prints_pin_state_without_network(tmp_path, monkeypatch, capsys, pinned_client):
+    client, _ = pinned_client
+    ex = _main_env(tmp_path, monkeypatch)
+    assert nn.main(["--dry-run", "--exclude-file", str(ex)]) == 0
+    assert "pool client pin match" in capsys.readouterr().out
+    client.write_bytes(b"x")
+    assert nn.main(["--dry-run", "--exclude-file", str(ex)]) == 0
+    out = capsys.readouterr().out
+    assert "pool client pin mismatch" in out and "would stop here (exit 2)" in out
+    assert _main_env.pool.calls == []
+
+
+def test_repin_refused_under_agent_control(pinned_client, monkeypatch, capsys):
+    client, pin = pinned_client
+    client.write_bytes(b"# new release\n")
+    before = pin.read_text()
+    monkeypatch.setenv("CLAUDECODE", "1")
+    assert nn.main(["--repin", "--confirm-sha", nn.file_sha256(client), "--no-commit"]) == 2
+    err = capsys.readouterr().err
+    assert "refused under agent control" in err and "bin/fw runme new node1-repin" in err
+    assert pin.read_text() == before
+
+
+def test_repin_refused_by_ancestry_even_without_env(pinned_client, monkeypatch):
+    client, pin = pinned_client
+    client.write_bytes(b"# new release\n")
+    before = pin.read_text()
+    monkeypatch.setattr(nn, "_agent_ancestry", lambda: True)
+    assert nn.main(["--repin", "--confirm-sha", nn.file_sha256(client), "--no-commit"]) == 2
+    assert pin.read_text() == before
+
+
+def test_repin_operator_sees_hash_and_confirms(pinned_client, capsys):
+    client, pin = pinned_client
+    client.write_bytes(b"# new release\n")
+    new = nn.file_sha256(client)
+    asked = []
+    assert nn.repin(ROOT, None, ask=lambda q: asked.append(q) or "no", commit=False) == 1
+    assert nn.read_pin(pin) == CLIENT_SHA
+    out = capsys.readouterr().out
+    assert new in out and CLIENT_SHA in out and asked
+    assert nn.repin(ROOT, None, ask=lambda q: "yes", commit=False) == 0
+    assert nn.read_pin(pin) == new and f"previous {CLIENT_SHA}" in pin.read_text()
+    assert nn.check_pool_client()["state"] == "match"
+
+
+def test_repin_confirm_sha_must_equal_the_hash_shown(pinned_client):
+    client, pin = pinned_client
+    client.write_bytes(b"# new release\n")
+    assert nn.repin(ROOT, "0" * 64, commit=False) == 2 and nn.read_pin(pin) == CLIENT_SHA
+    assert nn.repin(ROOT, nn.file_sha256(client), commit=False) == 0
+    assert nn.read_pin(pin) == nn.file_sha256(client)

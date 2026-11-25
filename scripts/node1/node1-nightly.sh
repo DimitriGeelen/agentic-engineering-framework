@@ -10,6 +10,7 @@
 #   scripts/node1/node1-nightly.sh --health           node1's feed health only
 #   scripts/node1/node1-nightly.sh --limit 20         a small real run
 #   scripts/node1/node1-nightly.sh                    the nightly run (cron: node1-unit-suite-nightly)
+#   scripts/node1/node1-nightly.sh --repin            OPERATOR ONLY: pin the pool client's new sha256 (T-5410)
 #
 # This project's ring20 adapter: scripts/ is not shipped by `fw vendor`, so it never
 # reaches a consumer. Exit codes: node1_nightly.py (3 = incomplete, never green).
@@ -25,7 +26,7 @@ export FRAMEWORK_ROOT PROJECT_ROOT
 
 for a in "$@"; do
     case "$a" in
-        --dry-run|--health|-h|--help) exec python3 -I "$SCRIPT_DIR/node1_nightly.py" "$@" ;;
+        --dry-run|--health|--repin|-h|--help) exec python3 -I "$SCRIPT_DIR/node1_nightly.py" "$@" ;;
     esac
 done
 
