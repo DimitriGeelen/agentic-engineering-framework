@@ -59640,3 +59640,21 @@ scan_id: R-a9d1986b
 task_id: T-5412
 payload:
   task_file: .tasks/active/T-5412-opencode-review-seat-pinned-to-glm-54-op.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T09:06:51Z'
+scan_id: R-97358d0b
+task_id: T-5413
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T09:06:51Z'
+scan_id: R-97358d0b
+task_id: T-5413
+payload:
+  task_file: .tasks/active/T-5413-pre-push-reds-after-t-5394t-5405t-5412-b.md
