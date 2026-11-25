@@ -8,12 +8,12 @@ description: >
   Phases editable and showable (832 T-1502, T-1503). Stored maps unchanged. Same procedure
   as T-5390; fw designer status now also checks the refusal mapping (T-5398).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [designer, 832]
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T19:49:48Z
-last_update: 2026-11-25T09:38:56Z
-date_finished:
+last_update: 2026-11-25T10:06:55Z
+date_finished: 2026-11-25T10:06:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -104,7 +104,7 @@ bvp_scores_proposed:
 - [x] `fw designer sync --from-tag designer-v0.49.0` verifies the artifact (sha256 bc6830534a9b…, 1472593 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way. (Tag object b21b63df as announced; kit SHA256SUMS 7ad136dd… = MANIFEST kit_sha256; validator 98e199b6…, 138795 B, identical to 0.48.1. First dry-run refused while the pin named the 0.48.1 kit, as in T-5390; pin updated from the tag, then dry-run and sync passed. Commit c81931b14.)
 - [x] `policy/designer-pin.yaml` pins 0.49.0; `fw designer status` reports the pin valid AND the refusal mapping current; `/designer/app` serves APP_VERSION 0.49.0 after a Watchtower restart; designer tests pass; vendored copy synced. (Refusal mapping now names vendor/designer/validate-workflow-0.49.0.py, version 0.49.0, sha unchanged; 0.48.1 build and validator removed at the root and pruned by vendor self, commit 9dba76d7e. Designer tests before/after: bats 70 ok, 0 not ok, 0 skip; pytest 82 passed. All five Verification lines pass; watchtower current.)
 - [x] Stored maps: per-map validation identical before and after (52 maps, 49 clean, same 3 pre-existing errors as T-5390 measured), none gained bpmn:group/category. (Measured: 52 maps, 49 without errors; aef-dispatch-loop v1 E-XML-NODE-UNASSIGNED, draft-inception-readiness v1 and v2 E-INCEPTION-NOT-SOVEREIGN; per-map exit codes, rule sets and file sha256 identical before/after.)
-- [ ] 832 is told the result on its thread (conversation 832-designer-release-0.49.0).
+- [x] 832 is told the result on its thread (conversation 832-designer-release-0.49.0).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -399,3 +399,21 @@ bin/fw vendor self --check --task T-5408
 ### 2026-11-25T09:38:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-25T10:06:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-651d194c
+- **Timestamp:** 2026-11-25T10:07:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `policy/designer-pin.yaml` pins 0.49.0; `fw designer status` reports the pin valid AND the refusal mapping current; `/designer/app` serves APP_VERSION 0.49.0 after a Watchtower restart; designer tests
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: `policy/designer-pin.yaml` pins 0.49.0; `fw designer status` reports the pin valid AND the refusal mapping current; `/designer/app` serves APP_VERSION`
