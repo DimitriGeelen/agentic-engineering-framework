@@ -959,7 +959,7 @@ EOF
     if [ "$decision" = "defer" ]; then
         echo ""
         "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --horizon later --skip-sovereignty --reason "Inception decision: DEFER — parking task" 2>&1 || \
-            echo -e "${YELLOW}Note: horizon update failed; recover with: $(_emit_user_command "inception sweep")${NC}" >&2
+            echo -e "${YELLOW}Note: horizon update failed; recover with: $(_emit_user_command "inception sweep $task_id")${NC}" >&2
     fi
 
     # Complete task if go or no-go (not defer)
@@ -985,7 +985,7 @@ EOF
                 echo "" >&2
                 echo -e "${RED}ERROR: status transition captured→started-work failed (exit $_uts_rc)${NC}" >&2
                 echo -e "${YELLOW}Decision was recorded but status is stuck. Recover with:${NC}" >&2
-                echo "  $(_emit_user_command "inception sweep")" >&2
+                echo "  $(_emit_user_command "inception sweep $task_id")" >&2
                 echo "  $(_emit_user_command "task verify $task_id")" >&2
                 return "$_uts_rc"
             fi
@@ -997,7 +997,7 @@ EOF
                 echo -e "${RED}ERROR: captured→started-work reported success but the task file says status: ${_current_status:-<none>} (lost write, T-4534)${NC}" >&2
                 echo -e "${YELLOW}Decision was recorded but status is stuck. Recover with:${NC}" >&2
                 echo "  $(_emit_user_command "task update $task_id --status started-work")" >&2
-                echo "  $(_emit_user_command "inception sweep")" >&2
+                echo "  $(_emit_user_command "inception sweep $task_id")" >&2
                 return 1
             fi
         fi
@@ -1012,7 +1012,7 @@ EOF
             echo -e "${YELLOW}Common causes: P-010 (unchecked AC), P-011 (verification command failure).${NC}" >&2
             echo -e "${YELLOW}Recover with:${NC}" >&2
             echo "  $(_emit_user_command "task verify $task_id")  # see what's blocking" >&2
-            echo "  $(_emit_user_command "inception sweep")     # if you've fixed the blocker" >&2
+            echo "  $(_emit_user_command "inception sweep $task_id")     # if you've fixed the blocker" >&2
             return "$_uts_rc"
         fi
     fi
@@ -1224,16 +1224,23 @@ PYCORRECT
 # that bypassed do_inception_decide.
 do_inception_sweep() {
     local dry_run=false
+    local only_ids=" "
     while [ $# -gt 0 ]; do
         case "$1" in
             --dry-run) dry_run=true ;;
+            T-[0-9]*) only_ids+="$1 " ;;  # T-5404: scope the sweep to named tasks
             -h|--help)
-                echo "fw inception sweep [--dry-run]"
+                echo "fw inception sweep [--dry-run] [T-XXX ...]"
                 echo ""
                 echo "Finds tasks in .tasks/active/ with a recorded ## Decision block and"
                 echo "status work-completed, or captured/started-work + GO/NO-GO. Ticks the"
                 echo "Human AC, then closes through update-task.sh (every close gate applies;"
                 echo "a task a gate holds is reported and left as is, exit 1)."
+                echo "Name task ids to sweep only those."
+                echo ""
+                echo "An agent session (CLAUDECODE=1) cannot close an 'owner: human' task"
+                echo "(T-3586): such a task is left untouched and the operator's one-line"
+                echo "command is printed instead (T-5404)."
                 return 0
                 ;;
         esac
@@ -1257,8 +1264,14 @@ do_inception_sweep() {
     local held_list=""
 
     local promoted=0
+    local operator_list=""
     for f in "$active_dir"/T-*.md; do
         [ -f "$f" ] || continue
+        if [ "$only_ids" != " " ]; then
+            local _fid
+            _fid=$(basename "$f" | grep -oE "^T-[0-9]+" || true)
+            case "$only_ids" in *" $_fid "*) ;; *) continue ;; esac
+        fi
         scanned=$((scanned+1))
 
         # T-1514: cover two stuck-state classes from T-1491 silent failure:
@@ -1307,6 +1320,23 @@ do_inception_sweep() {
             [ "$defer_park" = true ] && recovery=" (T-1865 park: horizon→later)"
             echo "  $tid: status=$current_status decision=$dec$recovery"
             continue
+        fi
+
+        # T-5404: an agent session cannot close or park an operator-owned task:
+        # update-task.sh refuses --skip-sovereignty under CLAUDECODE=1 (T-3586). Find
+        # that out BEFORE touching the file. The old order ticked the ### Human box and
+        # wrote its provenance row under agent control, then the close was refused
+        # anyway. Leave the task as is; the summary prints the operator's one line.
+        if [ "${CLAUDECODE:-}" = "1" ]; then
+            local _owner
+            _owner=$( { grep '^owner:' "$f" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
+            if [ "$_owner" = "human" ]; then
+                held=$((held+1))
+                held_list+="$tid"$'\n'
+                operator_list+="$tid"$'\n'
+                echo "  $tid: decision recorded, but the task is operator-owned and an agent session cannot close it (T-3586) — left as $current_status"
+                continue
+            fi
         fi
 
         # T-1865 class 3: DEFER on started-work → park. Set both --status
@@ -1407,6 +1437,14 @@ do_inception_sweep() {
             echo -e "${RED}Tasks a close gate is holding (not closed; see the gate output above):${NC}"
             echo "$held_list" | sed '/^$/d; s/^/  /'
             echo "  Fix the blocker, then re-run the sweep. See: $(_emit_user_command "task verify <T-XXX>" 2>/dev/null || echo "fw task verify <T-XXX>")"
+            if [ -n "$operator_list" ]; then
+                # T-5404: one line for the operator, run from their own terminal.
+                local _ids
+                _ids=$(printf '%s' "$operator_list" | sed '/^$/d' | tr '\n' ' ' | sed 's/ $//')
+                echo ""
+                echo -e "${YELLOW}Operator-owned, so only the operator can finish them. Operator, from your own terminal:${NC}"
+                echo "  $(_emit_user_command "inception sweep $_ids")"
+            fi
             return 1
         fi
     fi

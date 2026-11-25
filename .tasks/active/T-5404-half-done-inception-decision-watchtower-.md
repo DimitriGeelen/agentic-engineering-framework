@@ -105,9 +105,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Reproduced first: a fixture inception with a recorded operator decision and the task still in active/; `fw inception sweep` under agent control is shown to be refused (or not), and the finding is written in the task before any fix.
-- [ ] The recovery path works for that state: the sweep finalizes an inception whose decision has verified operator provenance, while still refusing one whose decision lacks it; OR, if a sound provenance check is not possible, the Watchtower messages give the operator one copy-paste line built with the project's fw path and drop "no action needed".
-- [ ] The Watchtower message text matches the path that works; hermetic tests for both message branches and the sweep legs; no regression in the existing inception decide/sweep tests.
+- [x] Reproduced first: a fixture inception with a recorded operator decision and the task still in active/; `fw inception sweep` under agent control is shown to be refused (or not), and the finding is written in the task before any fix.
+- [x] The recovery path works for that state: the sweep finalizes an inception whose decision has verified operator provenance, while still refusing one whose decision lacks it; OR, if a sound provenance check is not possible, the Watchtower messages give the operator one copy-paste line built with the project's fw path and drop "no action needed".
+- [x] The Watchtower message text matches the path that works; hermetic tests for both message branches and the sweep legs; no regression in the existing inception decide/sweep tests.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -294,6 +294,13 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5404_inception_sweep_operator_owned.bats > /tmp/.t5404-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t5404-bats.out
+test "$(grep -c '# skip' /tmp/.t5404-bats.out)" -eq 0
+timeout 300 python3 -m pytest tests/unit/test_t5404_half_done_recovery_text.py tests/unit/test_t3749_decide_detached.py -q > /tmp/.t5404-py.out 2>&1 && grep -q passed /tmp/.t5404-py.out
+timeout 600 bats tests/unit/t4535_inception_sweep_gates.bats tests/unit/inception_defer_park.bats tests/unit/inception_decide_propagate_exit.bats > /tmp/.t5404-reg.out 2>&1 && ! grep -q "^not ok" /tmp/.t5404-reg.out
+! grep -q "agent session can recover this" web/blueprints/inception.py
+bin/fw vendor self --check --task T-5404
+bin/fw watchtower current
 
 ## RCA
 
@@ -310,6 +317,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** after `fw inception decide` stopped with the decision saved, Watchtower told the operator "the agent session can recover this (fw inception sweep); no action needed from you". In 150-skills-manager the agent's sweep was refused, and the task stayed open until the operator ran `fw inception decide … --i-am-human` by hand.
+
+**Root cause:** the sweep closes through update-task.sh with `--skip-sovereignty`. Since T-3586 that flag is refused under `CLAUDECODE=1` (it protects the operator's ownership). Inceptions are normally `owner: human`, so the agent recovery path the message promised could not work. The message text dates from before T-3586 and was never re-checked against it. Second defect, found while reproducing: the sweep ticked the `### Human` box and wrote its Human-tick provenance row before the close was refused, so a refused agent sweep left a Human tick behind.
+
+**Why structurally allowed:** the Watchtower text and the sweep's gate behaviour were tested separately. No test ran the recovery the message names, under the identity the message names (an agent session), against an operator-owned task. T-3586 tightened a gate without a search for the advice that routed through it.
+
+**Prevention:** `tests/unit/t5404_inception_sweep_operator_owned.bats` runs the sweep under `CLAUDECODE=1` on an operator-owned decided inception (file byte-identical, no tick row, operator line printed). It then runs the printed line without `CLAUDECODE` through the real update-task.sh and checks the task reaches completed/. `tests/unit/test_t5404_half_done_recovery_text.py` pins both Watchtower branches (gate refused, interrupted) for both owners and the form-path redirect: "no action needed" appears only for an agent-owned task.
 
 ## Evolution
 
@@ -374,6 +388,10 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+### 2026-11-25 — recovery path: operator line, not provenance-gated agent close
+- **Chose:** an operator-owned half-done decision is finished by the operator with one printed line, `cd <root> && <fw> inception sweep T-NNN` (the sweep now takes task ids). Under `CLAUDECODE=1` the sweep leaves such a task untouched and prints that line. Watchtower says "only you can finish it" plus the line; "no action needed from you" appears only when the task is agent-owned.
+- **Why:** none of the existing decision records can tell an operator decision from an agent-written one (see the reproduction entry in Updates): an agent can write the `**Decision**:` line and a decision-subject commit unguarded, the decide run's status.json is gitignored and writable, and the sweep itself wrote the Human-tick row. A provenance check built on these would be a sovereignty bypass that looks like a gate.
+- **Rejected:** (a) sweep accepts recorded decision provenance as the human act — no sound provenance exists today; (b) make decide's write and close one transaction — larger change, and a crash between them (the reported case) would still need a recovery path.
 
 ## Decision
 
@@ -395,3 +413,9 @@ bvp_scores_proposed:
 ### 2026-11-25T09:39:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-25T10:05:00Z — reproduction, before any fix [w-t5404]
+- **Fixture:** throwaway PROJECT_ROOT; inception with `owner: human`, `status: started-work`, Agent AC ticked, `**Decision**: GO` recorded, task in active/. Ran `do_inception_sweep` with `CLAUDECODE=1` and the real update-task.sh.
+- **Result:** REFUSED. Exit 1, `held=1`, task left in active/ as started-work. update-task.sh said: `ERROR: --skip-sovereignty is refused in an agent session (CLAUDECODE=1) — T-3586`. So the Watchtower promise ("the agent session can recover this (fw inception sweep); no action needed from you") is false for every `owner: human` inception, which is the normal case.
+- **Side finding:** before the refused close, the sweep had already ticked the `### Human` box and written a `via: inception-decide` row to `.context/reviews/human-ac-ticks.jsonl`, under agent control.
+- **Provenance data that exists:** the `**Decision**:` line (no guard stops an agent writing it), the commit subject `T-NNN: inception decision …` (no guard on the subject), `.context/working/decide/<task>/*/status.json` (gitignored, agent-writable), and the Human-tick row above (the sweep writes it itself). None of them tells an operator decision from an agent-written one, so a sound provenance check is not possible with this data. Path chosen: an honest operator line, not a weaker gate.

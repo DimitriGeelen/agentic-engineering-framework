@@ -578,6 +578,53 @@ def _review_cmd(task_id):
     return user_command(f"task review {task_id}", str(PROJECT_ROOT))
 
 
+def _active_task_owner(task_id):
+    """`owner:` of the task's file in .tasks/active/, or '' when not found."""
+    import os
+    import re as _re
+    d = os.path.join(PROJECT_ROOT, ".tasks", "active")
+    try:
+        names = sorted(fn for fn in os.listdir(d)
+                       if fn.startswith(f"{task_id}-") and fn.endswith(".md"))
+    except OSError:
+        return ""
+    for fn in names:
+        try:
+            with open(os.path.join(d, fn), encoding="utf-8", errors="replace") as f:
+                m = _re.search(r"^owner:\s*(\S+)", f.read(), _re.MULTILINE)
+        except OSError:
+            continue
+        return m.group(1).strip("'\"") if m else ""
+    return ""
+
+
+def _finish_recovery_text(task_id, *, blocked):
+    """T-5404: who can finish a half-done decision, in words that match the gates.
+
+    `fw inception sweep` closes through update-task.sh, which refuses
+    --skip-sovereignty in an agent session (T-3586). So an agent can finish only a
+    task it owns; an `owner: human` task (the usual inception) needs the operator,
+    and the text gives them one copy-paste line. "No action needed from you" is
+    said only on the branch where the agent path works.
+    `blocked`: a close gate refused, so its blocker must be fixed first.
+    """
+    import sys
+    _fwroot = str(FRAMEWORK_ROOT)
+    if _fwroot not in sys.path:
+        sys.path.insert(0, _fwroot)
+    from lib.fw_command import user_command
+    line = user_command(f"inception sweep {task_id}", str(PROJECT_ROOT))
+    if _active_task_owner(task_id) == "human":
+        when = ("Once the blocker below is fixed (the agent session can fix it), "
+                if blocked else "")
+        return (f"The task is yours, so only you can finish it — an agent session "
+                f"cannot close an operator-owned task. {when}run this from your own "
+                f"terminal:\n{line}")
+    return ("The agent session can finish it"
+            + (" once the blocker below is fixed" if blocked else "")
+            + f" ({line}); no action needed from you unless it persists.")
+
+
 def _silent_refusal(task_id):
     # T-3539: the CLI exited non-zero having written NOTHING to either stream.
     return (
@@ -732,8 +779,8 @@ def record_decision(task_id):
                     f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
                     f'white-space:pre-wrap;">'
                     f'⚠ Your decision is saved. Automatic completion was blocked by a '
-                    f'framework gate — the agent session can recover this '
-                    f'(fw inception sweep); no action needed from you unless it persists.\n'
+                    f'framework gate. '
+                    f'{_html.escape(_finish_recovery_text(task_id, blocked=True))}\n'
                     f'Reason: {_html.escape(_reason)}'
                     f'</div>'
                 )
@@ -745,8 +792,9 @@ def record_decision(task_id):
                     f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
                     f'white-space:pre-wrap;">'
                     f'⚠ The decision is saved, but the decide command stopped (exit '
-                    f'{_html.escape(str(res.rc))}) before completing the task — the agent '
-                    f'session can finish it (fw inception sweep).{_html.escape(log_hint)}\n'
+                    f'{_html.escape(str(res.rc))}) before completing the task. '
+                    f'{_html.escape(_finish_recovery_text(task_id, blocked=False))}'
+                    f'{_html.escape(log_hint)}\n'
                     f'Last output: {_html.escape(_reason)}'
                     f'</div>'
                 )
@@ -847,14 +895,21 @@ def record_decision(task_id):
     if outcome == _dr.LANDED_INTERRUPTED:
         return redirect(url_for(
             "inception.inception_detail", task_id=task_id,
+            # T-5404: the recovery line goes before the log path and the cap is
+            # wide enough that the copy-paste command is never cut.
             warning=(f"The decide command stopped (exit {res.rc}) before completing the "
-                     f"task; the decision is saved.{log_hint}")[:300]))
+                     f"task; the decision is saved. "
+                     f"{_finish_recovery_text(task_id, blocked=False)}{log_hint}")[:700]))
     if outcome in (_dr.LANDED_GATE_REFUSED, _dr.LANDED_FOLLOWUP_FAILED):
         # T-1470: primary succeeded, surface as warning (not error).
         # T-3284: sanitize like the htmx sibling above — this redirect path
         # renders to the operator too, and previously leaked bypass flags.
         warn = (_operator_facing_stderr((chain_err or chain_out or "")[:3000])
                 or "side-effect warning")[:300]
+        if outcome == _dr.LANDED_GATE_REFUSED:
+            # T-5404: say who can finish it, as the htmx sibling does.
+            warn = (f"Your decision is saved; a framework gate blocked completion. "
+                    f"{_finish_recovery_text(task_id, blocked=True)}\nReason: {warn}")
         return redirect(url_for("inception.inception_detail", task_id=task_id, warning=warn))
     if outcome == _dr.NOT_LANDED:
         # T-4190: name the filtered-to-empty and truly-empty shapes, not "Unknown error".
