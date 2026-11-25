@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5412: opencode review seat pinned to GLM-5.4 (operator runme); vision probe: image input gives a Z.ai server error, vision stays false
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-25T08:52:07Z
+# ============================================================================
+
+task_id: T-5412
+task_name: "opencode review seat pinned to GLM-5.4 (operator runme); vision probe: image input gives a Z.ai server error, vision stays false"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-25T08:50:47Z
+completed: 2026-11-25T08:51:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-25T09:51:18+01:00
+last_commit: 2026-11-25T09:51:40+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  opencode review seat on GLM-5.4 (operator runme opencode-glm54); vision probe: image input gives a Z.ai server error, vision stays false. vendored registry
+
+# Key outcomes
+outcomes:
+  - 'The registry pins `zai-coding-plan/glm-5.4` for opencode, still parses, and `vision` is unchanged (`false`).'
+  - 'GLM-5.4 answers a text prompt through opencode; the vision probe result (no-answer, server error on image input) is recorded in the probe ledger.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'opencode review seat on GLM-5.4 (operator runme opencode-glm54); vision probe: image input gives a Z.ai server error, vision stays false'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/review-backends.yaml'
+  - '.context/reviews/vision-probes.jsonl'
+  - '.tasks/active/T-5412-opencode-review-seat-pinned-to-glm-54-op.md'
+  - 'policy/review-backends.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-25T09:51:18'
+    action: 'T-5412: opencode review seat on GLM-5.4 (operator runme opencode-glm54); vision probe: image input gives a Z.ai server error, vision stays false'
+  - time: '2026-11-25T09:51:40'
+    action: 'T-5412: vendored registry'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [review, registry]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 0
+  commits: 3
+  files_changed: 7
+  lines_added: 508
+  lines_removed: 6
+  footprint_refreshed_at: '2026-11-25T08:52:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5412-opencode-review-seat-pinned-to-glm-54-op.md
+generated_by: context-agent-hybrid

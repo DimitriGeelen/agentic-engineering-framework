@@ -59622,3 +59622,21 @@ scan_id: R-1f8e59ce
 task_id: T-5410
 payload:
   task_file: .tasks/active/T-5410-node1-runner-checks-ring20s-pool-client-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T08:51:48Z'
+scan_id: R-a9d1986b
+task_id: T-5412
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T08:51:48Z'
+scan_id: R-a9d1986b
+task_id: T-5412
+payload:
+  task_file: .tasks/active/T-5412-opencode-review-seat-pinned-to-glm-54-op.md
