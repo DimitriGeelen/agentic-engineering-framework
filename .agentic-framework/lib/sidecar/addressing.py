@@ -725,12 +725,53 @@ def orphan_inboxes(*, runner=None) -> list[dict] | None:
         row = {"topic": topic, "count": count,
                "unread_since_ms": a.get("unread_since_ms"),
                "last_writer": a.get("last_writer"),
-               "nickname_of": nickname_candidates(rest)}
+               "nickname_of": nickname_candidates(rest),
+               # T-5418: a topic named like THIS project (its id, or the id without the
+               # numeric prefix — what peers derive from the repo name) is mail to us.
+               "own_nickname": rest.lower() in own_nicknames()}
+        if row["own_nickname"]:
+            acked = orphan_acks().get(topic)
+            row["first_unacked"] = (acked + 1) if isinstance(acked, int) else 0
         if state == "unknown":
             row["readers_checked"] = False
             row["readers_reason"] = detail
         out.append(row)
     return out
+
+
+def own_nicknames() -> set:
+    """T-5418: names peers use for THIS project — its id and the id without the numeric
+    prefix (999-Agentic-Engineering-Framework -> agentic-engineering-framework), lower-cased.
+    Aliases already read (SIDECAR_INBOX_ALIASES) never reach the orphan check."""
+    try:
+        pid = circuit.project_id()
+    except Exception:
+        return set()
+    names = {pid.lower()}
+    m = circuit._PROJECT_ID_RE.match(pid)
+    if m and pid[m.end():]:
+        names.add(pid[m.end():].lower())
+    return {n for n in names if n}
+
+
+def topic_senders(topic: str, first_offset: int = 0, limit: int = 5, *, reader=None,
+                  now_ms: int | None = None) -> list[dict] | None:
+    """T-5418: the latest `limit` posts on `topic` from `first_offset`: sender, conversation,
+    age in seconds. None when the topic could not be read. Read-only (no cursor moves)."""
+    from . import inbox
+    read = reader or inbox.default_reader
+    env = read(topic, first_offset, 200)
+    if not isinstance(env, list):
+        return None
+    now_ms = now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    out = []
+    for e in env:
+        md = e.get("metadata") or {}
+        ts = e.get("ts") or e.get("timestamp")
+        out.append({"from": md.get("from_project") or md.get("from_agent") or "?",
+                    "conversation": md.get("conversation_id") or "-",
+                    "age_s": max(0, (now_ms - int(ts)) // 1000) if isinstance(ts, (int, float)) else None})
+    return out[-limit:]
 
 
 def _orphan_acks_path() -> Path:

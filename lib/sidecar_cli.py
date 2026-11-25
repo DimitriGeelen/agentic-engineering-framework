@@ -371,15 +371,48 @@ def cmd_inbox(args) -> int:
                     print(f"receipt for {m.get('client_msg_id')} failed: {e}", file=sys.stderr)
 
 
-def _orphan_lines(orphans) -> list[str]:
+def _age(seconds) -> str:
+    if seconds is None:
+        return "age unknown"
+    for unit, size in (("d", 86400), ("h", 3600), ("m", 60)):
+        if seconds >= size:
+            return f"{seconds // size}{unit} ago"
+    return f"{seconds}s ago"
+
+
+def _own_nickname_lines(orphans, senders=None) -> list[str]:
+    """T-5418: an orphan topic named like THIS project is mail to us that nobody reads.
+    Reported first, with up to 5 senders and the fix (T-5416: 10 posts sat for a month)."""
+    from lib import fw_command
+    senders = senders or (lambda o: addressing.topic_senders(o["topic"], o.get("first_unacked", 0)))
+    lines = []
+    for o in orphans or []:
+        if not o.get("own_nickname"):
+            continue
+        name = o["topic"].rsplit("/", 1)[-1]
+        lines.append(f"MAIL TO THIS PROJECT NOBODY READS: {o['count']} post(s) addressed to this "
+                     f"project as '{name}' ({o['topic']})")
+        rows = senders(o)
+        if rows is None:
+            lines.append("  senders: NOT CHECKED (the topic could not be read)")
+        for r in rows or []:
+            lines.append(f"  - from {r['from']}, {_age(r.get('age_s'))}, conversation {r['conversation']}")
+        lines.append(f"  fix: {fw_command.user_command(['config', 'set', 'SIDECAR_INBOX_ALIASES', name])}")
+        lines.append(f"  then, once those posts are answered: "
+                     f"{fw_command.user_command(['sidecar', 'inbox', '--mark-read', name])}")
+    return lines
+
+
+def _orphan_lines(orphans, senders=None) -> list[str]:
     """T-4418: unread inboxes on our hub that nothing reads (mail sent to a nickname)."""
     if orphans is None:
         return ["orphan inboxes: NOT CHECKED (the hub could not be asked)"]
-    lines = [f"orphan inbox: {o['topic']} holds {o['count']} unread post(s) no known agent reads "
+    lines = _own_nickname_lines(orphans, senders)
+    lines += [f"orphan inbox: {o['topic']} holds {o['count']} unread post(s) no known agent reads "
              f"(a nickname address? tell the senders the real circuit)"
              + (f" [partial check: hub reader list not read — {o.get('readers_reason')}]"
                 if o.get("readers_checked") is False else "")
-             for o in orphans if not o.get("own_project")]
+             for o in orphans if not o.get("own_project") and not o.get("own_nickname")]
     # T-4530: this project's own address, unread because this session reads another topic.
     lines += [f"orphan inbox: {o['topic']} (this project's address) holds {o['count']} post(s) "
               f"past our cursor; this session reads {o['read_topic']}, not it. Read it with "

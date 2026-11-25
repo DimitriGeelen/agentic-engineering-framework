@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T15:48:07Z
-last_update: '2026-11-25T15:48:16Z'
+last_update: 2026-11-25T15:59:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,9 +93,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw sidecar alerts` (and the orphan-inboxes verb) reports an orphan topic matching this project's own names separately and first, with sender and age per post (max 5) and the two fix commands built with the project's fw path; a topic already in SIDECAR_INBOX_ALIASES is not reported.
-- [ ] Unrelated orphan topics keep their current line; behaviour with the hub unreachable is unchanged (NOT CHECKED).
-- [ ] Hermetic tests (hub calls faked): own-name match on project id, on the part after the numeric prefix, and on the repo basename; no match for a foreign topic; aliased topic suppressed; senders and ages rendered; vendored copy synced.
+- [x] `fw sidecar alerts` (and the orphan-inboxes verb) reports an orphan topic matching this project's own names separately and first, with sender and age per post (max 5) and the two fix commands built with the project's fw path; a topic already in SIDECAR_INBOX_ALIASES is not reported.
+- [x] Unrelated orphan topics keep their current line; behaviour with the hub unreachable is unchanged (NOT CHECKED).
+- [x] Hermetic tests (hub calls faked): own-name match on project id, on the part after the numeric prefix, and on the repo basename (the project id IS the repo basename, circuit.project_id(); matched case-insensitively); no match for a foreign topic; aliased topic suppressed; senders and ages rendered; vendored copy synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,6 +150,10 @@ bvp_scores_proposed:
      Write your commands BELOW this comment, one per line.
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
+-->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5418_own_nickname_orphan.py tests/unit/test_sidecar_orphan_circuit_t4418.py tests/unit/test_sidecar_alerts_t3856.py > /tmp/.t5418.out 2>&1 && grep -q passed /tmp/.t5418.out && ! grep -q failed /tmp/.t5418.out
+bin/fw vendor self --check --task T-5418
+<!--
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # End a line with `# needs: fixture` if it must not be re-run unattended later by the audit (CTL-013, verify-queue); the gate still runs it (T-5268).
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
