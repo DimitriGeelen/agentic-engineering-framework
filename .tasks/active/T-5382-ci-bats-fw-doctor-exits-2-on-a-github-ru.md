@@ -13,10 +13,10 @@ description: >
   Ubuntu without termlink/claude (or add output on failure) and name the FAIL line;
   fix the check or the test's host assumption.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [ci, github-actions]
 components: []
 related_tasks: [T-5363]
@@ -48,7 +48,7 @@ origin: {kind: "agent", source: "T-5363"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T10:21:22Z
-last_update: '2026-11-24T10:31:21Z'
+last_update: 2026-11-25T15:47:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,20 +95,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** In GitHub CI runs on bleeding-edge (45252098987, and again in 45399591917 on 2026-11-24), 9 bats tests that need `fw doctor`/`fw audit` to exit below 2 fail on the runner, and all of them pass locally. T-5363 grouped them here. Operator 2026-11-25: "proceed as suggested" (CI reds first, so T-5397's false-green can be removed).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** On a clean GitHub runner (non-root Ubuntu, no termlink, no claude, no cron, no Watchtower), some doctor or audit check FAILs where this host passes. The tests do not print the doctor output, so the FAIL line is unknown. Either a check wrongly FAILs when an optional component is absent, or a test assumes this host's environment.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The 9 tests pass on the GitHub runner for the right reason.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The FAIL line(s) behind each of the 9 tests are named, from a reproduction in a runner-like environment (env -i, a non-root user if available, PATH without termlink and claude, no cron). Each cause is fixed in the check (an absent optional component is not a FAIL) or in the test (a host assumption isolated). The tests print the doctor output when they fail.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] For each of the 9 tests, the doctor/audit FAIL line that makes it red on a runner-like environment is recorded in this task (reproduced locally, not guessed), with its cause (check vs test assumption).
+- [ ] Each cause is fixed: a check no longer FAILs on an absent optional component (WARN or skip with a reason), or the test isolates its host assumption; no check is weakened for a real defect.
+- [ ] The 9 tests pass locally AND in the runner-like reproduction; the affected tests print the doctor/audit output on failure.
+- [ ] Pushed and checked on a GitHub run: the 9 tests are green in the bats job (or any still red are named with their new cause).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -392,3 +394,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5382-ci-bats-fw-doctor-exits-2-on-a-github-ru.md
 - **Context:** Initial task creation
+
+### 2026-11-25T15:47:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
