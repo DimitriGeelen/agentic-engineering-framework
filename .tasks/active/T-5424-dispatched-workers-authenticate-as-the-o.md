@@ -1,10 +1,20 @@
 ---
 id: T-5424
-name: "Dispatched workers authenticate as the old account after /login (weekly limit), while claude from the shell uses the new login"
+name: "Dispatched workers authenticate as the old account after /login (weekly limit),
+  while claude from the shell uses the new login"
 description: >
-  2026-11-25: after the operator's /login, every fw termlink dispatch worker (w-t5418, w-t5382, w-t5382b, and a trivial w-probe 'reply OK') exits 1 with "You've hit your weekly limit · resets Nov 28, 6am (Europe/Berlin)". claude -p from the parent's shell, with --model opus and --model sonnet, answers OK. Ruled out: CLAUDE_CODE_OAUTH_TOKEN / CLAUDE_CONFIG_DIR are not set in the parent session, termlink processes, tmux global/session env, or the operator's profile files (runme where-oauth-token). Worker: worker_bin /root/.local/bin/claude, model opus, run.sh env allowlist passes CLAUDE_CODE_OAUTH_TOKEN/CLAUDE_CONFIG_DIR/HOME through. Next: diff the worker's actual process environment and credential file reads against the parent's (strace/ENV dump inside run.sh), find which credential it loads.
+  2026-11-25: after the operator's /login, every fw termlink dispatch worker (w-t5418,
+  w-t5382, w-t5382b, and a trivial w-probe 'reply OK') exits 1 with "You've hit your
+  weekly limit · resets Nov 28, 6am (Europe/Berlin)". claude -p from the parent's
+  shell, with --model opus and --model sonnet, answers OK. Ruled out: CLAUDE_CODE_OAUTH_TOKEN
+  / CLAUDE_CONFIG_DIR are not set in the parent session, termlink processes, tmux
+  global/session env, or the operator's profile files (runme where-oauth-token). Worker:
+  worker_bin /root/.local/bin/claude, model opus, run.sh env allowlist passes CLAUDE_CODE_OAUTH_TOKEN/CLAUDE_CONFIG_DIR/HOME
+  through. Next: diff the worker's actual process environment and credential file
+  reads against the parent's (strace/ENV dump inside run.sh), find which credential
+  it loads.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T20:16:44Z
-last_update: 2026-11-25T20:16:44Z
-date_finished: null
+last_update: '2026-11-25T20:25:14Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-25T20:25:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5424: Dispatched workers authenticate as the old account after /login (weekly limit), while claude from the shell uses the new login
@@ -57,20 +84,20 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** After the operator's /login on 2026-11-25, every worker launched by `fw termlink dispatch` (w-t5418, w-t5382, w-t5382b, and a trivial w-probe) exits 1 with "You've hit your weekly limit · resets Nov 28, 6am (Europe/Berlin)". `claude -p` from the parent's shell answers OK with both --model opus and --model sonnet. The token variable is set nowhere that was checked: parent session, termlink processes, tmux, profiles. Operator 2026-11-25: "proceed as suggested" (investigate in-session).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The worker launch path loads a different credential than the parent's shell. Leading hypothesis: Claude Code keeps the new login in the desktop keyring over D-Bus, and falls back to `~/.claude/.credentials.json`, which still holds the old account. The worker runs `env -i` with only allowlisted variables, so it may not see the parent's D-Bus session bus.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Workers use the operator's current login.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The cause is shown by experiment, not guessed. The fix lets workers start with the current login, and a trivial test dispatch answers OK. If the fix needs the operator (a credential or session action), it is handed over as a runme with no secret in it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The cause is identified by an experiment that reproduces the worker's failure from the parent shell (e.g. the same command under the worker's environment) and shows that removing the difference makes it pass; recorded in the task.
+- [ ] A fix (code, config or operator runme) is in place and a trivial `fw termlink dispatch` probe answers OK; no secret value appears in any file, log or message.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -354,3 +381,12 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5424-dispatched-workers-authenticate-as-the-o.md
 - **Context:** Initial task creation
+
+### 2026-11-25T20:25:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-11-25 — cause found (in-session experiments, no secret values read)
+- Ruled out by experiment: D-Bus/keyring (parent has none, credentials file rewritten 15:11 after /login), `env -i` with the worker's allowlist (OK from the parent shell), model (opus and sonnet OK), output mode (`--output-format stream-json --verbose` OK), the Claude background daemon (not running since 2026-11-20), the TermLink hub's env (root, HOME=/root, no token var).
+- Evidence of two accounts: the stream's rate_limit_event shows seven_day resetsAt 1796090400 `allowed` from the parent shell, and 1795842000 `rejected` in w-probe; apiKeySource none in both (OAuth).
+- Cause: a shell spawned by TermLink (`termlink spawn --shell`, parent `termlink register --shell`, which itself lacks the var) HAS `CLAUDE_CODE_OAUTH_TOKEN` set by its startup files: `/root/.claude-login-select.sh` loads `/root/.claude-oauth-<account>.env` (file names found by grep -l; contents not read). run.sh's env allowlist (lib/spawn-env.sh FW_SPAWN_ENV_ALLOW) passes CLAUDE_CODE_OAUTH_TOKEN through, so every worker uses that account and ignores the operator's /login. The parent shell does not run that script, hence OK.
+- Fix is the operator's (credential selection): point the login-select script at the account workers should use, or stop it exporting the token so workers use ~/.claude/.credentials.json (the current /login).
