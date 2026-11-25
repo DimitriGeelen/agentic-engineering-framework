@@ -3,6 +3,8 @@ id: T-5409
 name: "Pick up ring20's orchestration module (first release): pin it, connect through
   the shared worker contract"
 description: >
+  Ring20 side (msg 6cbb1a29, 2026-11-25): T-2873 specifics into orchestration-config.yaml,
+  T-2874 split + first release; announcement on conversation aef-orchestration-module-2026-11-24.
   T-5406 GO (operator 2026-11-24, option 2): ring20's arc-009 orchestration engine
   becomes a separate versioned module, ring20 as producer. Ring20 first moves its
   specifics (worker uid range, launcher list, cap defaults, preflight hosts) into
