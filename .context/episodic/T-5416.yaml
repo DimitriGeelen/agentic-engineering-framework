@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5416: Peer mail to the nickname inbox 'agentic-engineering-framework' is never read: AEF's receiver should read it (or the hub alias it) and alerts should name the senders
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-25T13:03:02Z
+# ============================================================================
+
+task_id: T-5416
+task_name: "Peer mail to the nickname inbox 'agentic-engineering-framework' is never read: AEF's receiver should read it (or the hub alias it) and alerts should name the senders"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-25T11:08:21Z
+completed: 2026-11-25T13:02:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-25T12:08:31+01:00
+last_commit: 2026-11-25T14:02:40+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — peer mail to the nickname inbox agentic-engineering-framework is never read. read the nickname inbox agentic-engineering-framework (SIDECAR_INBOX_ALIASES); 10 handled posts marked read; self-test surfaced
+
+# Key outcomes
+outcomes:
+  - '`.framework.yaml` sets `SIDECAR_INBOX_ALIASES: agentic-engineering-framework`, and `lib/sidecar/inbox.py:alias_topics()` returns `inbox:cacc73ea32b121dd/agentic-engineering-framework`.'
+  - 'The alias topic''s backlog is marked read (`fw sidecar inbox --mark-read agentic-engineering-framework`) and `fw sidecar alerts` no longer reports it as an orphan inbox.'
+  - 'A fresh post to the alias address is picked up by this project''s reader (shown by `fw sidecar alerts` or `fw sidecar inbox --peek`), then settled. (2026-11-25: self-test at offset 11 surfaced as "peer mail: 1 unseen … [t5416-alias-selftest]", then marked seen.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/sidecar/dm-handled'
+  - '.framework.yaml'
+  - '.tasks/active/T-5416-peer-mail-to-the-nickname-inbox-agentic-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-25T12:08:31'
+    action: 'T-5416: filed — peer mail to the nickname inbox agentic-engineering-framework is never read'
+  - time: '2026-11-25T14:02:40'
+    action: 'T-5416: read the nickname inbox agentic-engineering-framework (SIDECAR_INBOX_ALIASES); 10 handled posts marked read; self-test surfaced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 114 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, messaging, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 114
+  commits: 3
+  files_changed: 6
+  lines_added: 504
+  lines_removed: 12
+  footprint_refreshed_at: '2026-11-25T13:03:11Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5416-peer-mail-to-the-nickname-inbox-agentic-.md
+generated_by: context-agent-hybrid
