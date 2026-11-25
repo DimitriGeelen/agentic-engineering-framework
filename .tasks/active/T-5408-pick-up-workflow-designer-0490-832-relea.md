@@ -101,9 +101,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw designer sync --from-tag designer-v0.49.0` verifies the artifact (sha256 bc6830534a9b…, 1472593 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way.
-- [ ] `policy/designer-pin.yaml` pins 0.49.0; `fw designer status` reports the pin valid AND the refusal mapping current; `/designer/app` serves APP_VERSION 0.49.0 after a Watchtower restart; designer tests pass; vendored copy synced.
-- [ ] Stored maps: per-map validation identical before and after (52 maps, 49 clean, same 3 pre-existing errors as T-5390 measured), none gained bpmn:group/category.
+- [x] `fw designer sync --from-tag designer-v0.49.0` verifies the artifact (sha256 bc6830534a9b…, 1472593 bytes) against 832's MANIFEST at the tag and against the pin, and installs it; validator and authoring kit verified the same way. (Tag object b21b63df as announced; kit SHA256SUMS 7ad136dd… = MANIFEST kit_sha256; validator 98e199b6…, 138795 B, identical to 0.48.1. First dry-run refused while the pin named the 0.48.1 kit, as in T-5390; pin updated from the tag, then dry-run and sync passed. Commit c81931b14.)
+- [x] `policy/designer-pin.yaml` pins 0.49.0; `fw designer status` reports the pin valid AND the refusal mapping current; `/designer/app` serves APP_VERSION 0.49.0 after a Watchtower restart; designer tests pass; vendored copy synced. (Refusal mapping now names vendor/designer/validate-workflow-0.49.0.py, version 0.49.0, sha unchanged; 0.48.1 build and validator removed at the root and pruned by vendor self, commit 9dba76d7e. Designer tests before/after: bats 70 ok, 0 not ok, 0 skip; pytest 82 passed. All five Verification lines pass; watchtower current.)
+- [x] Stored maps: per-map validation identical before and after (52 maps, 49 clean, same 3 pre-existing errors as T-5390 measured), none gained bpmn:group/category. (Measured: 52 maps, 49 without errors; aef-dispatch-loop v1 E-XML-NODE-UNASSIGNED, draft-inception-readiness v1 and v2 E-INCEPTION-NOT-SOVEREIGN; per-map exit codes, rule sets and file sha256 identical before/after.)
 - [ ] 832 is told the result on its thread (conversation 832-designer-release-0.49.0).
 
 ### Human
