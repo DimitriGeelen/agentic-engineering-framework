@@ -8,12 +8,12 @@ description: >
   which ring20 republished twice on 2026-11-24 (cc319cf0..., then f7a96c5b6f2d4a5a28f0672b1932213fc849d156d3af38624a45a4338385d9e9
   at 20:58Z, with advance notice). An unpinned poold.py is code the run executes unverified.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [node1, ring20, trust]
-components: []
+components: [scripts/node1/node1_nightly.py, scripts/node1/pool-client.sha256, tests/unit/test_t5392_node1_nightly.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T12:39:14Z
-last_update: '2026-11-25T12:39:21Z'
-date_finished:
+last_update: 2026-11-25T12:43:24Z
+date_finished: 2026-11-25T12:43:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -382,3 +382,16 @@ python3 scripts/node1/node1_nightly.py --dry-run --limit 1 > /tmp/.t5417d 2>&1 &
 
 ### 2026-11-25T12:39:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-25T12:43:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5ddbcc25
+- **Timestamp:** 2026-11-25T12:43:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

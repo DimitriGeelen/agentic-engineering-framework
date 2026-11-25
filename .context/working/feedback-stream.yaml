@@ -59712,3 +59712,21 @@ scan_id: R-f8a6a0c7
 task_id: T-5404
 payload:
   task_file: .tasks/active/T-5404-half-done-inception-decision-watchtower-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-25T12:43:31Z'
+scan_id: R-5ddbcc25
+task_id: T-5417
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-25T12:43:31Z'
+scan_id: R-5ddbcc25
+task_id: T-5417
+payload:
+  task_file: .tasks/active/T-5417-node1-runner-pins-ring20s-pooldpy-too-po.md
