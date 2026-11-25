@@ -48,3 +48,4 @@ TERMLINK_SIDECAR_SOCKET: /var/lib/termlink/sidecar/aef-meter.send.sock
 TERMLINK_ADAPTER2: 1
 VIEWABLE_DIRS: scripts
 ISSUES_PR_PROCESS_COMMENT: 1
+SIDECAR_INBOX_ALIASES: agentic-engineering-framework

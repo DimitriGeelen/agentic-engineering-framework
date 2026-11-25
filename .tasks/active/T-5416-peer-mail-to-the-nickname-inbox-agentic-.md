@@ -12,7 +12,7 @@ description: >
   or hub-side alias; plus a session-start alert that lists orphan posts addressed
   to this project by sender and age, not only counts.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T11:08:21Z
-last_update: '2026-11-25T11:15:53Z'
+last_update: 2026-11-25T13:01:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,20 +93,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** `fw sidecar alerts` on 2026-11-25 showed the orphan inbox `inbox:cacc73ea32b121dd/agentic-engineering-framework` holding 10 unread posts that no agent reads. Senders: 0909-boot-into-timeshift-snapshots (a question from about 2026-10-21, unanswered for a month, answered today), 150-skills-manager (C-010; 150 reported "no reply"), and 050-email-archive (escalation plus 5 nudges). Operator 2026-11-25: "start T-5416".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Peers derive our address from the repository name (agentic-engineering-framework), while this project's receiver reads only `999-Agentic-Engineering-Framework`. A mechanism for exactly this exists, `SIDECAR_INBOX_ALIASES` (T-5148: every inbox reader also reads `inbox:<hub>/<alias>`), but this project never set it. Hypothesis: a configuration gap, not missing code.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Mail sent to the nickname reaches this project's inbox readers.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `SIDECAR_INBOX_ALIASES=agentic-engineering-framework` in `.framework.yaml`. The 10 old posts, all checked as handled on 2026-11-25, are marked read, so they do not resurface. `fw sidecar alerts` no longer lists that topic as an orphan, and a new post to it shows up as ordinary peer mail.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `.framework.yaml` sets `SIDECAR_INBOX_ALIASES: agentic-engineering-framework`, and `lib/sidecar/inbox.py:alias_topics()` returns `inbox:cacc73ea32b121dd/agentic-engineering-framework`.
+- [x] The alias topic's backlog is marked read (`fw sidecar inbox --mark-read agentic-engineering-framework`) and `fw sidecar alerts` no longer reports it as an orphan inbox.
+- [x] A fresh post to the alias address is picked up by this project's reader (shown by `fw sidecar alerts` or `fw sidecar inbox --peek`), then settled. (2026-11-25: self-test at offset 11 surfaced as "peer mail: 1 unseen … [t5416-alias-selftest]", then marked seen.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -161,6 +162,10 @@ bvp_scores_proposed:
      Write your commands BELOW this comment, one per line.
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
+-->
+grep -qE "^SIDECAR_INBOX_ALIASES:.*agentic-engineering-framework" .framework.yaml
+python3 -c "import sys; sys.path.insert(0,'.'); from lib.sidecar import inbox; assert any(t.endswith('/agentic-engineering-framework') for t in inbox.alias_topics())"
+<!--
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # End a line with `# needs: fixture` if it must not be re-run unattended later by the audit (CTL-013, verify-queue); the gate still runs it (T-5268).
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
@@ -310,6 +315,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 10 posts sat unread on `inbox:<hub>/agentic-engineering-framework`. One peer question (0909) went unanswered for about a month, and 150 reported "no reply".
+
+**Root cause:** Peers address this project by its repository name. This project reads only its project id (`999-Agentic-Engineering-Framework`), and its alias list, `SIDECAR_INBOX_ALIASES` (T-5148), was never set.
+
+**Why structurally allowed:** The alias mechanism exists, but setting it is a manual per-project step, and nothing checks that a project's repository name is among its aliases. The orphan-inbox alert (T-5149) did show the topic, but only as a count under a generic "nickname address?" hint, among unrelated orphans (ring20's, test probes), so no session acted on it.
+
+**Prevention:** The alias is set, so posts to the nickname now surface as ordinary mail (self-test passed). Follow-up worth considering, not built here: when an orphan topic equals this project's repository directory name minus its numeric prefix, the alert should say "this looks like YOUR address — set SIDECAR_INBOX_ALIASES" and name the senders.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -390,3 +403,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5416-peer-mail-to-the-nickname-inbox-agentic-.md
 - **Context:** Initial task creation
+
+### 2026-11-25T13:01:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
