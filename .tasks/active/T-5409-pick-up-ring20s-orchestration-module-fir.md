@@ -5,6 +5,12 @@ name: "Pick up ring20's orchestration module (first release): pin it, connect th
 description: >
   Ring20 side (msg 6cbb1a29, 2026-11-25): T-2873 specifics into orchestration-config.yaml,
   T-2874 split + first release; announcement on conversation aef-orchestration-module-2026-11-24.
+  SCOPE includes worker-type registration (operator 2026-11-25, http://192.168.10.122:3000/orchestration/register):
+  the register form (based-on entry + why it does not fit, workflow, activity, max data class,
+  executor kind, lifetime, effect marker, route bindings, tools, write paths, prompt with fail-closed
+  secret scan) creates a CANDIDATE under policy/orchestration-registry/candidates/; admission stays
+  operator-only (orch-registry.py admit <id>@<v> --task T-X --i-am-human). In AEF the admit step
+  should be a Watchtower approval or an operator runme, never an agent action.
   T-5406 GO (operator 2026-11-24, option 2): ring20's arc-009 orchestration engine
   becomes a separate versioned module, ring20 as producer. Ring20 first moves its
   specifics (worker uid range, launcher list, cap defaults, preflight hosts) into
