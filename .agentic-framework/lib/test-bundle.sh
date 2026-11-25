@@ -87,7 +87,10 @@ fw_test_bundle() {
     mv -f "$work/out.bundle" "$out" || return 1
     printf 'source_ref:     %s (%s)\n' "$sha" "$ref"
     printf 'bundle_commit:  %s\n' "$(cat "$work/commit")"
-    printf 'size_bytes:     %s (%.1f MB, %s)\n' "$bytes" "$(awk -v b="$bytes" 'BEGIN{print b/1048576}')" \
+    # T-5411: format the fraction inside awk (always a decimal point). Bash's printf %.1f
+    # reads its argument in LC_NUMERIC; under a comma-decimal locale (de_DE, inherited by
+    # cron) "50.2069" was an invalid number and a scheduled caller's bundle build failed.
+    printf 'size_bytes:     %s (%s MB, %s)\n' "$bytes" "$(awk -v b="$bytes" 'BEGIN{printf "%.1f", b/1048576}')" \
         "$([ -n "$max_mb" ] && echo "cap $max_mb MB" || echo "no cap")"
     printf 'sha256:         %s\n' "$(sha256sum "$out" | cut -c1-64)"
     printf 'file:           %s\n' "$out"
