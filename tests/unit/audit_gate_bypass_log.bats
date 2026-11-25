@@ -19,6 +19,19 @@ setup() {
              "$PROJECT_ROOT/.context/working" \
              "$PROJECT_ROOT/.context/audits"
     echo "framework_root: $FRAMEWORK_ROOT" > "$PROJECT_ROOT/.framework.yaml"
+    # T-5413: these tests grade the whole enforcement section, so the fixture must be a
+    # set-up project: the MCP egress hook (T-5394) and the publish-ban rules (T-5405),
+    # and HOME in the temp dir so the host's ~/.claude.json MCP servers do not leak into
+    # the verdict. Written as a literal fixture: the hook-wiring writer is operator-only
+    # (T-5403) and refuses under an agent, by design.
+    export HOME="$TEST_TEMP_DIR"
+    mkdir -p "$PROJECT_ROOT/.claude"
+    cat > "$PROJECT_ROOT/.claude/settings.json" <<'JSON'
+{
+  "hooks": {"PreToolUse": [{"matcher": "mcp__.*", "hooks": [{"type": "command", "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-mcp-egress"}]}]},
+  "permissions": {"deny": ["Artifact", "ArtifactComments", "ArtifactData", "ArtifactCheck", "DesignSync", "mcp__claude-artifacts", "mcp__claude_ai_Claude_Docs"]}
+}
+JSON
 }
 
 teardown() {

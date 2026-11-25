@@ -75,7 +75,13 @@ def test_only_opencode_backends_with_provider_models_are_checked_and_listed_once
 def test_the_committed_registry_pin_is_not_the_retired_glm_5_2():
     text = (_HERE / "policy/review-backends.yaml").read_text()
     block = text.split("id: opencode", 1)[1].split("- id:", 1)[0]
-    assert "model: zai-coding-plan/glm-5.3\n" in block, block
+    # T-5413: assert the purpose (not the retired 5.2, still a Z.ai GLM pin), not one exact
+    # value; the operator moves the pin (glm-5.3 -> glm-5.4 on 2026-11-25, T-5412).
+    import re
+    m = re.search(r"^\s*model:\s*(\S+)", block, re.M)
+    assert m, block
+    assert m.group(1).startswith("zai-coding-plan/glm-"), m.group(1)
+    assert m.group(1) != "zai-coding-plan/glm-5.2", m.group(1)
 
 
 def _judge(root, monkeypatch, preflight):
