@@ -1,8 +1,14 @@
 ---
 id: T-5420
-name: "commit-msg accepts only T-IDs: a WM-00x workflow-mode commit (session lifecycle, close-out) must borrow an unrelated task id"
+name: "commit-msg accepts only T-IDs: a WM-00x workflow-mode commit (session lifecycle,
+  close-out) must borrow an unrelated task id"
 description: >
-  050-email-archive msg 398260cc item 7 (2026-11-25): a run handback written under WM-003 cannot be committed with a 'WM-003: ...' subject; agents/git/lib/common.sh TASK_PATTERN='T-[0-9]+'. AEF itself borrows T-4648 for every handover commit; T-4230 recorded the root cause but did not change the pattern. Fix: accept WM-001..WM-00N subjects for commits whose paths stay inside what that workflow mode may write (.context/, handovers), and keep T-IDs for everything else.
+  050-email-archive msg 398260cc item 7 (2026-11-25): a run handback written under
+  WM-003 cannot be committed with a 'WM-003: ...' subject; agents/git/lib/common.sh
+  TASK_PATTERN='T-[0-9]+'. AEF itself borrows T-4648 for every handover commit; T-4230
+  recorded the root cause but did not change the pattern. Fix: accept WM-001..WM-00N
+  subjects for commits whose paths stay inside what that workflow mode may write (.context/,
+  handovers), and keep T-IDs for everything else.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T16:16:21Z
-last_update: 2026-11-25T16:16:21Z
-date_finished: null
+last_update: '2026-11-25T16:30:39Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-25T16:30:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5420: commit-msg accepts only T-IDs: a WM-00x workflow-mode commit (session lifecycle, close-out) must borrow an unrelated task id
