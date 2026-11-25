@@ -14,7 +14,7 @@ description: >
   no action is needed while the task stays open. Fix the message or the route so a
   human-owned inception's recovery names what the operator must run.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,7 +49,7 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T13:48:39Z
-last_update: '2026-11-19T14:01:17Z'
+last_update: 2026-11-25T10:10:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,20 +95,19 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** On 2026-11-19 (T-4834), after the operator's GO in Watchtower, completion was blocked by a gate. Watchtower said "the agent session can recover this (fw inception sweep); no action needed from you". An agent session's sweep was then refused (skip-sovereignty, T-3586). 150-skills-manager reported the same on 2026-11-24, filed as T-5404.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The message promised a recovery that the gates forbid an agent for an operator-owned inception.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Close this as fixed by T-5404 (duplicate, found by recall on 2026-11-25).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** T-5404 (commit 32495abfb) makes the sweep leave an operator-owned task untouched in an agent session and print the operator's one-line command. Watchtower now tells the operator the task is theirs and gives that line. "No action needed" appears only for agent-owned tasks.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The fix exists and is tested: T-5404 tests pass (tests/unit/t5404_inception_sweep_operator_owned.bats, tests/unit/test_t5404_half_done_recovery_text.py).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -163,6 +162,10 @@ bvp_scores_proposed:
      Write your commands BELOW this comment, one per line.
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
+-->
+timeout 600 bats tests/unit/t5404_inception_sweep_operator_owned.bats > /tmp/.t5256b 2>&1 && ! grep -q "^not ok" /tmp/.t5256b
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5404_half_done_recovery_text.py > /tmp/.t5256p 2>&1 && grep -q passed /tmp/.t5256p && ! grep -q failed /tmp/.t5256p
+<!--
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
 # run, add the line `# verification: none — <why nothing can be run>`; it is serviced
@@ -311,6 +314,10 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom, root cause and prevention:** see T-5404 (the same defect, found again by a consumer on 2026-11-24 and fixed there).
+
+**Why structurally allowed (this task):** it was filed on 2026-11-19, stayed `captured` with no owner action, and nobody searched for it when the same bug came back. T-5404 was filed as new, and recall surfaced this task only after the fix. Prevention: before filing a bug, run `fw recall "<symptom>"`; this one would have matched.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -391,3 +398,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5256-watchtower-says-the-agent-session-can-re.md
 - **Context:** Initial task creation
+
+### 2026-11-25T10:10:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
