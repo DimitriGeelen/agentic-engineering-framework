@@ -12,10 +12,10 @@ description: >
   message, or make the decision write and its finalisation one step so no half-done
   state exists.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [inception, watchtower, bug, consumer]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T18:56:12Z
-last_update: '2026-11-24T19:01:27Z'
+last_update: 2026-11-25T09:39:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,20 +93,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 150-skills-manager reported this on 2026-11-24 (C-010, msg 78c00e5e). When `fw inception decide` stops after the decision is saved (their case: the T-5373 lib collision, 4 times in a week), Watchtower tells the operator "the agent session can recover this (fw inception sweep); no action needed from you". In their project the agent could not: the sweep closes through update-task.sh, whose sovereignty gate refuses an agent. The only working path was the operator re-running `fw inception decide T-nnn go --i-am-human` from a shell.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The messages in `web/blueprints/inception.py` (~lines 733-750: LANDED gate-blocked and LANDED_INTERRUPTED) promise an agent recovery that the gates forbid, so the operator is told "no action needed" while nothing can finish the task. The decision itself IS the operator's act: it is recorded with Watchtower provenance before the crash, but the sweep does not count it.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** After a half-done decision, the task gets finished on a path that works, and the operator is told the truth about who must act.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Either the sweep accepts a recorded operator decision (Watchtower or `--i-am-human` provenance, matching task, decision and date) as the human act and finalizes the task under an agent, or the message gives the operator one copy-paste line that finishes it. The words "no action needed from you" appear only when the agent path actually works. A test reproduces the half-done state and shows the task reaching completed.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduced first: a fixture inception with a recorded operator decision and the task still in active/; `fw inception sweep` under agent control is shown to be refused (or not), and the finding is written in the task before any fix.
+- [ ] The recovery path works for that state: the sweep finalizes an inception whose decision has verified operator provenance, while still refusing one whose decision lacks it; OR, if a sound provenance check is not possible, the Watchtower messages give the operator one copy-paste line built with the project's fw path and drop "no action needed".
+- [ ] The Watchtower message text matches the path that works; hermetic tests for both message branches and the sweep legs; no regression in the existing inception decide/sweep tests.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -390,3 +391,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5404-half-done-inception-decision-watchtower-.md
 - **Context:** Initial task creation
+
+### 2026-11-25T09:39:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
