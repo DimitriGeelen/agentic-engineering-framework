@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5404: Half-done inception decision: Watchtower says 'the agent session can recover this (fw inception sweep)' but the sovereignty gate refuses the agent
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-25T10:44:43Z
+# ============================================================================
+
+task_id: T-5404
+task_name: "Half-done inception decision: Watchtower says 'the agent session can recover this (fw inception sweep)' but the sovereignty gate refuses the agent"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-24T18:56:12Z
+completed: 2026-11-25T10:43:35Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-11-24T19:56:22+01:00
+last_commit: 2026-11-25T11:08:53+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — inception recovery message points at a path the agent cannot finish (150 C-010). scoped (reproduce first; recovery path that works; honest message). half-done inception decision — honest recovery path. fabric cards for the two new test files
+
+# Key outcomes
+outcomes:
+  - 'Reproduced first: a fixture inception with a recorded operator decision and the task still in active/; `fw inception sweep` under agent control is shown to be refused (or not), and the finding is written in the task before any fix.'
+  - 'The recovery path works for that state: the sweep finalizes an inception whose decision has verified operator provenance, while still refusing one whose decision lacks it; OR, if a sound provenance check is not possible, the Watchtower messages give the operator one copy-paste line built with the project''s fw path and drop "no action needed".'
+  - 'The Watchtower message text matches the path that works; hermetic tests for both message branches and the sweep legs; no regression in the existing inception decide/sweep tests.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-25 — recovery path: operator line, not provenance-gated agent close'
+    chose: 'an operator-owned half-done decision is finished by the operator with one printed line, `cd <root> && <fw> inception sweep T-NNN` (the sweep now takes task ids). Under `CLAUDECODE=1` the sweep leaves such a task untouched and prints that line. Watchtower says "only you can finish it" plus the line; "no action needed from you" appears only when the task is agent-owned.'
+    rationale: 'none of the existing decision records can tell an operator decision from an agent-written one (see the reproduction entry in Updates): an agent can write the `**Decision**:` line and a decision-subject commit unguarded, the decide run''s status.json is gitignored and writable, and the sweep itself wrote the Human-tick row. A provenance check built on these would be a sovereignty bypass that looks like a gate.'
+    alternatives_rejected: ['(a) sweep accepts recorded decision provenance as the human act — no sound provenance exists today; (b) make decide''s write and close one transaction — larger change, and a crash between them (the reported case) would still need a recovery path.']
+  # 1 decision(s) below are recorded in the register (.context/project/decisions.yaml) for this task but absent from the task file's Decisions section (T-4193).
+  - decision: 'D-1076'
+    chose: '` line and a decision-subject commit unguarded, the decide run''s status.json is gitignored and writable, and the sweep itself wrote the Human-tick row. A provenance check built on these would be a sovereignty bypass that looks like a gate.'
+    rationale: 'Auto-captured from task file on completion'
+    id: 'D-1076'
+    source: register
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.fabric/components/tests-unit-t5404_inception_sweep_operator_owned.yaml'
+  - '.fabric/components/tests-unit-test_t5404_half_done_recovery_text.yaml'
+  - 'lib/inception.sh'
+  - '.tasks/active/T-5404-half-done-inception-decision-watchtower-.md'
+  - 'tests/unit/t5404_inception_sweep_operator_owned.bats'
+  - 'tests/unit/test_t5404_half_done_recovery_text.py'
+  - 'web/blueprints/inception.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-24T19:56:22'
+    action: 'T-5404: filed — inception recovery message points at a path the agent cannot finish (150 C-010)'
+  - time: '2026-11-25T10:40:21'
+    action: 'T-5404: scoped (reproduce first; recovery path that works; honest message)'
+  - time: '2026-11-25T10:49:47'
+    action: 'T-5404: half-done inception decision — honest recovery path'
+  - time: '2026-11-25T11:08:53'
+    action: 'T-5404: fabric cards for the two new test files'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 947 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, watchtower, bug, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 947
+  commits: 5
+  files_changed: 12
+  lines_added: 1091
+  lines_removed: 37
+  footprint_refreshed_at: '2026-11-25T10:45:17Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5404-half-done-inception-decision-watchtower-.md
+generated_by: context-agent-hybrid

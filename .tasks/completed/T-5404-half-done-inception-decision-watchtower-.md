@@ -12,12 +12,12 @@ description: >
   message, or make the decision write and its finalisation one step so no half-done
   state exists.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [inception, watchtower, bug, consumer]
-components: []
+components: [lib/inception.sh, tests/unit/t5404_inception_sweep_operator_owned.bats, tests/unit/test_t5404_half_done_recovery_text.py, web/blueprints/inception.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T18:56:12Z
-last_update: 2026-11-25T09:39:56Z
-date_finished:
+last_update: 2026-11-25T10:43:35Z
+date_finished: 2026-11-25T10:43:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -419,3 +419,17 @@ bin/fw watchtower current
 - **Result:** REFUSED. Exit 1, `held=1`, task left in active/ as started-work. update-task.sh said: `ERROR: --skip-sovereignty is refused in an agent session (CLAUDECODE=1) — T-3586`. So the Watchtower promise ("the agent session can recover this (fw inception sweep); no action needed from you") is false for every `owner: human` inception, which is the normal case.
 - **Side finding:** before the refused close, the sweep had already ticked the `### Human` box and written a `via: inception-decide` row to `.context/reviews/human-ac-ticks.jsonl`, under agent control.
 - **Provenance data that exists:** the `**Decision**:` line (no guard stops an agent writing it), the commit subject `T-NNN: inception decision …` (no guard on the subject), `.context/working/decide/<task>/*/status.json` (gitignored, agent-writable), and the Human-tick row above (the sweep writes it itself). None of them tells an operator decision from an agent-written one, so a sound provenance check is not possible with this data. Path chosen: an honest operator line, not a weaker gate.
+
+### 2026-11-25T10:43:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** operator: render review via chat for a text-only warning
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f8a6a0c7
+- **Timestamp:** 2026-11-25T10:44:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
