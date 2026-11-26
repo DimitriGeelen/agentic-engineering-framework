@@ -385,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5423-audit-tag-format-drift-headline-is-paire.md
 - **Context:** Initial task creation
+
+### 2026-11-26 — evidence from 050 (v1.8.15+756, fw audit)
+Headline: `[WARN] Orchestrator-arc tag-format drift: live sessions carry non-canonical prefixes`
+The evidence line leads with `NEW: 9 unclassified tool(s) ... | REMOVED: 12 tool(s) gone from /opt/termlink ... | TAG-FORMAT-DRIFT: 5 non-canonical tag prefix(es) in live sessions: fw-project=(20), respawn=(4), role=(2), fqdn=(1), stack=(1)`. The headline names tag drift; the evidence leads with MCP tool classification.
