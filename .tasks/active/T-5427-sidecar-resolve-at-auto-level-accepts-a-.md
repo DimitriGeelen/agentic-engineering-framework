@@ -1,8 +1,16 @@
 ---
 id: T-5427
-name: "sidecar resolve() at auto level accepts a nickname on our own hub because any fetch (a peek) counts as read"
+name: "sidecar resolve() at auto level accepts a nickname on our own hub because any
+  fetch (a peek) counts as read"
 description: >
-  AEF-ontology-agent RCA (msg 9a0b7e4b, 2026-11-26): lib/sidecar/addressing.py resolve() auto level accepts a bare name not in the peer directory when inbox:<own hub>/<name> was fetched after its last write (T-4529, line ~333/481). topic_is_read counts any fetch including a peek, so a nickname nobody reads passes. Three consults (22-24 Nov) were stored as <own hub>/proxmox-ring20-management with hub null; our orphan inbox of that name holds 29 unread posts. Their vendored fix removes the branch and the refusal names --level project; land it upstream with a test (nickname refused at auto, resolved at --level project, numbered id still resolves).
+  AEF-ontology-agent RCA (msg 9a0b7e4b, 2026-11-26): lib/sidecar/addressing.py resolve()
+  auto level accepts a bare name not in the peer directory when inbox:<own hub>/<name>
+  was fetched after its last write (T-4529, line ~333/481). topic_is_read counts any
+  fetch including a peek, so a nickname nobody reads passes. Three consults (22-24
+  Nov) were stored as <own hub>/proxmox-ring20-management with hub null; our orphan
+  inbox of that name holds 29 unread posts. Their vendored fix removes the branch
+  and the refusal names --level project; land it upstream with a test (nickname refused
+  at auto, resolved at --level project, numbered id still resolves).
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-26T18:11:22Z
-last_update: 2026-11-26T18:11:22Z
-date_finished: null
+last_update: '2026-11-26T18:15:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-26T18:15:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=309,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5427: sidecar resolve() at auto level accepts a nickname on our own hub because any fetch (a peek) counts as read
