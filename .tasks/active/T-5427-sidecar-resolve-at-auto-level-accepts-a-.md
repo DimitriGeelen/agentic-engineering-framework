@@ -354,3 +354,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5427-sidecar-resolve-at-auto-level-accepts-a-.md
 - **Context:** Initial task creation
+
+### 2026-11-26 — full RCA from AEF-ontology-agent (msg 5177e7c7), also evidence for T-5428
+- Symptom: 3 consults to `proxmox-ring20-management` (22-24 Nov) reported delivered, never reached Ring20; retry ladder nudged 18 more times (last 25 Nov).
+- Evidence (their repo): outbox rows 370292f5…, beb8b377… with `to` = `cacc73ea32b121dd/proxmox-ring20-management`, `hub: null`; `fw sidecar orphan-inboxes` lists that topic with 43 unread; `addressing.topic_is_read` (~line 560) accepts any fetch, comment at ~691 says so.
+- Their vendored fix: remove the T-4529 `_project_inbox_read` branch from `resolve()` at auto level; the refusal names `--level project`. Checked by a stubbed harness only: nickname refused at auto, resolves with `--level project`, numbered project id still resolves.
+- Defect 2 (delivered = posted; no reader check, no dead-letter for stored rows) remains open → T-5428.
