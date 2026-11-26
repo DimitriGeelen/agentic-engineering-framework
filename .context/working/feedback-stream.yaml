@@ -59766,3 +59766,21 @@ scan_id: R-bab5718a
 task_id: T-5418
 payload:
   task_file: .tasks/active/T-5418-orphan-inbox-alert-names-it-when-the-top.md
+---
+kind: scan_emitted
+timestamp: '2026-11-26T15:47:15Z'
+scan_id: R-224c5d68
+task_id: T-5425
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-26T15:47:15Z'
+scan_id: R-224c5d68
+task_id: T-5425
+payload:
+  task_file: .tasks/active/T-5425-hook-telemetry-counts-a-gates-deliberate.md
