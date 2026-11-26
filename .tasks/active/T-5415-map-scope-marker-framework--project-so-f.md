@@ -372,6 +372,12 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-26 — scope attribute name and values (agreed with 832, their T-1519)
+- **Chose:** `aef:workflowMeta/@scope` = `framework` (ships to every vendoring project) | `project` (stays in its repo); absent = `project`; a separate attribute from `kind`; no third value. 832 builds the validator value check, designer Scope select, AUTHORING 6 and skill; we build the `fw vendor` filter and its test, and mark our framework maps in the same release.
+- **Why:** fail-safe default (an unmarked map never ships); kind says what sort of map, scope says whose.
+- **Rejected:** `distribution` (packaging-ish), `owner` (collides with node performer), a list value (no case needs it yet).
+- **Operator:** confirmed 2026-11-26 ("2 yes").
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
