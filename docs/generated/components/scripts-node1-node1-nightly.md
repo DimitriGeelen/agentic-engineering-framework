@@ -15,7 +15,7 @@ scripts/node1/node1-nightly.sh --dry-run          list what would be sent (no ne
 scripts/node1/node1-nightly.sh --health           node1's feed health only
 scripts/node1/node1-nightly.sh --limit 20         a small real run
 scripts/node1/node1-nightly.sh                    the nightly run (cron: node1-unit-suite-nightly)
-This project's ring20 adapter: scripts/ is not shipped by `fw vendor`, so it never
+scripts/node1/node1-nightly.sh --repin            OPERATOR ONLY: pin the pool client's new sha256 (T-5410)
 
 ---
 *Auto-generated from Component Fabric. Card: `scripts-node1-node1-nightly.yaml`*

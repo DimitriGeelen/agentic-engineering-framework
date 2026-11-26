@@ -6,8 +6,6 @@
 
 ## What It Does
 
-── exclusions and selection ────────────────────────────────────────────────────────
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_t5392_node1_nightly.yaml`*
 *Last verified: 2026-11-24*
