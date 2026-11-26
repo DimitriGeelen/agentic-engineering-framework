@@ -83,9 +83,18 @@ teardown() {
     grep -q '^check-tier0=1$' "$PROJECT_ROOT/.context/working/.hook-counter"
 }
 
-@test "exit 2 (block) increments failure counter" {
+@test "exit 2 (gate refusal) counts as a refusal, not a failure (T-5425)" {
     fw_record_hook_fire "check-tier0" 2
-    grep -q '^check-tier0=1$' "$PROJECT_ROOT/.context/working/.hook-failure-counter"
+    grep -q '^check-tier0=1$' "$PROJECT_ROOT/.context/working/.hook-counter"
+    grep -q '^check-tier0=1$' "$PROJECT_ROOT/.context/working/.hook-refusal-counter"
+    [ ! -f "$PROJECT_ROOT/.context/working/.hook-failure-counter" ]
+}
+
+@test "exit 1 and 127 still count as failures (T-5425)" {
+    fw_record_hook_fire "crashy" 1
+    fw_record_hook_fire "crashy" 127
+    grep -q '^crashy=2$' "$PROJECT_ROOT/.context/working/.hook-failure-counter"
+    [ ! -f "$PROJECT_ROOT/.context/working/.hook-refusal-counter" ]
 }
 
 @test "fw_hook_counter_get reads current values" {

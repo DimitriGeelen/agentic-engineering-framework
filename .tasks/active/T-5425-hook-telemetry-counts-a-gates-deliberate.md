@@ -8,10 +8,10 @@ description: >
   exit 2 as refused separately, only other non-zero exits as failures, and record
   fires on the refusal path too.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, telemetry]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T21:09:36Z
-last_update: '2026-11-25T21:16:07Z'
+last_update: 2026-11-26T15:46:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010-termlink (their T-3670, sidecar msg f86f2502, 2026-11-25) reported that the audit WARN "Hook threshold: N hook(s) failing over threshold (T-1626)" fires for gates that work as designed. On 010: block-plan-mode 67/26, block-task-tools 67/26, check-agent-dispatch 8/28. Our own counter shows the same: check-active-task=486, block-task-tools=407, block-plan-mode=317, check-human-ac-tick=179 "failures".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `fw_record_hook_fire` in `lib/hook-telemetry.sh` counts every non-zero exit as a failure, and `tests/unit/hook_telemetry.bats` even pins "exit 2 (block) increments failure counter". Exit 2 is how a PreToolUse gate refuses a call, so every deliberate refusal is counted as the hook being broken. A broken hook is caught elsewhere: a missing script records 127, a bash syntax error is turned into broken mode (T-4908), and crashes exit 1 or another code.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Count a refusal (exit 2) as a refusal, not as a failure, so the T-1626 threshold only fires for hooks that actually fail.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** exit 2 increments `.hook-refusal-counter` (and the fire counter), never `.hook-failure-counter`; other non-zero exits still count as failures; the threshold scan and audit WARN stop naming gates that only refuse.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw_record_hook_fire <hook> 2` increments `.hook-counter` and `.hook-refusal-counter`, not `.hook-failure-counter`
+- [x] exit 1 and 127 still increment `.hook-failure-counter` (missing-hook witness unchanged)
+- [x] `tests/unit/hook_telemetry.bats` and `tests/unit/hook_threshold.bats` pass, with the old "exit 2 is a failure" test replaced by the refusal test
+- [x] vendored copy in sync (`bin/fw vendor self --check`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +292,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/hook_telemetry.bats tests/unit/hook_threshold.bats tests/unit/hook_telemetry_race.bats
+grep -q 'hook-refusal-counter' lib/hook-telemetry.sh
+bin/fw vendor self --check --task T-5425
 
 ## RCA
 
@@ -306,6 +311,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** The audit WARN "Hook threshold: N hook(s) failing over threshold (T-1626)" named gates that work correctly (block-task-tools, block-plan-mode, check-active-task), here and at 010-termlink.
+
+**Root cause:** T-1628 defined "failure" as any non-zero exit. For PreToolUse hooks, exit 2 is the designed refusal signal, so every refusal was recorded as a failure. The test suite pinned that choice ("exit 2 (block) increments failure counter").
+
+**Why structurally allowed:** The telemetry was built for the T-1626 witness (a path-broken hook exiting 0 or 127), and nobody checked it against the gates' own exit contract. A WARN that always fires gets acknowledged and then ignored, which is what 010 had to do.
+
+**Prevention:** The tests now pin both halves: exit 2 never touches the failure counter, and exit 1/127 still do. Refusals get their own counter (`.hook-refusal-counter`, `fw_hook_counter_get refusals`), so the information is kept rather than dropped.
 
 ## Evolution
 
@@ -387,3 +400,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5425-hook-telemetry-counts-a-gates-deliberate.md
 - **Context:** Initial task creation
+
+### 2026-11-26T15:43:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

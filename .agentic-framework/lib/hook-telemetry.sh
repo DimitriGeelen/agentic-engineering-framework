@@ -10,22 +10,31 @@
 #
 # Files (in $PROJECT_ROOT/.context/working/):
 #   .hook-counter            — per-hook fire count, one `<hookname>=<count>` line
-#   .hook-failure-counter    — per-hook non-zero-exit count, same format
+#   .hook-failure-counter    — per-hook failing-exit count (non-zero, not 2), same format
+#   .hook-refusal-counter    — per-hook exit-2 count: a gate refusing by design (T-5425)
 #
 # Performance budget: <5ms per fire (per T-1626 constraint). Achieved by a
 # single awk subprocess per file with a small (typically <20-line) input.
 # All errors are swallowed — telemetry must NEVER block a hook from running.
 
 # fw_record_hook_fire <hookname> <exit_code>
-#   Increment the per-hook fire counter. If exit_code != 0, also increment the
-#   per-hook failure counter. Silent on all errors (telemetry never blocks).
+#   Increment the per-hook fire counter. Exit 2 also increments the refusal
+#   counter; any other non-zero exit increments the failure counter (T-5425). Silent on all errors (telemetry never blocks).
 fw_record_hook_fire() {
     local hookname="${1:-unknown}"
     local exit_code="${2:-0}"
     local working_dir="${PROJECT_ROOT:-.}/.context/working"
     [ -d "$working_dir" ] || return 0
     _fw_telemetry_increment "$working_dir/.hook-counter" "$hookname" 2>/dev/null || true
-    if [ "$exit_code" != "0" ]; then
+    # T-5425 (010-termlink T-3670): exit 2 is how a PreToolUse gate REFUSES a call
+    # by design, so it is counted as a refusal, never as a failure. Counting it as
+    # a failure made every working gate (block-task-tools, check-active-task, ...)
+    # trip the T-1626 hook-threshold WARN. Broken hooks still show up: a missing
+    # script records 127, a bash syntax error goes to broken mode (T-4908), and a
+    # crash exits 1 or another non-zero code.
+    if [ "$exit_code" = "2" ]; then
+        _fw_telemetry_increment "$working_dir/.hook-refusal-counter" "$hookname" 2>/dev/null || true
+    elif [ "$exit_code" != "0" ]; then
         _fw_telemetry_increment "$working_dir/.hook-failure-counter" "$hookname" 2>/dev/null || true
     fi
     return 0
@@ -129,7 +138,7 @@ _fw_telemetry_rmw() {
 }
 
 # fw_hook_counter_get <kind> <hookname>
-#   kind: fires|failures
+#   kind: fires|failures|refusals (refusals = exit 2, T-5425)
 #   Prints the current count for one hook, or "0" if absent. Used by B-3
 #   (threshold escalation) and `fw doctor`. Read-only; safe in hot paths.
 fw_hook_counter_get() {
@@ -140,6 +149,7 @@ fw_hook_counter_get() {
     case "$kind" in
         fires)    file="$working_dir/.hook-counter" ;;
         failures) file="$working_dir/.hook-failure-counter" ;;
+        refusals) file="$working_dir/.hook-refusal-counter" ;;
         *)        echo 0; return 0 ;;
     esac
     [ -f "$file" ] || { echo 0; return 0; }
