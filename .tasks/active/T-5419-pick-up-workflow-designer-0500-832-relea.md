@@ -1,8 +1,16 @@
 ---
 id: T-5419
-name: "Pick up Workflow Designer 0.50.0 (832 release; pin 0.49.0 -> 0.50.0)"
+name: "Pick up Workflow Designer 0.51.0 (832 release; pin 0.49.0 -> 0.51.0, includes 0.50.0)"
 description: >
-  832 msg bd2cad5f (2026-11-25): tag designer-v0.50.0 (release commit 850394c00),
+  RETARGETED 2026-11-26 to 0.51.0 (832 msg 49602d6f, T-1527): tag designer-v0.51.0
+  (release commit 960086290), dist/aef-workflow-designer-0.51.0.html sha256
+  6b3e2a4915acb7ff83455cd6b96b436b501c13c6defadc991a95199951b55866, 1496964 bytes;
+  kit SHA256SUMS sha256 58e664932e579a27b6020c661f1f5c2fcc1b16d0480f3c19f151036bbb09ae2d;
+  validator unchanged 98e199b6; /api/validate and the five endpoints unchanged.
+  Lifts 'add lanes before phases' (T-1513); lane add/delete/resize one undo step (T-1525);
+  deleting a phase gives its range to the neighbour (T-1515). Stored maps change only
+  when lanes are added/enlarged under phases or a phase is deleted.
+  Superseded 0.50.0 details: 832 msg bd2cad5f (2026-11-25): tag designer-v0.50.0 (release commit 850394c00),
   dist/aef-workflow-designer-0.50.0.html sha256 23a8d4d00675861278ee54b4c91658b5fe32e3002760f420a349ffa614a71d42,
   1493171 bytes; kit SHA256SUMS sha256 0fccba7390d7e873e901e4c4c0078511c39afdab6809b265c97c36f9a87851be;
   validator unchanged 98e199b6. Phases slices B and C (add phase row/phase, drag shared
