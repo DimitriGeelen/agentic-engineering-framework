@@ -377,6 +377,7 @@ bvp_scores_proposed:
 - **Why:** fail-safe default (an unmarked map never ships); kind says what sort of map, scope says whose.
 - **Rejected:** `distribution` (packaging-ish), `owner` (collides with node performer), a list value (no case needs it yet).
 - **Operator:** confirmed 2026-11-26 ("2 yes").
+- **2026-11-27, 832 msg 525bca45:** 832 operator GO; build is 832 T-1528, targets designer **0.52.0** (validator W-XML-WORKFLOW-SCOPE / W-WORKFLOW-SCOPE, YAML bridge, Scope select). **Ordering constraint:** designers up to and including 0.51.0 (we serve 0.49.0) do not read `@scope`, so opening and saving a marked map there silently drops the mark. Mark our framework maps only once we serve 0.52.0, or by script, and ship the filter, test and markings with the 0.52.0 pickup. The filter's test should also catch a map that lost its mark.
 
 ## Decision
 
