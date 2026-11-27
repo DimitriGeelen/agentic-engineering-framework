@@ -59964,3 +59964,21 @@ scan_id: R-9716f07d
 task_id: T-5422
 payload:
   task_file: .tasks/active/T-5422-audit-fabric-drift-reader-ignores-the-wa.md
+---
+kind: scan_emitted
+timestamp: '2026-11-27T14:04:40Z'
+scan_id: R-c6fc9e68
+task_id: T-5433
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-27T14:04:40Z'
+scan_id: R-c6fc9e68
+task_id: T-5433
+payload:
+  task_file: .tasks/active/T-5433-fabric-exclude-x-does-not-match-x-at-the.md

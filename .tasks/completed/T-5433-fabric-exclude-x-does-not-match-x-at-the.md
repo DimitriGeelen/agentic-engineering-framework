@@ -7,12 +7,12 @@ description: >
   excludes src/frontend/node_modules/… but not node_modules/… at the root, the most
   common place. Make a leading '**/' also match zero directories (gitignore semantics).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, fabric]
-components: []
+components: [agents/fabric/lib/expand_patterns.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-27T14:03:46Z
-last_update: 2026-11-27T14:04:27Z
-date_finished:
+last_update: 2026-11-27T14:04:29Z
+date_finished: 2026-11-27T14:04:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -388,3 +388,16 @@ bin/fw vendor self --check --task T-5433
 
 ### 2026-11-27T14:03:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-27T14:04:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c6fc9e68
+- **Timestamp:** 2026-11-27T14:04:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
