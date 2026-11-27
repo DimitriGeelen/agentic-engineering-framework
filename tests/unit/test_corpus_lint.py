@@ -472,12 +472,24 @@ def test_live_corpus_all_versions_census():
     Three ADDs: `aef-github-pr-intake@v1..v3` (the as-is outside-PR workflow
     drawn from PR #116; saved three times while clearing /api/validate errors).
     All three lint clean (checked: lint_map returns no findings for v1, v2, v3),
-    so the flagged set is the same 14 names."""
+    so the flagged set is the same 14 names.
+
+    T-5435 baseline move (52 -> 61 versions, flagged held at 14), 2026-11-27.
+    Red from T-5415, which saved nine framework maps as new versions carrying
+    aef:workflowMeta scope="framework" (designer 0.52.0, 832 T-1528) and did not
+    re-derive this pin: the same lapse, a fifth time. Nine ADDs, each identical to
+    the version before it except the attribute: aef-audit-cron@v2,
+    aef-dispatch-loop@v4, aef-existing-project-onboarding@v2,
+    aef-greenfield-onboarding@v3, aef-inception-flow@v2, aef-inception-lifecycle@v2,
+    aef-session-lifecycle@v2, aef-task-lifecycle@v5, aef-tier0-escalation@v2.
+    Checked by construction: `git diff --name-status a4db7c97b HEAD` over the store
+    is 9 A (.bpmn) and 9 M (meta.json), tools/corpus_lint.py has no commits since
+    the pin, and none of the nine is in the flagged set."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
     targets = corpus_lint.collect_all_versions(store)
-    assert len(targets) == 52, [n for n, _ in targets]
+    assert len(targets) == 61, [n for n, _ in targets]
 
     findings, typed = [], []
     for name, xml_text in targets:
