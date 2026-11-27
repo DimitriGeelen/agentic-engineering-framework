@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5379: Prompt-origin classifier labels task-notification prompts human: transcript_mark matches by text with one unretried read
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-27T13:30:53Z
+# ============================================================================
+
+task_id: T-5379
+task_name: "Prompt-origin classifier labels task-notification prompts human: transcript_mark matches by text with one unretried read"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-23T21:44:17Z
+completed: 2026-11-27T13:30:26Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-11-23T22:44:27+01:00
+last_commit: 2026-11-27T14:30:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — task-notification prompts classified human (010-termlink msg 03b9b550). prompt-origin lookup matches the transcript record by prompt_id, re-reads within a bounded wait, logs its branch (010 msg 03b9b550)
+
+# Key outcomes
+outcomes:
+  - 'With `prompt_id` in the hook input, the record with that `promptId` decides, whatever its text'
+  - 'When no matching record is found, the transcript is re-read within a bounded total wait (no wait when the record is already there)'
+  - 'Each lookup outcome (generated / unmarked / none, and by id or text) is logged to a file under `.context/sidecar/`'
+  - 'Existing adapter2 tests pass plus new cases for id match, text mismatch and late record; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/adapter2.py'
+  - '.tasks/active/T-5379-prompt-origin-classifier-labels-task-not.md'
+  - 'lib/sidecar/adapter2.py'
+  - 'tests/unit/test_t5054_adapter2.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-23T22:44:27'
+    action: 'T-5379: capture — task-notification prompts classified human (010-termlink msg 03b9b550)'
+  - time: '2026-11-27T14:30:24'
+    action: 'T-5379: prompt-origin lookup matches the transcript record by prompt_id, re-reads within a bounded wait, logs its branch (010 msg 03b9b550)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5266 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar, T-5351]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5266
+  commits: 3
+  files_changed: 7
+  lines_added: 716
+  lines_removed: 40
+  footprint_refreshed_at: '2026-11-27T13:31:05Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5379-prompt-origin-classifier-labels-task-not.md
+generated_by: context-agent-hybrid
