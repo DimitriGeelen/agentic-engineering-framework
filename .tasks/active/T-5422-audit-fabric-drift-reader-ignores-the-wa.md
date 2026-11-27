@@ -6,10 +6,10 @@ description: >
   not apply the watch-patterns exclude list, so excluded paths are reported as drift.
   Reproduce in a consumer fixture with an exclude, then fix the reader.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [audit, fabric, bug, consumer]
 components: []
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T16:16:22Z
-last_update: '2026-11-25T16:31:17Z'
+last_update: 2026-11-27T14:02:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 050-email-archive msg 398260cc item 4 (their T-1771, 2026-11-25): fabric drift in the audit reported files that their watch-patterns exclude list should have removed.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Both audit readers already go through agents/fabric/lib/expand_patterns.py (T-2735), which applies `exclude:`. But the expander does `list(exclude)`: an exclude written as a single string (`exclude: "node_modules/**"`) becomes a list of characters, no file matches a one-character pattern, and the exclude is silently ignored. Our own watch file uses lists, so this never showed here. Unconfirmed for 050 until they show their exclude lines.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Accept an exclude given as a string or a list, at top level and per pattern, so the written intent always applies; and never iterate a string as characters again.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A watch file with a scalar exclude drops the excluded files from drift, the same as the list form; a non-string, non-list exclude is reported, not silently ignored.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `expand_patterns.py` applies a string exclude and a list exclude identically (top-level and per-pattern)
+- [x] An exclude of any other type is reported on stderr instead of being ignored
+- [x] A test fixture covers both forms; existing fabric expander tests pass
+- [x] 050 is asked which form their watch file uses (confirms or refutes the hypothesis)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +289,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5422_expand_patterns_scalar_exclude.py
+bats tests/unit/test_fabric_exclude.bats
+bin/fw vendor self --check --task T-5422
 
 ## RCA
 
@@ -303,6 +308,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** At 050, fabric drift in the audit listed files their watch-patterns exclude list should have removed.
+
+**Root cause (most likely; awaiting 050's exclude lines):** Both audit readers use expand_patterns.py, which applies excludes, but it built the list with `list(exclude)`. An exclude written as a single string becomes a list of characters; no path matches a one-character pattern, so the exclude was ignored.
+
+**Why structurally allowed:** The expander accepted any YAML type for `exclude:` without checking it, and the only tests (test_fabric_exclude.bats) used the list form, so the scalar form had no witness and failed silently.
+
+**Prevention:** `_as_list` accepts a string or a list and reports any other type on stderr; tests pin string and list as equivalent at both levels and the report for a wrong type. If 050's file shows a different cause, a follow-up task will cover it.
 
 ## Evolution
 
@@ -384,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5422-audit-fabric-drift-reader-ignores-the-wa.md
 - **Context:** Initial task creation
+
+### 2026-11-27T14:00:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

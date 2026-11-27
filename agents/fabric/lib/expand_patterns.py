@@ -42,6 +42,22 @@ def _excluded(rel_path: str, exclude_patterns: list[str]) -> bool:
     return False
 
 
+def _as_list(value, where: str) -> list[str]:
+    """T-5422 (050 item 4): an exclude may be written as one string or a list.
+
+    `list("node_modules/**")` is a list of single characters, which match no path, so a
+    scalar exclude used to be ignored without a word. Any other type is reported."""
+    if value is None or value == "":
+        return []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, (list, tuple)):
+        return [str(v) for v in value if v is not None and str(v) != ""]
+    sys.stderr.write(f"expand_patterns.py: {where} exclude is a {type(value).__name__}, "
+                     f"not a string or list; ignored: {value!r}\n")
+    return []
+
+
 def expand(watch_yaml: Path, project_root: Path) -> list[str]:
     try:
         data = yaml.safe_load(watch_yaml.read_text())
@@ -51,7 +67,7 @@ def expand(watch_yaml: Path, project_root: Path) -> list[str]:
     if not isinstance(data, dict):
         return []
 
-    top_exclude = data.get("exclude", []) or []
+    top_exclude = _as_list(data.get("exclude"), "top-level")
     seen: set[str] = set()
     out: list[str] = []
 
@@ -64,8 +80,8 @@ def expand(watch_yaml: Path, project_root: Path) -> list[str]:
             glob_str = pattern.get("glob")
             if not glob_str:
                 continue
-            per_pattern_exclude = pattern.get("exclude", []) or []
-            combined_exclude = list(top_exclude) + list(per_pattern_exclude)
+            per_pattern_exclude = _as_list(pattern.get("exclude"), f"pattern {glob_str!r}")
+            combined_exclude = top_exclude + per_pattern_exclude
 
             for match in glob.glob(glob_str, recursive=True):
                 if not os.path.isfile(match):
