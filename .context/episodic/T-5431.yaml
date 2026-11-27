@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5431: Add W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE to the validator-refusal mapping (832 T-1528)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-27T13:24:09Z
+# ============================================================================
+
+task_id: T-5431
+task_name: "Add W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE to the validator-refusal mapping (832 T-1528)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-27T13:23:03Z
+completed: 2026-11-27T13:23:53Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-27T14:23:51+01:00
+last_commit: 2026-11-27T14:23:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refusal mapping gains W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE (832 T-1528, byte-equal to their diff)
+
+# Key outcomes
+outcomes:
+  - 'Both entries are present, byte-for-byte as in 832''s diff, directly before `E-LANES-EMPTY`'
+  - 'The mapping parses as YAML; `fw designer status` raises no new mapping finding'
+  - '832 has the resulting sha256 and the reason for the earlier difference'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5431-add-w-workflow-scope-and-w-xml-workflow-.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-27T14:23:51'
+    action: 'T-5431: refusal mapping gains W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE (832 T-1528, byte-equal to their diff)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, contract]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 0
+  commits: 2
+  files_changed: 5
+  lines_added: 510
+  lines_removed: 4
+  footprint_refreshed_at: '2026-11-27T13:24:18Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5431-add-w-workflow-scope-and-w-xml-workflow-.md
+generated_by: context-agent-hybrid
