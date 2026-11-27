@@ -52,7 +52,9 @@ teardown() {
     run bash -c "cd '$CONSUMER' && FRAMEWORK_ROOT='$FRAMEWORK_ROOT' timeout 300 '$CONSUMER/.agentic-framework/bin/fw' doctor 2>&1"
     ! echo "$output" | grep -q "Cron registry present but not generated" || false
     ! echo "$output" | grep -q "Cron registry edited but not generated" || false
-    echo "$output" | grep -q "Run: fw cron install"
+    # T-5382: since T-5302 doctor never prints a bare `fw`; without fw on PATH the
+    # remedy is "Run: cd <consumer> && .agentic-framework/bin/fw cron install".
+    echo "$output" | grep -qE "Run: (cd [^&]+&& )?[^ ]*fw cron install"
 }
 
 @test "T-4259 (d): init next steps name fw cron install" {

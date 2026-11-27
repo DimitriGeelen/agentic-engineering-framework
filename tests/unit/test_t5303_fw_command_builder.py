@@ -187,6 +187,16 @@ def test_doctor_absent_warns(tmp_path):
     assert rc == 1 and "No fw on PATH" in out and "install.sh" in out
 
 
+def test_t5382_path_findings_are_host_scoped(tmp_path):
+    """Which fw a shell finds is a host fact: both WARNs carry doctor's [host] tag."""
+    (tmp_path / "a").mkdir()
+    (tmp_path / "s").mkdir()
+    _, absent = _doctor(tmp_path / "a", None)
+    assert "WARN  [host] No fw on PATH" in absent
+    _, shim = _doctor(tmp_path / "s", "#!/bin/bash\n# fw-shim — Project-detecting wrapper\n")
+    assert "WARN  [host] fw on PATH is the old fw-shim" in shim
+
+
 def test_doctor_skips_a_project_copy_first_on_path(tmp_path):
     """A session started inside the repo has its bin/ first on PATH; that copy is
     not the host's entry point."""
@@ -202,4 +212,5 @@ def test_doctor_skips_a_project_copy_first_on_path(tmp_path):
 
 def test_doctor_wires_the_check():
     src = (ROOT / "bin" / "fw").read_text()
-    assert "fw_doctor_path_fw || warnings=$((warnings + 1))" in src
+    # T-5382: the PATH finding is host-scoped, so it also counts as a host warning
+    assert "fw_doctor_path_fw || { warnings=$((warnings + 1)); host_warnings=$((host_warnings + 1)); }" in src

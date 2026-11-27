@@ -53,8 +53,11 @@ setup() {
     grep -q '=== END AUDIT ===' "$out_file" \
         || { echo "audit did not run to completion (rc=$rc); timing is meaningless"; \
              tail -20 "$out_file"; false; }
-    grep -q 'Cron registry in sync\|Cron registry' "$out_file" \
-        || { echo "structure checks did not execute; timing is meaningless"; false; }
+    # T-5382: the cron check prints "Cron registry …" where this project's crontab is
+    # installed and "Cron drift: …" where it is not (a CI runner, a fresh clone). Either
+    # line proves the structure section ran.
+    grep -qE 'Cron registry|Cron drift' "$out_file" \
+        || { echo "structure checks did not execute; timing is meaningless"; grep -E '^\[(PASS|WARN|FAIL)\]' "$out_file" | head -5; false; }
 
     if [ "$elapsed" -gt "$BUDGET_S" ]; then
         echo "Pre-push structure audit took ${elapsed}s (budget ${BUDGET_S}s)."

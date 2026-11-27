@@ -40,7 +40,7 @@ teardown() {
 @test "T-1406: fw doctor prints Active mode line in framework-repo mode" {
     cd "$FRAMEWORK_ROOT"
     run "$FW" doctor
-    [ "$status" -le 1 ]
+    [ "$status" -le 1 ] || { echo "$output" | grep -E "^ *FAIL" >&2; false; }   # T-5382
     [[ "$output" == *"Active mode: framework-repo"* ]]
 }
 

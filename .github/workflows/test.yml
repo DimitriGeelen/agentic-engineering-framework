@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: [bleeding-edge, master]
 
+# T-5382: a GitHub runner has no semantic-recall index (never built, no reindex cron).
+# lib/vector_index_health.py correctly FAILs a missing index on a host that has recall,
+# which made `fw doctor` exit 2 here and turned 7 doctor/audit bats tests red. The
+# runner is a host without recall, so it says so through the sanctioned opt-out
+# (T-3862: one SKIP "not configured on this host"); the check itself stays strict.
+env:
+  FW_SEMANTIC_RECALL: "0"
+
 jobs:
   # T-5045: the required check for every pull request. Fast and deterministic on a
   # bare runner: the structural invariant tests, plus the test files the pull request

@@ -3859,7 +3859,7 @@ PY
     if [ -f "$FRAMEWORK_ROOT/lib/fw-path-check.sh" ]; then
         # shellcheck source=../lib/fw-path-check.sh
         source "$FRAMEWORK_ROOT/lib/fw-path-check.sh"
-        fw_doctor_path_fw || warnings=$((warnings + 1))
+        fw_doctor_path_fw || { warnings=$((warnings + 1)); host_warnings=$((host_warnings + 1)); }   # T-5382: host-scoped
     fi
 
     # Check: running claude-fw wrappers older than the script they run (T-4069).

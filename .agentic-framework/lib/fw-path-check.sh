@@ -72,7 +72,10 @@ fw_doctor_path_fw() {
             echo -e "         Bare \`fw\` runs that file; printed commands use this project's own fw path (T-5303)"
             return 0 ;;
         shim)
-            echo -e "  ${y}WARN${n}  fw on PATH is the old fw-shim, not the router (T-2793): $p"
+            # T-5382: which fw a shell finds is a fact about this HOST's PATH, not about
+            # the project, so it carries doctor's [host] tag (T-1707) and counts as a
+            # host warning. On a clean CI runner it read as a project-scope WARN.
+            echo -e "  ${y}WARN${n}  [host] fw on PATH is the old fw-shim, not the router (T-2793): $p"
             echo -e "         Bare \`fw\` may not reach this project's copy; printed commands do not rely on it (T-5303)"
             if [ -f "$router" ]; then
                 echo -e "         Refresh: rm -f \"$p\" && cp \"$router\" \"$p\" && chmod +x \"$p\""
@@ -81,7 +84,7 @@ fw_doctor_path_fw() {
             return 1 ;;
         *)
             local dest="$HOME/.local/bin/fw"
-            echo -e "  ${y}WARN${n}  No fw on PATH: bare \`fw\` does not run here; use this project's own fw path"
+            echo -e "  ${y}WARN${n}  [host] No fw on PATH: bare \`fw\` does not run here; use this project's own fw path"
             if [ -f "$router" ]; then
                 echo -e "         Install the router: mkdir -p \"$HOME/.local/bin\" && cp \"$router\" \"$dest\" && chmod +x \"$dest\"   (and put ~/.local/bin on PATH)"
             fi

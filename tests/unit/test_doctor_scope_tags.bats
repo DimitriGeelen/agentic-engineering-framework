@@ -77,8 +77,9 @@ _doctor_output() {
     # bin/fw doctor exits 2 if there are FAILs; this project should be
     # clean (warnings only). Mirrors the no-regression check.
     _doctor_output
-    # Accept 0 (clean) or 1 (warnings); 2 means a real FAIL slipped in
-    [ "$status" -ne 2 ]
+    # Accept 0 (clean) or 1 (warnings); 2 means a real FAIL slipped in.
+    # T-5382: on failure, name the FAIL lines (CI only ever said "status -ne 2 failed").
+    [ "$status" -ne 2 ] || { echo "$output" | grep -E "^ *FAIL" >&2; false; }
     echo "$output" | grep -q "fw doctor"
 }
 

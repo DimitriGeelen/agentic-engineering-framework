@@ -102,6 +102,12 @@ PY
 @test "cron registry in sync (fw doctor)" {
     # The REAL repo's registry is the subject here, not the fixture (T-3807). Read-only.
     unset PROJECT_ROOT
-    run bash -c "FW_DOCTOR_SMOKE=0 bin/fw doctor 2>&1 | grep -E 'Cron registry in sync'"
-    [ "$status" -eq 0 ]
+    run bash -c "FW_DOCTOR_SMOKE=0 bin/fw doctor 2>&1"
+    # T-5382: a host that never installed this project's crontab (a CI runner, a fresh
+    # clone) cannot be "in sync"; doctor says so with "generated but not installed".
+    # That is a fact about the host, not about the registry: skip, and say why.
+    if echo "$output" | grep -q "Cron generated but not installed"; then
+        skip "this host has no installed crontab for this project (doctor: generated but not installed)"
+    fi
+    echo "$output" | grep -qE 'Cron registry in sync' || { echo "$output" | grep -i cron >&2; false; }
 }

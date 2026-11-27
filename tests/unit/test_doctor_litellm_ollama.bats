@@ -61,7 +61,7 @@ setup() {
 @test "fw doctor exits cleanly on this project (litellm/ollama checks don't FAIL)" {
     cd "$FRAMEWORK_ROOT"
     run "$FW_BIN" doctor
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 0 ] || { echo "$output" | grep -E "^ *FAIL" >&2; false; }   # T-5382
     [[ "$output" != *"FAIL"*"litellm"* ]]
     [[ "$output" != *"FAIL"*"ollama"* ]]
 }

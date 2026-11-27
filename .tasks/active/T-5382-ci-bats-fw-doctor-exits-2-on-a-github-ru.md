@@ -48,7 +48,7 @@ origin: {kind: "agent", source: "T-5363"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-24T10:21:22Z
-last_update: '2026-11-25T16:01:23Z'
+last_update: 2026-11-27T22:02:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -403,6 +403,22 @@ bvp_scores_proposed:
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Findings (2026-11-27, reproduced, not guessed)
+
+Reproduction: a fresh clone of bleeding-edge, run under `env -i` with HOME in scratch and a PATH of plain system tools (no termlink, claude, fw, cron). CI run 46014208221 had 37 bats reds; 7 involve doctor/audit. Without the fix, the same 5 doctor tests failed in the reproduction as on CI.
+
+| Test | FAIL line on the runner | Cause | Fix |
+|---|---|---|---|
+| test_doctor_scope_tags: fw doctor exits cleanly | `FAIL index: vector index missing` (+ manifest/age/lag/canary/token) | host: a runner never builds a semantic-recall index | workflow env `FW_SEMANTIC_RECALL=0` (T-3862 opt-out: SKIP "not configured on this host"); check unchanged |
+| test_doctor_litellm_ollama: exits cleanly | same | same | same |
+| fw_mode_detection T-1406: Active mode line | same (status 2) | same | same |
+| bvp_auto_promote_enable: cron registry in sync | no "Cron registry in sync" line; doctor says "Cron generated but not installed" | test assumed this host's installed crontab | skip with the reason when doctor reports generated-but-not-installed |
+| t4259 (c): fresh init doctor | missing literal "Run: fw cron install" | test predates T-5302 (no bare `fw`; remedy is `cd … && …/fw cron install`) | match any fw path. On THIS host (c) also fails at "edited but not generated": a separate bug, filed as T-5434 |
+| greenfield: no PROJECT-SCOPE warning | `WARN No fw on PATH` counted as project-scope | check misclassified a host fact | the PATH finding carries `[host]` and counts as a host warning |
+| t3062: pre-push structure audit in budget | positive control wanted "Cron registry"; the runner prints "Cron drift" | test wording | accept either line |
+
+The doctor exit tests now print the FAIL lines when they fail. In the reproduction all 38 affected tests pass (one honest skip). Still to confirm on a GitHub run (last criterion).
 
 ## Updates
 
