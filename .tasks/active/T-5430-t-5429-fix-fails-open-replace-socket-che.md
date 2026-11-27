@@ -284,7 +284,7 @@ bvp_scores_proposed:
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
 bats tests/unit/t4048_claude_fw_background_resume.bats tests/unit/t3890_conversation_holder.bats
-! grep -q "FW_CC_PROC_NET_UNIX\|cc-daemon" lib/conversation-holder.sh
+! grep -q "FW_CC_PROC_NET_UNIX\|/proc/net/unix" lib/conversation-holder.sh
 bin/fw vendor self --check --task T-5430
 
 ## RCA
