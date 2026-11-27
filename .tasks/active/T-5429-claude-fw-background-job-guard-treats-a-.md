@@ -14,10 +14,10 @@ description: >
   connect) AND daemon.log does not record the job settled after its last spawn; if
   neither is readable, state decides as before.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, claude-fw]
 components: []
 related_tasks: []
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-27T10:07:16Z
-last_update: '2026-11-27T10:15:53Z'
+last_update: 2026-11-27T10:22:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,20 +95,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055-agentic-fleet-cockpit (msg cf326993, 2026-11-27): after a host restart the fleet resume of project 1023 (`claude-fw --resume d23f2c1f-…`) was refused with rc 3 twenty times; the agent stayed down and the operator got phone alerts. Confirmed on this host: daemon.log shows `bg spawned d23f2c1f (spare)` 2026-09-21T19:00Z and `bg settled d23f2c1f (done)` 20:34Z, and no cc-daemon socket is listening now.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `fw_conversation_background_job` (lib/conversation-holder.sh, T-4048) judges a job live from `~/.claude/jobs/<short>/state.json` alone. The daemon does not rewrite state.json when it settles a job, so a job settled months ago (state "blocked") still reads as live, and with no daemon at all nothing can ever correct it.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A job counts as live only while a Claude Code daemon is actually listening and the daemon log does not record the job as settled since it last started; with neither source readable, keep today's behaviour.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A resume after a restart (no daemon) or of a job the log shows settled goes ahead; a genuinely live job is still refused with exit 3.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] With no listening cc-daemon control socket in /proc/net/unix, a non-final state.json no longer blocks `--resume`
+- [x] With a listening socket, a job whose last `spawned`/`claimed*` line in daemon.log is followed by `settled <short>` no longer blocks `--resume`
+- [x] A listening socket and no later settle line still refuses with exit 3; with neither source readable the state decides as before
+- [x] t4048 bats suite passes (existing tests plus the new cases); vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -295,6 +297,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t4048_claude_fw_background_resume.bats tests/unit/t3890_conversation_holder.bats
+grep -q "FW_CC_PROC_NET_UNIX" lib/conversation-holder.sh
+bin/fw vendor self --check --task T-5429
 
 ## RCA
 
@@ -311,6 +316,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** After a host restart, `claude-fw --resume d23f2c1f-…` for project 1023 was refused with exit 3 twenty times; the agent stayed down and the operator got phone alerts.
+
+**Root cause:** The T-4048 guard read liveness from `~/.claude/jobs/<short>/state.json` only. Claude Code's daemon does not rewrite that file when it settles a job, so a job settled on 2026-09-21 still read "blocked", and with no daemon running nothing could ever update it.
+
+**Why structurally allowed:** T-4048 trusted one source of truth for a state owned by another program, and its tests only wrote state.json fixtures, so nothing modelled "settled but the file never changed" or "no daemon at all".
+
+**Prevention:** Liveness now needs a listening cc-daemon control socket AND no `bg settled <short>` after the last start in daemon.log. Tests cover no daemon, settled per log, settled-then-restarted (still refused) and neither source readable (state decides, as before).
 
 ## Evolution
 
@@ -392,3 +405,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5429-claude-fw-background-job-guard-treats-a-.md
 - **Context:** Initial task creation
+
+### 2026-11-27T10:19:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

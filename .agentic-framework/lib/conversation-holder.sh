@@ -174,24 +174,72 @@ fw_conversation_holder() {
 # viewer with no tty of its own, which claude-fw's tmux typing (T-4003) cannot reach.
 #
 # fw_conversation_background_job <id> — prints "<short> <state>" when <id> is a live
-# background job (state not done/failed/stopped), else nothing. Return 0 always.
+# background job, else nothing. Return 0 always.
+#
+# T-5429 (055 T-774): state.json alone is not evidence. The daemon does NOT rewrite it
+# when it settles a job, so a job settled months ago still says "blocked", and after a
+# host restart (no daemon at all) nothing ever corrects it: 1023's fleet resume was
+# refused 20 times. A non-final state now counts as live only when
+#   (a) a Claude Code daemon control socket is LISTENING (read from /proc/net/unix,
+#       no connect; override the file with FW_CC_PROC_NET_UNIX for tests), and
+#   (b) <config>/daemon.log does not record `bg settled <short>` after the job's last
+#       `bg spawned|claimed… <short>` line.
+# Either source that cannot be read is skipped; with neither readable the state
+# decides as before (fail towards refusing, the T-4048 behaviour).
 fw_conversation_background_job() {
     local id="$1" cfg="${CLAUDE_CONFIG_DIR:-$HOME/.claude}" f
     [ -n "$id" ] || return 0
     f="$cfg/jobs/${id:0:8}/state.json"
     [ -f "$f" ] || return 0
-    python3 - "$f" "$id" <<'PY' 2>/dev/null
-import json, sys
+    python3 - "$f" "$id" "$cfg/daemon.log" "${FW_CC_PROC_NET_UNIX:-/proc/net/unix}" <<'PY' 2>/dev/null
+import json, re, sys
+f, sid, log, netunix = sys.argv[1:5]
 try:
-    d = json.load(open(sys.argv[1]))
+    d = json.load(open(f))
 except Exception:
     sys.exit(0)
-if d.get("sessionId") != sys.argv[2]:
+if d.get("sessionId") != sid:
     sys.exit(0)
 state = str(d.get("state") or "unknown")
 if state in ("done", "failed", "stopped"):
     sys.exit(0)
-print(d.get("daemonShort") or sys.argv[2][:8], state)
+short = d.get("daemonShort") or sid[:8]
+
+# (a) is any Claude Code daemon listening? /proc/net/unix: Num RefCount Protocol
+# Flags Type St Inode [Path]; a listening socket has St 01 (and __SO_ACCEPTCON).
+try:
+    listening = False
+    with open(netunix) as fh:
+        next(fh, None)
+        for line in fh:
+            parts = line.split()
+            if len(parts) >= 8 and parts[5] == "01" and "cc-daemon" in parts[7] \
+                    and parts[7].endswith("control.sock"):
+                listening = True
+                break
+    if not listening:
+        sys.exit(0)            # no daemon: no background job can be live
+except OSError:
+    pass                       # unreadable: no evidence either way
+
+# (b) did the daemon settle this job after it last started it?
+try:
+    last_start = last_settle = -1
+    pat = re.compile(r"\bbg (spawned|claimed[\w-]*|settled) " + re.escape(short) + r"\b")
+    with open(log, errors="replace") as fh:
+        for n, line in enumerate(fh):
+            m = pat.search(line)
+            if m:
+                if m.group(1) == "settled":
+                    last_settle = n
+                else:
+                    last_start = n
+    if last_settle > last_start:
+        sys.exit(0)
+except OSError:
+    pass
+
+print(short, state)
 PY
     return 0
 }

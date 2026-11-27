@@ -33,7 +33,23 @@ exit 0
 STUB
     chmod +x "${TDIR}/stubbin/claude"
     ARGV="${TDIR}/.stub-argv"
+    # T-5429: a job is live only while a daemon listens. Default fixture: one is
+    # listening (St 01, a cc-daemon control.sock), so the T-4048 cases keep their meaning.
+    NETUNIX="${TDIR}/net-unix"
+    daemon_listening
 }
+
+# daemon_listening / daemon_gone — the /proc/net/unix view the guard reads.
+daemon_listening() {
+    printf 'Num       RefCount Protocol Flags    Type St Inode Path\n' > "$NETUNIX"
+    printf '0000000000000000: 00000002 00000000 00010000 0001 01 4242 /tmp/cc-daemon-0/abcd1234/control.sock\n' >> "$NETUNIX"
+}
+daemon_gone() {
+    printf 'Num       RefCount Protocol Flags    Type St Inode Path\n' > "$NETUNIX"
+    printf '0000000000000000: 00000002 00000000 00010000 0001 01 4243 /run/systemd/private\n' >> "$NETUNIX"
+}
+# daemon_log <lines…> — write the daemon log the guard reads.
+daemon_log() { mkdir -p "${TDIR}/.claude"; printf '%s\n' "$@" > "${TDIR}/.claude/daemon.log"; }
 
 teardown() { rm -rf "$TDIR"; }
 
@@ -46,7 +62,7 @@ job() {
 
 launch() {
     cd "$TDIR" || return 1
-    run env PATH="${TDIR}/stubbin:${PATH}" HOME="$TDIR" \
+    run env PATH="${TDIR}/stubbin:${PATH}" HOME="$TDIR" FW_CC_PROC_NET_UNIX="$NETUNIX" \
         FW_NO_STARTUP_BANNER=1 FW_NO_TERMINATOR=1 \
         timeout 120 bash "$WRAPPER" --no-restart "$@"
 }
@@ -94,7 +110,7 @@ launch() {
 @test "FW_ALLOW_BACKGROUND_RESUME=1 overrides with a warning" {
     job blocked
     cd "$TDIR" || return 1
-    run env PATH="${TDIR}/stubbin:${PATH}" HOME="$TDIR" FW_ALLOW_BACKGROUND_RESUME=1 \
+    run env PATH="${TDIR}/stubbin:${PATH}" HOME="$TDIR" FW_CC_PROC_NET_UNIX="$NETUNIX" FW_ALLOW_BACKGROUND_RESUME=1 \
         FW_NO_STARTUP_BANNER=1 FW_NO_TERMINATOR=1 \
         timeout 120 bash "$WRAPPER" --no-restart --resume "$ID"
     [ "$status" -eq 0 ]
@@ -113,4 +129,43 @@ launch() {
     WRAPPER="$pre" launch --resume "$ID"
     [ "$status" -eq 0 ]
     [ -f "$ARGV" ]
+}
+
+
+# ── T-5429 (055 T-774): state.json is not rewritten when the daemon settles a job ──
+
+@test "T-5429: no daemon listening (after a host restart) — a 'blocked' job resumes normally" {
+    job blocked
+    daemon_gone
+    launch --resume "$ID"
+    [ "$status" -eq 0 ]
+    [ "$(head -1 "$ARGV")" = "$(printf '2\t--resume\t%s' "$ID")" ]
+}
+
+@test "T-5429: daemon listening but the log settled the job after its last start — resumes" {
+    job blocked
+    daemon_log "[2026-09-21T19:00:44.914Z] [bg] bg spawned ${ID:0:8} (spare)" \
+               "[2026-09-21T20:34:10.707Z] [bg] bg retire ${ID:0:8}: idle-prompt, idle 61m" \
+               "[2026-09-21T20:34:11.320Z] [bg] bg settled ${ID:0:8} (done)"
+    launch --resume "$ID"
+    [ "$status" -eq 0 ]
+    [ -f "$ARGV" ]
+}
+
+@test "T-5429: settled earlier but started again afterwards — still live, refused" {
+    job blocked
+    daemon_log "[2026-09-21T19:00:00Z] [bg] bg spawned ${ID:0:8} (spare)" \
+               "[2026-09-21T20:00:00Z] [bg] bg settled ${ID:0:8} (done)" \
+               "[2026-09-22T08:00:00Z] [bg] bg claimed-spare ${ID:0:8} (slash)"
+    launch --resume "$ID"
+    [ "$status" -eq 3 ]
+    [ ! -f "$ARGV" ]
+}
+
+@test "T-5429: neither source readable — the state decides as before (refused)" {
+    job blocked
+    NETUNIX="${TDIR}/does-not-exist"
+    launch --resume "$ID"
+    [ "$status" -eq 3 ]
+    [ ! -f "$ARGV" ]
 }
