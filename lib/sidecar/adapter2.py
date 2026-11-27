@@ -171,33 +171,92 @@ def _record_text(rec: dict) -> str:
     return ""
 
 
-def transcript_mark(transcript_path: str | None, prompt: str, tail_bytes: int = 262144) -> str | None:
-    """'generated' when Claude Code's transcript record for THIS prompt marks it
-    generated, 'unmarked' when the record is found without such a mark, None when no
-    record for this prompt text is found (the hook may run before it is written)."""
-    if not transcript_path or not prompt:
-        return None
+#: T-5379: total time to keep re-reading the transcript when the record for this prompt
+#: is not there yet (the hook can run before Claude Code writes it). Only spent when the
+#: first read finds nothing; overridable with FW_ORIGIN_REREAD_MS (0 = read once).
+REREAD_TOTAL_S = 0.4
+REREAD_STEP_S = 0.05
+
+
+def _reread_total() -> float:
+    try:
+        return max(0.0, int(os.environ.get("FW_ORIGIN_REREAD_MS", "")) / 1000.0)
+    except ValueError:
+        return REREAD_TOTAL_S
+
+
+def _scan_transcript(transcript_path: str, want: str, prompt_id: str | None,
+                     tail_bytes: int) -> tuple[str | None, str]:
+    """One read: (mark, matched_by). matched_by is 'id', 'text' or 'none'."""
     try:
         with open(transcript_path, "rb") as fh:
             fh.seek(0, os.SEEK_END)
             fh.seek(max(0, fh.tell() - tail_bytes))
             lines = fh.read().decode("utf-8", "ignore").splitlines()
     except OSError:
-        return None
-    want = prompt.strip()
+        return None, "none"
     for line in reversed(lines):
         try:
             rec = json.loads(line)
         except ValueError:
             continue
-        if rec.get("type") != "user" or "promptId" not in rec or _record_text(rec).strip() != want:
+        if rec.get("type") != "user" or "promptId" not in rec:
             continue
+        if prompt_id:
+            # T-5379: the hook's prompt_id IS the record's promptId; text may differ
+            # (a task-notification record is not the hook's prompt string verbatim).
+            if rec.get("promptId") != prompt_id:
+                continue
+            by = "id"
+        else:
+            if _record_text(rec).strip() != want:
+                continue
+            by = "text"
         kind = (rec.get("origin") or {}).get("kind")
         if (kind in _GENERATED_KINDS or rec.get("turnOrigin") in _GENERATED_TURNS
                 or rec.get("scheduledTaskId") or rec.get("promptSource") == "system"):
-            return "generated"
-        return "unmarked"
-    return None
+            return "generated", by
+        return "unmarked", by
+    return None, "none"
+
+
+def transcript_mark(transcript_path: str | None, prompt: str, tail_bytes: int = 262144, *,
+                    prompt_id: str | None = None, wait_s: float = 0.0,
+                    sleep=time.sleep, clock=time.monotonic) -> str | None:
+    """'generated' when Claude Code's transcript record for THIS prompt marks it
+    generated, 'unmarked' when the record is found without such a mark, None when no
+    record for this prompt is found.
+
+    T-5379 (010 msg 03b9b550): with `prompt_id` (the hook payload's, equal to the
+    record's promptId) the record is matched by id, never by text; without it, by exact
+    text as before. When nothing matches, the transcript is re-read until `wait_s` has
+    passed (the hook can run before the record is written). Every outcome is logged."""
+    if not transcript_path or (not prompt and not prompt_id):
+        return None
+    want = str(prompt or "").strip()
+    start = clock()
+    mark, by = _scan_transcript(transcript_path, want, prompt_id, tail_bytes)
+    reads = 1
+    while mark is None and wait_s > 0 and clock() - start < wait_s:
+        sleep(REREAD_STEP_S)
+        mark, by = _scan_transcript(transcript_path, want, prompt_id, tail_bytes)
+        reads += 1
+    _log_origin_lookup(mark, by, bool(prompt_id), reads, clock() - start)
+    return mark
+
+
+def _log_origin_lookup(mark, by: str, had_id: bool, reads: int, waited: float) -> None:
+    """T-5379: one line per lookup, so a human/inferred verdict can be traced to its
+    branch (none / unmarked / generated, matched by id or text). Never raises."""
+    try:
+        d = _project_root() / ".context" / "sidecar" / "receiver"   # gitignored, beside hook-errors.log
+        d.mkdir(parents=True, exist_ok=True)
+        with open(d / "origin-lookup.log", "a", encoding="utf-8") as fh:
+            fh.write(f"{datetime.now(timezone.utc).isoformat()} mark={mark or 'none'} by={by} "
+                     f"prompt_id={'yes' if had_id else 'no'} reads={reads} "
+                     f"waited_ms={int(waited * 1000)}\n")
+    except Exception:
+        pass
 
 
 def classify_origin(hook_input: dict, interactive: bool | None) -> tuple[str, str | None]:
@@ -208,7 +267,9 @@ def classify_origin(hook_input: dict, interactive: bool | None) -> tuple[str, st
             return "automated", "doorbell"
         if interactive is False:
             return "automated", "non-interactive"
-        if transcript_mark(hook_input.get("transcript_path"), prompt) == "generated":
+        if transcript_mark(hook_input.get("transcript_path"), prompt,
+                           prompt_id=str(hook_input.get("prompt_id") or "") or None,
+                           wait_s=_reread_total()) == "generated":
             return "automated", "harness-mark"
         if interactive is True:
             return "human", "inferred"

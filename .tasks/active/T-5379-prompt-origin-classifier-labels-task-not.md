@@ -11,10 +11,10 @@ description: >
   carries prompt_id = the record's promptId. Fix: match by prompt_id, bounded wait-and-reread
   when absent, log which branch (none/unmarked/generated).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, sidecar, T-5351]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T21:44:17Z
-last_update: '2026-11-23T21:46:44Z'
+last_update: 2026-11-27T13:30:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,20 +93,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010-termlink msg 03b9b550 (2026-11-23): a task-notification prompt (transcript record origin.kind task-notification, promptSource system, written 21:41:00.367Z) reached their sidecar as origin human/inferred at 21:41:00.710Z. It gates their arc-011 origin-reporting go (their T-3694 step 5); they asked again on 2026-11-27 (msgs 27c7f5f3, 8815b369).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `transcript_mark` in lib/sidecar/adapter2.py finds the transcript record by exact prompt TEXT and reads the file once. A task-notification's record text can differ from the hook's prompt string, and the record may not be written yet when the hook runs; both give None, and with interactive=True the classifier falls back to human. The hook payload carries `prompt_id`, which equals the record's `promptId`.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Find the record by `prompt_id` when the hook gives one (text only as fallback), re-read briefly when it is not there yet, and log which branch decided, so a misclassification can be traced.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A task-notification or scheduled prompt is reported automated/harness-mark even when its record text differs or lands a moment after the hook; a typed prompt still reports human/inferred; the wait is bounded and only taken when the record is missing.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] With `prompt_id` in the hook input, the record with that `promptId` decides, whatever its text
+- [x] When no matching record is found, the transcript is re-read within a bounded total wait (no wait when the record is already there)
+- [x] Each lookup outcome (generated / unmarked / none, and by id or text) is logged to a file under `.context/sidecar/`
+- [x] Existing adapter2 tests pass plus new cases for id match, text mismatch and late record; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,6 +295,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5054_adapter2.py
+grep -q "prompt_id=str(hook_input.get(\"prompt_id\")" lib/sidecar/adapter2.py
+bin/fw vendor self --check --task T-5379
 
 ## RCA
 
@@ -309,6 +314,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** At 010, a task-notification prompt was reported to their sidecar as origin human/inferred, although its transcript record was marked task-notification / promptSource system.
+
+**Root cause:** `transcript_mark` identified the prompt's record by exact text and read the transcript once. The hook's prompt string and the record's text need not be identical for generated prompts, so no record matched; None plus interactive=True falls back to human.
+
+**Why structurally allowed:** The hook payload's `prompt_id` (equal to the record's `promptId`) was recorded by `_log_hook_keys` but never used, and no log said which branch produced a human/inferred verdict, so the miss looked like a confident answer.
+
+**Prevention:** The lookup now keys on `prompt_id` (text only when no id), re-reads within a bounded 0.4 s (FW_ORIGIN_REREAD_MS) when nothing matches, and logs every outcome to `.context/sidecar/receiver/origin-lookup.log`. Tests pin the id match with differing text, no borrowing of another prompt's mark, a late record, the bounded wait and the log line.
 
 ## Evolution
 
@@ -390,3 +403,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5379-prompt-origin-classifier-labels-task-not.md
 - **Context:** Initial task creation
+
+### 2026-11-27T13:28:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
