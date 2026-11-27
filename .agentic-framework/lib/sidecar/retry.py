@@ -478,6 +478,16 @@ def sweep(*, now: str | datetime | None = None,
                                       "attempts": attempts})
             continue
 
+        stale = stale_own_hub_address(msg)
+        if stale:
+            # T-5428: the ladder would re-post or nudge an address nobody reads.
+            _close(cmid, row, attempts, outbox.UNKNOWN, f"{UNRETRYABLE}: {stale}")
+            report["deadlettered"] += 1
+            report["actions"].append({"client_msg_id": cmid, "verb": "deadletter",
+                                      "reason": f"{UNRETRYABLE}: {stale}",
+                                      "attempts": attempts})
+            continue
+
         verb = retry_ladder.verb_for(next_rung, posted=posted)
         action = {"client_msg_id": cmid, "verb": verb, "rung": next_rung,
                   "attempts": attempts + 1}
@@ -504,6 +514,51 @@ def sweep(*, now: str | datetime | None = None,
         report["actions"].append(action)
 
     return report
+
+
+def stale_own_hub_address(msg: dict, *, resolve=None, own: str | None = None) -> str | None:
+    """T-5428 (AEF-ontology-agent RCA, defect 2): is this stored row addressed to a
+    place on OUR hub that the resolver would no longer send to?
+
+    Rows stored before T-5427 could name `<own hub>/<nickname>` (the removed T-4529
+    route): the hub took the post, so it counted as delivered, and the ladder then
+    re-posted and nudged it into a topic nobody reads (18 times for
+    `proxmox-ring20-management`). Re-resolve the bare name the way a send would now;
+    a refusal or a different circuit means the stored address is dead. Returns the
+    dead-letter reason with the resend command, or None to leave the row to the
+    ladder. Only `<own>/<name>` rows without `addressed_how` (pre-T-5428) are
+    judged; anything that cannot be decided (hub unreachable, any error) is left
+    alone, so real mail is never dropped on a guess.
+    """
+    if not msg or msg.get("addressed_how") or msg.get("hub"):
+        return None
+    target = str(msg.get("to") or "")
+    parts = target.split("/")
+    if len(parts) != 2 or not all(parts):
+        return None
+    from . import addressing, circuit
+    try:
+        own = own or addressing.own_hub_id()
+    except Exception:  # noqa: BLE001 — undecidable: leave it to the ladder
+        return None
+    if parts[0] != own:
+        return None
+    name = parts[1]
+    try:
+        where = (resolve or addressing.resolve)(name)
+    except addressing.AddressError as exc:
+        return (f"stored address {target!r} is not one anyone reads and {name!r} no "
+                f"longer resolves ({str(exc).split(':', 1)[0]}); resend to the real "
+                f"recipient: fw sidecar send --to <project id> (T-5428)")
+    except circuit.CircuitError:
+        return None
+    except Exception:  # noqa: BLE001
+        return None
+    if where.get("circuit") and where["circuit"] != target:
+        hub = f" --hub {where['hub']}" if where.get("hub") else ""
+        return (f"stored address {target!r} is not where {name!r} reads (now "
+                f"{where['circuit']}); resend: fw sidecar send --to {name}{hub} (T-5428)")
+    return None
 
 
 def _read_message(client_msg_id: str) -> dict | None:

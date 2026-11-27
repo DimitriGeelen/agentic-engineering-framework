@@ -9,10 +9,10 @@ description: >
   a remote hub. Need a reader check before the delivered verdict, and a dead-letter
   for stored rows that have no reader.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, sidecar]
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-26T18:11:22Z
-last_update: '2026-11-26T18:15:49Z'
+last_update: 2026-11-27T12:32:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** AEF-ontology-agent RCA (msgs 9a0b7e4b, 5177e7c7, 2026-11-26), defect 2: three consults stored as `cacc73ea32b121dd/proxmox-ring20-management` (our own hub, a nickname nobody reads) were marked delivered and then re-posted/nudged 18 more times, the last on 25 Nov. T-5427 stops new sends to such addresses; rows already stored keep cycling.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `delivery.deliver()` records INJECTED_* once the hub takes the post (by design: "delivered" = the hub has it; unread is chased by the D-600 retry ladder). The ladder in `retry.py` then re-posts or nudges the stored address without asking whether it is still a place anyone reads. The only guard (T-3887) catches rows naming a remote hub with a bare `to`, not a full circuit on our own hub that points at a nickname.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Stop the ladder spending rungs on an own-hub address the resolver would no longer send to, and tell the sender where to resend instead. Keep the "delivered = hub took it" meaning and the normal chase of unread mail to real recipients.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** In the retry sweep, a row whose target is `<own hub>/<name>` is dead-lettered (UNKNOWN, `ladder-unretryable`) with a resend hint when re-resolving `<name>` now refuses or points elsewhere; rows to numbered projects, peers, aliases and sub-agents are retried exactly as before. (A pre-send reader check on the hub is not added: the hub's consumer list can be empty while a real peer is offline, which would dead-letter real mail.)
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The retry sweep dead-letters a due row whose target is `<own hub>/<name>` when `resolve(name)` raises or resolves to a different circuit, with the resend address in the reason, and never re-posts or nudges it
+- [x] A due row to a numbered project on our hub, a peer-directory circuit, or a remote hub is reposted/nudged exactly as before
+- [x] A resolver failure that is not an address refusal (hub unreachable, exception) leaves the row to the ladder as before
+- [x] Sidecar retry/delivery tests pass; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +292,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5428_stale_own_hub_address.py tests/unit/test_sidecar_sweep.py
+grep -q "def stale_own_hub_address" lib/sidecar/retry.py
+bin/fw vendor self --check --task T-5428
 
 ## RCA
 
@@ -306,6 +311,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Consults stored to `<own hub>/proxmox-ring20-management` were marked delivered and then re-posted or nudged 18 times into a topic nobody reads. Our own outbox had the same class: two replies to 150-skills-manager on C-010 (22-23 Nov) sat at `cacc73ea32b121dd/150-skills-manager` while 150 reads on hub 22c19fedafd73da2.
+
+**Root cause:** "Delivered" means the hub took the post (by design), and the D-600 ladder keeps chasing unread mail by re-posting to the stored address. Nothing re-checked whether that stored address was still a place the recipient reads; the only guard (T-3887) covered bare names with a remote hub.
+
+**Why structurally allowed:** The address was fixed once at send time and trusted forever after, so a resolver mistake (T-4529 route, fixed in T-5427) or a recipient moving hubs was never revisited, and each retry looked like progress.
+
+**Prevention:** The sweep re-resolves pre-T-5428 `<own hub>/<name>` rows and dead-letters them (ladder-unretryable, with the resend command) when the resolver refuses the name or points elsewhere; new sends record `addressed_how`, so rows addressed under current rules are never second-guessed. Undecidable cases stay on the ladder. A dry check of our outbox found 3 such rows (2 to 150, 1 greenfield notice); the 150 answer was resent to the right hub.
 
 ## Evolution
 
@@ -387,3 +400,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5428-sidecar-delivery-marks-a-message-deliver.md
 - **Context:** Initial task creation
+
+### 2026-11-27T12:26:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

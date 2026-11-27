@@ -226,7 +226,7 @@ def _cmd_send(args) -> int:
         conversation_id=args.conversation or f"consult-{args.to}",
         urgent=args.urgent, hub=hub,
         in_reply_to=receipts.base_id(args.in_reply_to) if args.in_reply_to else None,
-        notice=args.notice)
+        notice=args.notice, addressed_how=str(where.get("how") or "") or None)
 
     result = delivery.deliver(client_msg_id, transport.termlink_transport,
                               transport.probe_hub)
