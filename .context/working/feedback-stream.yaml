@@ -59946,3 +59946,21 @@ scan_id: R-238be1c8
 task_id: T-5421
 payload:
   task_file: .tasks/active/T-5421-audit-d6-completion-velocity-reads-recen.md
+---
+kind: scan_emitted
+timestamp: '2026-11-27T14:02:25Z'
+scan_id: R-9716f07d
+task_id: T-5422
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-27T14:02:25Z'
+scan_id: R-9716f07d
+task_id: T-5422
+payload:
+  task_file: .tasks/active/T-5422-audit-fabric-drift-reader-ignores-the-wa.md

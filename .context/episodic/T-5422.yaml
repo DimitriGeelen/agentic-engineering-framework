@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5422: audit fabric-drift reader ignores the watch-patterns exclude list (050 report)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-27T14:02:44Z
+# ============================================================================
+
+task_id: T-5422
+task_name: "audit fabric-drift reader ignores the watch-patterns exclude list (050 report)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-25T16:16:22Z
+completed: 2026-11-27T14:02:12Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-11-27T15:02:09+01:00
+last_commit: 2026-11-27T15:02:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric pattern expander honours an exclude written as a single string; other types reported (050 item 4)
+
+# Key outcomes
+outcomes:
+  - '`expand_patterns.py` applies a string exclude and a list exclude identically (top-level and per-pattern)'
+  - 'An exclude of any other type is reported on stderr instead of being ignored'
+  - 'A test fixture covers both forms; existing fabric expander tests pass'
+  - '050 is asked which form their watch file uses (confirms or refutes the hypothesis)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/expand_patterns.py'
+  - '.tasks/active/T-5422-audit-fabric-drift-reader-ignores-the-wa.md'
+  - 'agents/fabric/lib/expand_patterns.py'
+  - 'tests/unit/test_t5422_expand_patterns_scalar_exclude.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-27T15:02:09'
+    action: 'T-5422: fabric pattern expander honours an exclude written as a single string; other types reported (050 item 4)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2745 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, fabric, bug, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2745
+  commits: 2
+  files_changed: 7
+  lines_added: 230
+  lines_removed: 20
+  footprint_refreshed_at: '2026-11-27T14:02:53Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5422-audit-fabric-drift-reader-ignores-the-wa.md
+generated_by: context-agent-hybrid
