@@ -1,8 +1,18 @@
 ---
 id: T-5429
-name: "claude-fw background-job guard treats a settled Claude Code job as live (stale state.json)"
+name: "claude-fw background-job guard treats a settled Claude Code job as live (stale
+  state.json)"
 description: >
-  055-agentic-fleet-cockpit (msg cf326993, 2026-11-27, for T-4048): fw_conversation_background_job in lib/conversation-holder.sh treats a job as live whenever ~/.claude/jobs/<short>/state.json has a state other than done/failed/stopped, but state.json is not rewritten when the daemon settles a job. Live case: job d23f2c1f state blocked (updated 2026-09-21T19:33Z), daemon.log 'bg settled d23f2c1f (done)' 20:34Z, no daemon running; after a host restart the fleet resume of project 1023 was refused rc 3 twenty times and the operator got phone alerts. 055's vendored fix (their commit f295e3a8, test tests/test_conversation_holder_stale_job.py): live only while a cc-daemon control socket is LISTENING (read /proc/net/unix, no connect) AND daemon.log does not record the job settled after its last spawn; if neither is readable, state decides as before.
+  055-agentic-fleet-cockpit (msg cf326993, 2026-11-27, for T-4048): fw_conversation_background_job
+  in lib/conversation-holder.sh treats a job as live whenever ~/.claude/jobs/<short>/state.json
+  has a state other than done/failed/stopped, but state.json is not rewritten when
+  the daemon settles a job. Live case: job d23f2c1f state blocked (updated 2026-09-21T19:33Z),
+  daemon.log 'bg settled d23f2c1f (done)' 20:34Z, no daemon running; after a host
+  restart the fleet resume of project 1023 was refused rc 3 twenty times and the operator
+  got phone alerts. 055's vendored fix (their commit f295e3a8, test tests/test_conversation_holder_stale_job.py):
+  live only while a cc-daemon control socket is LISTENING (read /proc/net/unix, no
+  connect) AND daemon.log does not record the job settled after its last spawn; if
+  neither is readable, state decides as before.
 
 status: captured
 workflow_type: build
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-27T10:07:16Z
-last_update: 2026-11-27T10:07:16Z
-date_finished: null
+last_update: '2026-11-27T10:15:25Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-27T10:15:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5429: claude-fw background-job guard treats a settled Claude Code job as live (stale state.json)
