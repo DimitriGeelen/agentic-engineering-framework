@@ -59892,3 +59892,21 @@ scan_id: R-812671cd
 task_id: T-5379
 payload:
   task_file: .tasks/active/T-5379-prompt-origin-classifier-labels-task-not.md
+---
+kind: scan_emitted
+timestamp: '2026-11-27T13:47:05Z'
+scan_id: R-80e74350
+task_id: T-5432
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-27T13:47:05Z'
+scan_id: R-80e74350
+task_id: T-5432
+payload:
+  task_file: .tasks/active/T-5432-take-the-scope-codes-back-out-of-the-ref.md
