@@ -23,12 +23,12 @@ description: >
   Known: add lanes before phases (832 T-1513). Same procedure as T-5408; refusal mapping
   checked by fw designer status (T-5398).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [designer, 832]
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -57,8 +57,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T15:50:02Z
-last_update: 2026-11-27T14:46:44Z
-date_finished:
+last_update: 2026-11-27T14:47:22Z
+date_finished: 2026-11-27T14:47:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -422,3 +422,21 @@ The vendored build is 832's released artifact (sha256-verified at the tag); AEF 
 ### 2026-11-27T14:41:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-27T14:47:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2c1fc725
+- **Timestamp:** 2026-11-27T14:47:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `policy/designer-pin.yaml` names 0.52.0 (artifact, tag, vendored path, validator and kit sums) and `fw designer sync --from-tag` installs it, matching both the MANIFEST at the tag and the pin
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: `policy/designer-pin.yaml` names 0.52.0 (artifact, tag, vendored path, validator and kit sums) and `fw designer sync --from-tag` installs it, matching`

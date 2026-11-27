@@ -59982,3 +59982,21 @@ scan_id: R-c6fc9e68
 task_id: T-5433
 payload:
   task_file: .tasks/active/T-5433-fabric-exclude-x-does-not-match-x-at-the.md
+---
+kind: scan_emitted
+timestamp: '2026-11-27T14:47:38Z'
+scan_id: R-2c1fc725
+task_id: T-5419
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-27T14:47:38Z'
+scan_id: R-2c1fc725
+task_id: T-5419
+payload:
+  task_file: .tasks/active/T-5419-pick-up-workflow-designer-0500-832-relea.md

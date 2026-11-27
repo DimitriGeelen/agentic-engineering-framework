@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5419: Pick up Workflow Designer 0.52.0 (832 release; pin 0.49.0 -> 0.52.0, includes 0.50.0 and 0.51.0)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-27T14:47:58Z
+# ============================================================================
+
+task_id: T-5419
+task_name: "Pick up Workflow Designer 0.52.0 (832 release; pin 0.49.0 -> 0.52.0, includes 0.50.0 and 0.51.0)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-25T15:50:02Z
+completed: 2026-11-27T14:47:22Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-11-25T16:50:02+01:00
+last_commit: 2026-11-27T15:47:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — designer 0.50.0 pickup (832 msg bd2cad5f). retarget pickup to designer 0.51.0 (includes 0.50.0). re-pin Workflow Designer 0.49.0 -> 0.52.0 via pull-at-tag (832 msg 6e13f104, tag designer-v0.52.0 fa0b725a8): artifact sha256 3de8ff55, 1499756 B; validator 68dad584 and kit 2e64c22c verified against MANIFEST; refusal mapping names validator 0.52.0 and adds W-WORKFLOW-SCOPE / W-XML-WORKFLOW-SCOPE. pin, refusal mapping (validator 0.52.0 + scope codes) and vendored copies for the 0.52.0 re-pin. title names 0.52.0; 832 has the final mapping sha. verification lines read full designer status (no SIGPIPE)
+
+# Key outcomes
+outcomes:
+  - '`policy/designer-pin.yaml` names 0.52.0 (artifact, tag, vendored path, validator and kit sums) and `fw designer sync --from-tag` installs it, matching both the MANIFEST at the tag and the pin'
+  - 'The refusal mapping names validator 0.52.0 and carries W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE (832''s text); `test_t5189_validator_refusal_mapping.py` passes'
+  - '`fw designer status` is clean (present, sha matches pin, mapping names 0.52.0)'
+  - '832 has the final mapping sha256'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.52.0.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.52.0.py'
+  - '.tasks/active/T-5419-pick-up-workflow-designer-0500-832-relea.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.yaml'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.52.0.html'
+  - 'vendor/designer/validate-workflow-0.52.0.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-25T16:50:02'
+    action: 'T-5419: filed — designer 0.50.0 pickup (832 msg bd2cad5f)'
+  - time: '2026-11-26T10:32:38'
+    action: 'T-5419: retarget pickup to designer 0.51.0 (includes 0.50.0)'
+  - time: '2026-11-27T15:46:13'
+    action: 'T-5419: re-pin Workflow Designer 0.49.0 -> 0.52.0 via pull-at-tag (832 msg 6e13f104, tag designer-v0.52.0 fa0b725a8): artifact sha256 3de8ff55, 1499756 B; validator 68dad584 and kit 2e64c22c verified against MANIFEST; refusal mapping names validator 0.52.0 and adds W-WORKFLOW-SCOPE / W-XML-WORKFLOW-SCOPE'
+  - time: '2026-11-27T15:46:28'
+    action: 'T-5419: pin, refusal mapping (validator 0.52.0 + scope codes) and vendored copies for the 0.52.0 re-pin'
+  - time: '2026-11-27T15:46:45'
+    action: 'T-5419: title names 0.52.0; 832 has the final mapping sha'
+  - time: '2026-11-27T15:47:19'
+    action: 'T-5419: verification lines read full designer status (no SIGPIPE)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 2817 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, 832]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2817
+  commits: 7
+  files_changed: 12
+  lines_added: 1460
+  lines_removed: 69
+  footprint_refreshed_at: '2026-11-27T14:48:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5419-pick-up-workflow-designer-0500-832-relea.md
+generated_by: context-agent-hybrid
