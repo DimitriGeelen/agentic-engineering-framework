@@ -176,24 +176,29 @@ fw_conversation_holder() {
 # fw_conversation_background_job <id> — prints "<short> <state>" when <id> is a live
 # background job, else nothing. Return 0 always.
 #
-# T-5429 (055 T-774): state.json alone is not evidence. The daemon does NOT rewrite it
-# when it settles a job, so a job settled months ago still says "blocked", and after a
-# host restart (no daemon at all) nothing ever corrects it: 1023's fleet resume was
-# refused 20 times. A non-final state now counts as live only when
-#   (a) a Claude Code daemon control socket is LISTENING (read from /proc/net/unix,
-#       no connect; override the file with FW_CC_PROC_NET_UNIX for tests), and
-#   (b) <config>/daemon.log does not record `bg settled <short>` after the job's last
-#       `bg spawned|claimed… <short>` line.
-# Either source that cannot be read is skipped; with neither readable the state
-# decides as before (fail towards refusing, the T-4048 behaviour).
+# T-5429 / T-5430 (055 T-774): state.json alone is not evidence. The daemon does NOT
+# rewrite it when it settles a job, so a job settled months ago still says "blocked":
+# 1023's fleet resume was refused 20 times. A non-terminal record is overruled by ONE
+# piece of evidence only: <config>/daemon.log has `bg settled <short>` whose timestamp
+# (`[YYYY-MM-DDTHH:MM:SS[.f]Z]`, a UTC instant) is STRICTLY later than the record's
+# updatedAt, and no `bg spawned <short>` line (dated or not) follows that settle.
+# Anything else keeps the refusal: no log, no or unparseable timestamps, an older or
+# equal settle, a respawn, no updatedAt.
+# T-5430: T-5429's first rule ("live only while a cc-daemon socket listens") failed
+# OPEN, found by 055's review rounds: a moved or renamed socket made every live job
+# read as not live, so claude-fw resumed into a `claude attach` viewer. No socket check.
+# Accepted limit: assumes each incarnation refreshes updatedAt and logs its spawn in
+# this daemon.log, and no clock rollback; only an authoritative current-job query or an
+# incarnation id shared by record and log would remove it.
 fw_conversation_background_job() {
     local id="$1" cfg="${CLAUDE_CONFIG_DIR:-$HOME/.claude}" f
     [ -n "$id" ] || return 0
     f="$cfg/jobs/${id:0:8}/state.json"
     [ -f "$f" ] || return 0
-    python3 - "$f" "$id" "$cfg/daemon.log" "${FW_CC_PROC_NET_UNIX:-/proc/net/unix}" <<'PY' 2>/dev/null
+    python3 - "$f" "$id" "$cfg/daemon.log" <<'PY' 2>/dev/null
 import json, re, sys
-f, sid, log, netunix = sys.argv[1:5]
+from datetime import datetime, timezone
+f, sid, log = sys.argv[1:4]
 try:
     d = json.load(open(f))
 except Exception:
@@ -205,40 +210,51 @@ if state in ("done", "failed", "stopped"):
     sys.exit(0)
 short = d.get("daemonShort") or sid[:8]
 
-# (a) is any Claude Code daemon listening? /proc/net/unix: Num RefCount Protocol
-# Flags Type St Inode [Path]; a listening socket has St 01 (and __SO_ACCEPTCON).
-try:
-    listening = False
-    with open(netunix) as fh:
-        next(fh, None)
-        for line in fh:
-            parts = line.split()
-            if len(parts) >= 8 and parts[5] == "01" and "cc-daemon" in parts[7] \
-                    and parts[7].endswith("control.sock"):
-                listening = True
-                break
-    if not listening:
-        sys.exit(0)            # no daemon: no background job can be live
-except OSError:
-    pass                       # unreadable: no evidence either way
+ISO = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(\.\d+)?Z$")
+def utc(text):
+    m = ISO.match(str(text or "").strip())
+    if not m:
+        return None
+    frac = (m.group(2) or ".0")[1:7].ljust(6, "0")
+    try:
+        return datetime.strptime(m.group(1), "%Y-%m-%dT%H:%M:%S").replace(
+            microsecond=int(frac), tzinfo=timezone.utc)
+    except ValueError:
+        return None
 
-# (b) did the daemon settle this job after it last started it?
-try:
-    last_start = last_settle = -1
-    pat = re.compile(r"\bbg (spawned|claimed[\w-]*|settled) " + re.escape(short) + r"\b")
-    with open(log, errors="replace") as fh:
-        for n, line in enumerate(fh):
-            m = pat.search(line)
-            if m:
-                if m.group(1) == "settled":
-                    last_settle = n
-                else:
-                    last_start = n
-    if last_settle > last_start:
-        sys.exit(0)
-except OSError:
-    pass
+def overruled():
+    updated = d.get("updatedAt")
+    if isinstance(updated, (int, float)) and not isinstance(updated, bool):
+        # epoch milliseconds (or seconds) — still a UTC instant
+        secs = updated / 1000 if updated > 1e11 else updated
+        try:
+            updated = datetime.fromtimestamp(secs, tz=timezone.utc)
+        except (OverflowError, OSError, ValueError):
+            return False
+    else:
+        updated = utc(updated)
+    if updated is None:
+        return False
+    line_re = re.compile(r"\bbg (settled|spawned) " + re.escape(short) + r"\b")
+    ts_re = re.compile(r"^\[([^\]]+)\]")
+    settle_at = None              # instant of the last settle seen so far
+    try:
+        with open(log, errors="replace") as fh:
+            for line in fh:
+                m = line_re.search(line)
+                if not m:
+                    continue
+                if m.group(1) == "spawned":
+                    settle_at = None          # a (re)spawn after any settle: refusal stays
+                    continue
+                t = ts_re.match(line)
+                settle_at = utc(t.group(1)) if t else None
+    except OSError:
+        return False
+    return settle_at is not None and settle_at > updated
 
+if overruled():
+    sys.exit(0)
 print(short, state)
 PY
     return 0
