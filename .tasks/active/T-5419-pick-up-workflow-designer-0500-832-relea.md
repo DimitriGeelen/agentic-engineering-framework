@@ -10,6 +10,11 @@ description: >
   Lifts 'add lanes before phases' (T-1513); lane add/delete/resize one undo step (T-1525);
   deleting a phase gives its range to the neighbour (T-1515). Stored maps change only
   when lanes are added/enlarged under phases or a phase is deleted.
+  2026-11-27: likely retarget to 0.52.0 (832 T-1528, scope attribute). When pinning
+  0.52.0, also add 832's two refusal-mapping entries W-WORKFLOW-SCOPE and
+  W-XML-WORKFLOW-SCOPE (exact text in 832 msg f406b52d; applied once in commit 9b9eaa03e,
+  reverted by T-5432 because validator 0.49.0 does not emit them), then send 832 the
+  final mapping sha256 so they re-pin once (their T-1530).
   Superseded 0.50.0 details: 832 msg bd2cad5f (2026-11-25): tag designer-v0.50.0 (release commit 850394c00),
   dist/aef-workflow-designer-0.50.0.html sha256 23a8d4d00675861278ee54b4c91658b5fe32e3002760f420a349ffa614a71d42,
   1493171 bytes; kit SHA256SUMS sha256 0fccba7390d7e873e901e4c4c0078511c39afdab6809b265c97c36f9a87851be;
