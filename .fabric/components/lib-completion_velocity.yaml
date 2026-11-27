@@ -1,0 +1,21 @@
+id: lib/completion_velocity.py
+name: completion_velocity
+type: script
+subsystem: framework-core
+location: lib/completion_velocity.py
+tags: []
+
+purpose: "D6 completion velocity (T-248), made testable and corrected by T-5421."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-27
+created_by: unknown

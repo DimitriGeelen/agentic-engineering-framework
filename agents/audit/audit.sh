@@ -9049,59 +9049,9 @@ esac
 
 # D6: Completion Velocity Trends (Score 15, T-248)
 # Detect sustained drops in task completion rate (7-day rolling average)
-d6_result=$(python3 << 'D6EOF'
-import yaml, glob, os, re
-from datetime import datetime, timedelta, timezone
-from collections import Counter
-
-PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
-TASKS_DIR = os.path.join(PROJECT_ROOT, ".tasks", "completed")
-
-def parse_frontmatter(path):
-    try:
-        content = open(path).read()
-        m = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
-        if m:
-            return yaml.safe_load(m.group(1)) or {}
-    except Exception:
-        pass
-    return {}
-
-now = datetime.now(timezone.utc)
-cutoff = now - timedelta(days=14)
-
-# Count completions per day (last 14 days)
-daily = Counter()
-for f in glob.glob(os.path.join(TASKS_DIR, "T-*.md")):
-    fm = parse_frontmatter(f)
-    finished = fm.get("date_finished")
-    if not finished:
-        continue
-    try:
-        ts = datetime.fromisoformat(str(finished).replace("Z", "+00:00"))
-        if ts.tzinfo is None:
-            ts = ts.replace(tzinfo=timezone.utc)
-        if ts >= cutoff:
-            day_key = ts.strftime("%Y-%m-%d")
-            daily[day_key] = daily.get(day_key, 0) + 1
-    except (ValueError, TypeError):
-        pass
-
-if len(daily) < 4:
-    print("PASS insufficient_data")
-else:
-    # Compare last 3 days vs previous 7 days
-    dates = sorted(daily.keys())
-    recent = [daily.get((now - timedelta(days=i)).strftime("%Y-%m-%d"), 0) for i in range(3)]
-    earlier = [daily.get((now - timedelta(days=i)).strftime("%Y-%m-%d"), 0) for i in range(3, 10)]
-    recent_avg = sum(recent) / max(len(recent), 1)
-    earlier_avg = sum(earlier) / max(len(earlier), 1)
-    if earlier_avg > 0 and recent_avg < earlier_avg * 0.3:
-        print(f"WARN drop recent_avg={recent_avg:.1f} vs earlier_avg={earlier_avg:.1f}")
-    else:
-        print(f"PASS recent={recent_avg:.1f} earlier={earlier_avg:.1f}")
-D6EOF
-)
+# T-5421 (050 item 2): computed in lib/completion_velocity.py, which also counts
+# partial-complete tasks (work-completed, still in active/ awaiting human review).
+d6_result=$(python3 "$FRAMEWORK_ROOT/lib/completion_velocity.py" "$PROJECT_ROOT" 2>/dev/null || echo "PASS could_not_compute")
 d6_level=$(echo "$d6_result" | awk '{print $1}')
 case "$d6_level" in
     WARN)

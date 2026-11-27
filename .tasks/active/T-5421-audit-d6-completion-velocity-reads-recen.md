@@ -8,10 +8,10 @@ description: >
   tasks distort it. agents/audit/audit.sh ~9100. Reproduce with a fixture, then fix
   the computation.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [audit, bug, consumer]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T16:16:21Z
-last_update: '2026-11-25T16:31:17Z'
+last_update: 2026-11-27T13:59:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 050-email-archive msg 398260cc item 2 (their T-2136, 2026-11-25): "D6: Completion velocity — sustained drop" showed recent_avg=0.0 while they were completing tasks. On 2026-11-26 (msg a97881ce) it read PASS (recent 3.3, earlier 1.4), so the 0.0 is intermittent.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** D6 (agents/audit/audit.sh ~9050) counts only files in `.tasks/completed/`. A task whose agent work is done but whose Human criteria are still open stays in `.tasks/active/` with `status: work-completed` and a `date_finished` (partial-complete). Those completions are invisible until the operator closes them, which moves them, with their original finish date, into the past window. Recent days read low and earlier days high: a false "sustained drop" in a project with many partial-completes, such as 050.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Count a task as completed on its `date_finished`, wherever the file sits, and make the result testable.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Partial-complete tasks count on the day their agent work finished; a fixture with only partial-completes in the last 3 days no longer reads 0.0; the PASS/WARN line says how many partial-completes it counted.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] D6 counts `status: work-completed` tasks with `date_finished` in `.tasks/active/` as well as `.tasks/completed/`
+- [x] A fixture with recent completions only in partial-complete reads PASS, not a 0.0 drop; a real drop still WARNs
+- [x] The D6 line reports the partial-complete count; the computation lives in a testable module
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +290,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5421_completion_velocity.py
+bash -n agents/audit/audit.sh
+python3 lib/completion_velocity.py . | grep -q "partial-complete counted=\|insufficient_data"
 
 ## RCA
 
@@ -305,6 +309,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** At 050, D6 reported "Completion velocity — sustained drop" with recent_avg 0.0 while tasks were being completed; a day later it read PASS.
+
+**Root cause:** D6 counted completions only from `.tasks/completed/`. Partial-complete tasks (agent work done, Human criteria open) stay in `.tasks/active/` with `status: work-completed` and a `date_finished`, so recent completions were invisible until the operator closed them, and then landed in the past window, inflating "earlier".
+
+**Why structurally allowed:** D6 (T-248) was written before partial-complete existed (T-193) and was inline Python in audit.sh with no test, so nobody re-checked what "completed" meant when the lifecycle grew a waiting state. Here 361 tasks sit in that state.
+
+**Prevention:** The computation lives in lib/completion_velocity.py, counts a task on its `date_finished` wherever it sits, and reports the partial-complete count; tests pin the 050 shape (recent completions only in partial-complete reads PASS), the old reading as a control, a real drop, and that non-completed active tasks are not counted.
 
 ## Evolution
 
@@ -386,3 +398,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5421-audit-d6-completion-velocity-reads-recen.md
 - **Context:** Initial task creation
+
+### 2026-11-27T13:57:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
