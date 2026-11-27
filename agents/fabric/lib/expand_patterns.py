@@ -39,6 +39,11 @@ def _excluded(rel_path: str, exclude_patterns: list[str]) -> bool:
     for pat in exclude_patterns:
         if fnmatch.fnmatch(rel_path, pat):
             return True
+        # T-5433: fnmatch needs something before the slash of a leading `**/`, so
+        # `**/node_modules/**` missed a node_modules/ at the project root. A leading
+        # `**/` also matches zero directories, as in .gitignore.
+        if pat.startswith("**/") and fnmatch.fnmatch(rel_path, pat[3:]):
+            return True
     return False
 
 

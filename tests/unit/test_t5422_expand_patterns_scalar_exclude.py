@@ -46,3 +46,15 @@ def test_other_types_are_reported_not_silently_ignored(tmp_path):
     out, err, rc = _expand(p)
     assert rc == 0 and "lib/vendor/b.py" in out
     assert "not a string or list" in err
+
+
+def test_t5433_leading_doublestar_also_matches_the_root(tmp_path):
+    """050's exclude list: '**/node_modules/**' must drop a root-level node_modules/ too."""
+    for rel in ("app.js", "node_modules/top/e.js", "src/node_modules/pkg/c.js", "src/dist/b.js"):
+        p = tmp_path / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("x\n")
+    (tmp_path / ".fabric").mkdir()
+    (tmp_path / ".fabric/watch-patterns.yaml").write_text(
+        'exclude:\n  - "src/dist/**"\n  - "**/node_modules/**"\npatterns:\n  - glob: "**/*.js"\n')
+    assert _expand(tmp_path)[0] == ["app.js"]
