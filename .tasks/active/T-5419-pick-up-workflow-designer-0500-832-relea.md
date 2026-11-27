@@ -306,9 +306,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-bin/fw designer status | grep -q "sha256 matches pin"
+out=$(bin/fw designer status 2>&1); echo "$out" | grep -q "sha256 matches pin"
 test -f .context/visual/T-5419/designer@1440.png
-bin/fw designer status | grep -q "names validator 0.52.0"
+out=$(bin/fw designer status 2>&1); echo "$out" | grep -q "names validator 0.52.0"
 python3 -m pytest -q tests/unit/test_t5189_validator_refusal_mapping.py
 bats tests/unit/t3064_designer_onboarding_install.bats tests/unit/designer_sync_from_tag.bats
 bin/fw vendor self --check --task T-5419
