@@ -1,0 +1,21 @@
+id: lib/designer_scope.py
+name: designer_scope
+type: script
+subsystem: framework-core
+location: lib/designer_scope.py
+tags: []
+
+purpose: "T-5415: which designer maps ship to consumers, decided by the map itself."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-27
+created_by: unknown

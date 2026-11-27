@@ -10,10 +10,10 @@ description: >
   adding it to its designer skill rule 1), mark each existing map, and make fw vendor
   copy only scope=framework. Same class as the T-5392 genericity finding.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [designer, vendor, genericity]
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T09:41:18Z
-last_update: '2026-11-25T09:46:20Z'
+last_update: 2026-11-27T15:10:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5393 finding (operator, 2026-11-24): every map in `.context/designer/projects` ships to every consumer, including maps about developing AEF itself (`aef-github-pr-intake`: our GitHub, our review panel) and scratch drafts. The operator: framework-class maps should be visible on a consumer's instance; the PR map is specific to AEF development. Agreed with 832 (their T-1519 / T-1528, operator-confirmed 2026-11-26): `aef:workflowMeta/@scope` = framework | project, absent = project. Designer 0.52.0, which keeps the attribute on save, is served since T-5419.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `fw vendor` (bin/fw `_vendor` includes/excludes) ships the whole `.context/designer/projects` tree minus `draft-*`, so which maps ship is decided by a naming convention, not by the map.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Mark the framework maps `scope="framework"` and make `fw vendor` ship only maps whose latest version says so; everything else (unmarked, `project`, drafts) stays home.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Consumers get the nine framework lifecycle maps and not `aef-github-pr-intake` or any draft; a newly added map stays home until someone marks it framework.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A helper reads a map's scope from its latest version (absent or unknown = project)
+- [x] The nine framework maps (all `aef-*` except `aef-github-pr-intake`) get a new version identical to their latest except `scope="framework"`; `aef-github-pr-intake` and the drafts stay unmarked
+- [x] `fw vendor` excludes every map whose scope is not framework; a test pins framework-ships, unmarked-stays, project-stays
+- [x] Corpus lint and the designer/vendor tests pass; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +293,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t2942_corpus_reachable_in_consumer.bats
+python3 tools/corpus_lint.py
+out=$(python3 lib/designer_scope.py stay-home .context/designer/projects); echo "$out" | grep -qx aef-github-pr-intake && ! echo "$out" | grep -qx aef-task-lifecycle
+bin/fw vendor self --check --task T-5415
 
 ## RCA
 
@@ -395,3 +401,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5415-map-scope-marker-framework--project-so-f.md
 - **Context:** Initial task creation
+
+### 2026-11-27T15:03:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

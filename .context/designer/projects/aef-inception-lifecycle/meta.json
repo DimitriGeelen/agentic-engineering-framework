@@ -6,6 +6,11 @@
       "v": 1,
       "note": "T-5227: inception lifecycle map with instances (operator rulings 2026-11-18, question 2); state carriers il_wait_agent, il_wait_peer, il_wait_operator, il_ready, il_awaiting_decision, il_go_building, il_decided, il_closed",
       "ts": 1795526400
+    },
+    {
+      "v": 2,
+      "note": "T-5415: scope=framework (ships to consumers; designer 0.52.0, 832 T-1528); otherwise identical to the previous version",
+      "ts": 1795791871
     }
   ],
   "latest": 1,

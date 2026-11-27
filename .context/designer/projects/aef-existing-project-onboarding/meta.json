@@ -4,8 +4,13 @@
   "versions": [
     {
       "v": 1,
-      "note": "T-2979: the existing-project onboarding prologue (T-001 through T-006) — counterpart to aef-greenfield-onboarding, which had a map from T-2972 while this path had none. Per-node prose authored on the aef:meta note attribute channel from the start (T-2974 lesson applied, not retrofitted). Human lane holds one deliberately unwired node: this path has no blocking human gate, and drawing one would contradict arc-017's invariant.",
+      "note": "T-2979: the existing-project onboarding prologue (T-001 through T-006) \u2014 counterpart to aef-greenfield-onboarding, which had a map from T-2972 while this path had none. Per-node prose authored on the aef:meta note attribute channel from the start (T-2974 lesson applied, not retrofitted). Human lane holds one deliberately unwired node: this path has no blocking human gate, and drawing one would contradict arc-017's invariant.",
       "ts": 1786692761
+    },
+    {
+      "v": 2,
+      "note": "T-5415: scope=framework (ships to consumers; designer 0.52.0, 832 T-1528); otherwise identical to the previous version",
+      "ts": 1795791871
     }
   ],
   "latest": 1,

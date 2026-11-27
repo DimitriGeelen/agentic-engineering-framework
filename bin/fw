@@ -885,6 +885,8 @@ do_vendor() {
         # aef-* list on purpose: an explicit list drifts silently the first time a
         # seventh map is added, which is the exact shape of the bug this task
         # fixes. Naming the drafts instead means new aef-* maps vendor themselves.
+        # (Superseded by T-5415 below: a map ships only when it is marked
+        # scope="framework"; a new map stays home until someone marks it.)
         # (636K of drafts excluded, 196K of aef maps shipped.)
         # T-2989 removed a sibling line here that named `t2584-scratch`
         # explicitly. It was a scratch artefact carrying a deliberately dangling
@@ -896,6 +898,17 @@ do_vendor() {
         # `draft-*` rather than adding a line back.
         ".context/designer/projects/draft-*"
     )
+    # T-5415: the map decides, not its name. Only maps whose latest version says
+    # <aef:workflowMeta scope="framework"> ship; unmarked or `project` maps (e.g.
+    # aef-github-pr-intake, about developing AEF itself) stay home. Scope agreed
+    # with 832 (T-1519 / T-1528, designer 0.52.0). The draft-* line above stays as
+    # a floor: if the helper cannot run, drafts still never ship.
+    local _scope_py="$vendor_source/lib/designer_scope.py" _home_map
+    if [ -f "$_scope_py" ] && command -v python3 >/dev/null 2>&1; then
+        while IFS= read -r _home_map; do
+            [ -n "$_home_map" ] && excludes+=(".context/designer/projects/$_home_map")
+        done < <(python3 "$_scope_py" stay-home "$vendor_source/.context/designer/projects" 2>/dev/null)
+    fi
 
     # T-3850: consumer-local protection. The copy below mirrors each include
     # with rsync --delete (or rm -rf + cp), which deleted every file a consumer

@@ -11,6 +11,11 @@
       "v": 2,
       "note": "T-2974: operator-facing explanations on every node; prose moved to the aef:meta note attribute channel (v1's aef:description child elements were invisible to both readers)",
       "ts": 1786665600
+    },
+    {
+      "v": 3,
+      "note": "T-5415: scope=framework (ships to consumers; designer 0.52.0, 832 T-1528); otherwise identical to the previous version",
+      "ts": 1795791871
     }
   ],
   "latest": 2,

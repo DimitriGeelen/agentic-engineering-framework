@@ -6,6 +6,11 @@
       "v": 1,
       "note": "T-2664 promotion proof",
       "ts": 1785268492
+    },
+    {
+      "v": 2,
+      "note": "T-5415: scope=framework (ships to consumers; designer 0.52.0, 832 T-1528); otherwise identical to the previous version",
+      "ts": 1795791871
     }
   ],
   "uuid": "af4b9cc6-5ca4-46c1-acb7-eddb2e9faba2",

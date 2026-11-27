@@ -92,3 +92,50 @@ _excludes() {
     run bash -c "ls -d '$tmpstore'/aef-* 2>/dev/null"
     [ "$status" -ne 0 ]
 }
+
+# ── T-5415: the map decides whether it ships (aef:workflowMeta/@scope) ──────────
+
+@test "t5415: every map the curriculum routes to is scope=framework, so consumers get it" {
+    local seeds="$FRAMEWORK_ROOT/lib/seeds/tasks" ids id s
+    ids=$(grep -ho 'fw corpus explain [a-z0-9-]*' \
+              "$seeds"/greenfield/T-00*.md "$seeds"/existing-project/T-00*.md \
+          | awk '{print $4}' | sort -u)
+    [ -n "$ids" ]
+    for id in $ids; do
+        s=$(python3 "$FRAMEWORK_ROOT/lib/designer_scope.py" scope "$STORE" "$id")
+        [ "$s" = framework ] || { echo "curriculum routes to $id but it is scope=$s (stays home)" >&2; return 1; }
+    done
+}
+
+@test "t5415: the AEF-development map and every draft stay home" {
+    run python3 "$FRAMEWORK_ROOT/lib/designer_scope.py" stay-home "$STORE"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -qx 'aef-github-pr-intake'
+    ! echo "$output" | grep -vq '^draft-\|^aef-github-pr-intake$'
+}
+
+@test "t5415: fw vendor turns stay-home maps into excludes" {
+    grep -qF '_scope_py="$vendor_source/lib/designer_scope.py"' "$FRAMEWORK_ROOT/bin/fw"
+    grep -qF 'python3 "$_scope_py" stay-home "$vendor_source/.context/designer/projects"' "$FRAMEWORK_ROOT/bin/fw"
+    grep -qF 'excludes+=(".context/designer/projects/$_home_map")' "$FRAMEWORK_ROOT/bin/fw"
+}
+
+@test "t5415: framework ships, unmarked and project stay home (fixture store)" {
+    local s="$BATS_TEST_TMPDIR/store" n
+    for n in fw-map plain-map proj-map; do
+        mkdir -p "$s/$n"
+        printf '{"id":"%s","versions":[{"v":1,"note":"","ts":1}]}\n' "$n" > "$s/$n/meta.json"
+    done
+    printf '<x><aef:workflowMeta id="fw-map" scope="framework"/></x>\n' > "$s/fw-map/v1.bpmn"
+    printf '<x><aef:workflowMeta id="plain-map"/></x>\n' > "$s/plain-map/v1.bpmn"
+    printf '<x><aef:workflowMeta id="proj-map" scope="project"/></x>\n' > "$s/proj-map/v1.bpmn"
+    run python3 "$FRAMEWORK_ROOT/lib/designer_scope.py" stay-home "$s"
+    [ "$status" -eq 0 ]
+    [ "$output" = "$(printf 'plain-map\nproj-map')" ]
+    # marking writes a NEW version and flips the verdict
+    run python3 "$FRAMEWORK_ROOT/lib/designer_scope.py" mark "$s" plain-map framework --note t
+    [ "$output" = 2 ]
+    [ -f "$s/plain-map/v1.bpmn" ] && [ -f "$s/plain-map/v2.bpmn" ]
+    run python3 "$FRAMEWORK_ROOT/lib/designer_scope.py" stay-home "$s"
+    [ "$output" = proj-map ]
+}

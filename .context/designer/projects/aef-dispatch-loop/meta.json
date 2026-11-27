@@ -16,6 +16,11 @@
       "v": 3,
       "note": "",
       "ts": 1785967450
+    },
+    {
+      "v": 4,
+      "note": "T-5415: scope=framework (ships to consumers; designer 0.52.0, 832 T-1528); otherwise identical to the previous version",
+      "ts": 1795791871
     }
   ],
   "latest": 3,

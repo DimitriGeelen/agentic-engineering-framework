@@ -6,6 +6,11 @@
       "v": 1,
       "note": "fw corpus prove \u2014 identity-preserving recreate (aef-audit-cron)",
       "ts": 1785171538
+    },
+    {
+      "v": 2,
+      "note": "T-5415: scope=framework (ships to consumers; designer 0.52.0, 832 T-1528); otherwise identical to the previous version",
+      "ts": 1795791871
     }
   ],
   "latest": 1,
