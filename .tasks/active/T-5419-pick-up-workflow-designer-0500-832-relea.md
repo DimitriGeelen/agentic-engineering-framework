@@ -1,6 +1,6 @@
 ---
 id: T-5419
-name: "Pick up Workflow Designer 0.51.0 (832 release; pin 0.49.0 -> 0.51.0, includes 0.50.0)"
+name: "Pick up Workflow Designer 0.52.0 (832 release; pin 0.49.0 -> 0.52.0, includes 0.50.0 and 0.51.0)"
 description: >
   RETARGETED 2026-11-26 to 0.51.0 (832 msg 49602d6f, T-1527): tag designer-v0.51.0
   (release commit 960086290), dist/aef-workflow-designer-0.51.0.html sha256
@@ -57,7 +57,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T15:50:02Z
-last_update: 2026-11-27T14:46:28Z
+last_update: 2026-11-27T14:46:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -119,7 +119,7 @@ bvp_scores_proposed:
 - [x] `policy/designer-pin.yaml` names 0.52.0 (artifact, tag, vendored path, validator and kit sums) and `fw designer sync --from-tag` installs it, matching both the MANIFEST at the tag and the pin
 - [x] The refusal mapping names validator 0.52.0 and carries W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE (832's text); `test_t5189_validator_refusal_mapping.py` passes
 - [x] `fw designer status` is clean (present, sha matches pin, mapping names 0.52.0)
-- [ ] 832 has the final mapping sha256
+- [x] 832 has the final mapping sha256
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
