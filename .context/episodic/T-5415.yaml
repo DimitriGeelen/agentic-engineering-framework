@@ -1,0 +1,110 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5415: Map scope marker (framework | project) so fw vendor ships only framework-process maps
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-27T15:10:48Z
+# ============================================================================
+
+task_id: T-5415
+task_name: "Map scope marker (framework | project) so fw vendor ships only framework-process maps"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-25T09:41:18Z
+completed: 2026-11-27T15:10:20Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-11-26T19:10:40+01:00
+last_commit: 2026-11-27T16:10:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record agreed scope attribute; operator confirmed. 832 GO, ships in designer 0.52.0; mark maps only after serving 0.52.0. the map decides whether it ships: fw vendor ships only maps marked aef:workflowMeta scope="framework" (agreed with 832, designer 0.52.0); nine aef-* lifecycle maps marked; aef-github-pr-intake and drafts stay home
+
+# Key outcomes
+outcomes:
+  - 'A helper reads a map''s scope from its latest version (absent or unknown = project)'
+  - 'The nine framework maps (all `aef-*` except `aef-github-pr-intake`) get a new version identical to their latest except `scope="framework"`; `aef-github-pr-intake` and the drafts stay unmarked'
+  - '`fw vendor` excludes every map whose scope is not framework; a test pins framework-ships, unmarked-stays, project-stays'
+  - 'Corpus lint and the designer/vendor tests pass; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-26 — scope attribute name and values (agreed with 832, their T-1519)'
+    chose: '`aef:workflowMeta/@scope` = `framework` (ships to every vendoring project) | `project` (stays in its repo); absent = `project`; a separate attribute from `kind`; no third value. 832 builds the validator value check, designer Scope select, AUTHORING 6 and skill; we build the `fw vendor` filter and its test, and mark our framework maps in the same release.'
+    rationale: 'fail-safe default (an unmarked map never ships); kind says what sort of map, scope says whose.'
+    alternatives_rejected: ['`distribution` (packaging-ish), `owner` (collides with node performer), a list value (no case needs it yet).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/designer_scope.py'
+  - '.context/designer/projects/aef-audit-cron/meta.json'
+  - '.context/designer/projects/aef-audit-cron/v2.bpmn'
+  - '.context/designer/projects/aef-dispatch-loop/meta.json'
+  - '.context/designer/projects/aef-dispatch-loop/v4.bpmn'
+  - '.context/designer/projects/aef-existing-project-onboarding/meta.json'
+  - '.context/designer/projects/aef-existing-project-onboarding/v2.bpmn'
+  - '.context/designer/projects/aef-greenfield-onboarding/meta.json'
+  - '.context/designer/projects/aef-greenfield-onboarding/v3.bpmn'
+  - '.context/designer/projects/aef-inception-flow/meta.json'
+  - '.context/designer/projects/aef-inception-flow/v2.bpmn'
+  - '.context/designer/projects/aef-inception-lifecycle/meta.json'
+  - '.context/designer/projects/aef-inception-lifecycle/v2.bpmn'
+  - '.context/designer/projects/aef-session-lifecycle/meta.json'
+  - '.context/designer/projects/aef-session-lifecycle/v2.bpmn'
+  - '.context/designer/projects/aef-task-lifecycle/meta.json'
+  - '.context/designer/projects/aef-task-lifecycle/v5.bpmn'
+  - '.context/designer/projects/aef-tier0-escalation/meta.json'
+  - '.context/designer/projects/aef-tier0-escalation/v2.bpmn'
+  - '.fabric/components/lib-designer_scope.yaml'
+  - '.tasks/active/T-5415-map-scope-marker-framework--project-so-f.md'
+  - 'bin/fw'
+  - 'lib/designer_scope.py'
+  - 'tests/unit/t2942_corpus_reachable_in_consumer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-26T19:10:40'
+    action: 'T-5415: record agreed scope attribute; operator confirmed'
+  - time: '2026-11-27T11:13:05'
+    action: 'T-5415: 832 GO, ships in designer 0.52.0; mark maps only after serving 0.52.0'
+  - time: '2026-11-27T16:10:18'
+    action: 'T-5415: the map decides whether it ships: fw vendor ships only maps marked aef:workflowMeta scope="framework" (agreed with 832, designer 0.52.0); nine aef-* lifecycle maps marked; aef-github-pr-intake and drafts stay home'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 3209 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, vendor, genericity]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3209
+  commits: 5
+  files_changed: 29
+  lines_added: 3347
+  lines_removed: 21
+  footprint_refreshed_at: '2026-11-27T15:10:59Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5415-map-scope-marker-framework--project-so-f.md
+generated_by: context-agent-hybrid

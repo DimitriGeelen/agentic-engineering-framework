@@ -60000,3 +60000,21 @@ scan_id: R-2c1fc725
 task_id: T-5419
 payload:
   task_file: .tasks/active/T-5419-pick-up-workflow-designer-0500-832-relea.md
+---
+kind: scan_emitted
+timestamp: '2026-11-27T15:10:31Z'
+scan_id: R-67313466
+task_id: T-5415
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-27T15:10:31Z'
+scan_id: R-67313466
+task_id: T-5415
+payload:
+  task_file: .tasks/active/T-5415-map-scope-marker-framework--project-so-f.md
