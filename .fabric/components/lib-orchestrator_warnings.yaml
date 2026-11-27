@@ -1,0 +1,21 @@
+id: lib/orchestrator_warnings.py
+name: orchestrator_warnings
+type: script
+subsystem: framework-core
+location: lib/orchestrator_warnings.py
+tags: []
+
+purpose: "T-5423: split the orchestrator MCP scan's warnings into one audit line per class."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-27
+created_by: unknown

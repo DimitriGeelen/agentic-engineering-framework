@@ -9573,17 +9573,14 @@ else
         pass "Orchestrator-arc MCP scan: $ORCH_STATUS — $ORCH_GATED/$ORCH_TOTAL tools gated"
     else
         if [ "$ORCH_EXIT_CAPTURED" = "1" ]; then
-            ORCH_WARNS=$(awk '/^warnings:/{flag=1; next} /^errors:/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
-            # T-1649: tag-format drift uses a different remediation path than baseline drift.
-            if echo "$ORCH_WARNS" | grep -q "TAG-FORMAT-DRIFT"; then
-                warn "Orchestrator-arc tag-format drift: live sessions carry non-canonical prefixes" \
-                     "${ORCH_WARNS:-see $ORCH_LATEST}" \
-                     "Fix at source: update spawn callers (see /orchestrator) or add validator (T-1649 cross-repo half)"
-            else
-                warn "Orchestrator-arc MCP scan: drift detected" \
-                     "${ORCH_WARNS:-see $ORCH_LATEST}" \
-                     "Update .context/audits/orchestrator-mcp-baseline.yaml or investigate ratchet/new-tool"
-            fi
+            # T-5423 (050 item 5): one WARN per warning class, each with its own
+            # evidence. The list is YAML with wrapped entries; `awk | head -1` took a
+            # fragment of the first entry and paired the tag-format title (T-1649)
+            # with tool-classification evidence.
+            while IFS=$'\t' read -r _ow_title _ow_evidence _ow_fix; do
+                [ -n "$_ow_title" ] || continue
+                warn "$_ow_title" "$_ow_evidence" "$_ow_fix"
+            done < <(python3 "$FRAMEWORK_ROOT/lib/orchestrator_warnings.py" "$ORCH_LATEST" 2>/dev/null)
         elif [ "$ORCH_EXIT_CAPTURED" = "2" ]; then
             ORCH_ERRS=$(awk '/^errors:/{flag=1; next} /^[a-z]/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
             fail "Orchestrator-arc MCP scan: regression — gated tool lost its check_task_governance" \

@@ -7,10 +7,10 @@ description: >
   line is followed by evidence that belongs to another check. Reproduce from their
   audit output and fix the pairing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [audit, bug, consumer]
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T16:16:22Z
-last_update: '2026-11-26T16:45:49Z'
+last_update: 2026-11-27T13:56:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,20 +105,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 050-email-archive's seven-item report, item 5 (2026-11-25; printed example 2026-11-26, msg a97881ce): the audit line "Orchestrator-arc tag-format drift: live sessions carry non-canonical prefixes" carried evidence that led with "NEW: 9 unclassified tool(s) … | REMOVED: 12 …", the MCP tool classification.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** agents/audit/audit.sh reads the orchestrator scan's `warnings:` list with `awk … | head -1`, but the scan writes it as YAML whose entries wrap over several lines. The audit therefore takes a fragment, picks the title by grepping the whole text for TAG-FORMAT-DRIFT, and prints evidence from a different warning class.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Parse the warnings list as YAML and report each warning class (NEW, RATCHET, REMOVED, TAG-FORMAT-DRIFT) under its own title, with its own evidence and remedy.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A tag-format WARN shows only tag-prefix evidence; tool-classification drift shows its own WARN; every warning in the scan is reported, none is dropped or cut.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The audit parses `warnings:` from orchestrator-LATEST.yaml as YAML (multi-line entries intact)
+- [x] Each warning class gets its own WARN line whose title and evidence belong to that class
+- [x] A test feeds a LATEST with NEW + REMOVED + TAG-FORMAT-DRIFT and checks the pairing
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -305,6 +306,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5423_orchestrator_warnings.py
+bash -n agents/audit/audit.sh
+bin/fw vendor self --check --task T-5423
 
 ## RCA
 
@@ -321,6 +325,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** The audit printed "Orchestrator-arc tag-format drift" with evidence that started with unclassified-tool and removed-tool findings (050 item 5).
+
+**Root cause:** audit.sh read the scan's `warnings:` list with `awk … | head -1`. The list is YAML whose entries wrap over several lines, so the audit took a fragment, matched the title on a grep of that text, and printed one warning's title with another's evidence; the other warnings were dropped.
+
+**Why structurally allowed:** A YAML list was parsed as text, and no test fed the audit a LATEST file with more than one warning class or a wrapped entry.
+
+**Prevention:** lib/orchestrator_warnings.py parses the list as YAML and emits one line per class with its own title, evidence and remedy; tests use a wrapped, three-class fixture and pin that the old `head -1` read is gone.
 
 ## Evolution
 
@@ -406,3 +418,7 @@ bvp_scores_proposed:
 ### 2026-11-26 — evidence from 050 (v1.8.15+756, fw audit)
 Headline: `[WARN] Orchestrator-arc tag-format drift: live sessions carry non-canonical prefixes`
 The evidence line leads with `NEW: 9 unclassified tool(s) ... | REMOVED: 12 tool(s) gone from /opt/termlink ... | TAG-FORMAT-DRIFT: 5 non-canonical tag prefix(es) in live sessions: fw-project=(20), respawn=(4), role=(2), fqdn=(1), stack=(1)`. The headline names tag drift; the evidence leads with MCP tool classification.
+
+### 2026-11-27T13:53:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
