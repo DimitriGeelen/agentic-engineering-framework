@@ -9,9 +9,9 @@ sources:
     path: docs/research/executable-workflow/contracts/v2/refusal.schema.json
     sha256: c4148a34b54ed8bf3e3cb7c75b79aba5cb6c0923b9ca28406cb9329d7c9cb857
   validator:
-    path: vendor/designer/validate-workflow-0.49.0.py
-    version: 0.49.0
-    sha256: 98e199b617d37e82730583fdb40822f9b5ac70f9df0a5548e7781088b30dc943
+    path: vendor/designer/validate-workflow-0.52.0.py
+    version: 0.52.0
+    sha256: 68dad58456356f0b40bd2a17b47d0dc6aa2740f73e22d52e5a896a5de0939535
 reason_codes:
   unratified_procedure:
     refuses: instance creation from a procedure no human has ratified
@@ -209,6 +209,19 @@ validator_codes:
     inferred: false
     note: 'The map is then judged as an executable process (the default reading is defined), so nothing is left for the runtime to refuse; the finding is identity falling back to the process id and an undeclared
       kind (832 review, msg afe9ff0c, T-5191).'
+  W-WORKFLOW-SCOPE:
+    rule: workflow scope is not in {framework, project} (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+    note: 'T-1528 (T-1519, agreed with AEF msg ab4c1d03). A value outside the set is read as project, so the map does not
+      ship; nothing is left for the runtime to refuse. The finding is a mark the vendoring step cannot use.'
+  W-XML-WORKFLOW-SCOPE:
+    rule: workflow scope is not in {framework, project} (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+    note: 'T-1528, the XML twin of W-WORKFLOW-SCOPE: aef:workflowMeta/@scope outside the set, read as project.'
   E-LANES-EMPTY:
     rule: no lane declared (YAML)
     prevents: []

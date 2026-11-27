@@ -8,8 +8,8 @@ This file sits beside contracts v2 but is **not part of the frozen set**: it is 
 
 ## What the relation is
 
-The designer's validator (`vendor/designer/validate-workflow-0.49.0.py`, 832's, pinned at
-0.49.0, byte-identical to 0.48.1 and 0.47.0 — T-5408, T-5398; first mapped against 0.43.0, whose 80 codes 0.49.0 emits unchanged — T-5363) checks a **map** at design time. The runtime refuses a **proposal** against a live
+The designer's validator (`vendor/designer/validate-workflow-0.52.0.py`, 832's, pinned at
+0.52.0 — T-5419; 0.49.0 was byte-identical to 0.48.1 and 0.47.0 — T-5408, T-5398; first mapped against 0.43.0, whose 80 codes 0.52.0 still emits, plus W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE added in 0.52.0 — T-5363, T-5419) checks a **map** at design time. The runtime refuses a **proposal** against a live
 instance and writes a refusal record (`refusal.schema.json`, v2). The two never meet as
 records: a validator finding has no instance, no requester and no ledger position, so it can
 never be a refusal record, and a refusal record can never be produced by the validator.
@@ -71,6 +71,8 @@ against the validator's own rule texts; their verdicts are applied below and rec
 | `E-WORKFLOW-KIND` | workflow kind is not in the closed kind vocabulary (YAML) | `unratified_procedure` |
 | `E-XML-WORKFLOW-KIND` | workflow kind is not in the closed kind vocabulary (XML) | `unratified_procedure` |
 | `W-XML-NO-WORKFLOWMETA` | no <aef:workflowMeta>: no id of its own and no kind | design-only |
+| `W-WORKFLOW-SCOPE` | workflow scope is not in {framework, project} (YAML) | design-only |
+| `W-XML-WORKFLOW-SCOPE` | workflow scope is not in {framework, project} (XML) | design-only |
 | `E-LANES-EMPTY` | no lane declared (YAML) | design-only |
 | `E-XML-LANES-EMPTY` | no <bpmn:lane> declared (XML) | design-only |
 | `E-LANE-FIELD` | a lane is not a mapping or misses a required field | design-only |

@@ -100,6 +100,12 @@ AUTHORITIES = {"sovereignty", "authority", "initiative", "external", "none"}
 # apart on the governance question itself.
 WORKFLOW_KINDS = {"documentation", "work-plan"}
 
+# T-1528 (T-1519 GO, agreed with AEF msg ab4c1d03): whose map it is. `framework` ships to every project that vendors
+# the framework; `project` stays in the repository that holds it. Absent is read as `project` (fail safe: an unmarked
+# map does not ship), so absent is legal and silent. A value outside the set is a WARNING, not an error: the map is
+# still a valid map, it is the vendoring step that must not guess. One copy, read by both forms (as WORKFLOW_KINDS).
+WORKFLOW_SCOPES = {"framework", "project"}
+
 # IW-9 authority collapse (mapping-v1 section 3): lane authority -> task-YAML
 # owner.
 #
@@ -410,6 +416,15 @@ class Validator:
                     "E-WORKFLOW-KIND",
                     "workflowMeta.kind",
                     "kind '%s' not in %s" % (_kind, sorted(WORKFLOW_KINDS)),
+                )
+        # T-1528: the scope marker, YAML form. Absent is legal (read as project).
+        if isinstance(_wm, dict) and "scope" in _wm:
+            _scope = _wm.get("scope")
+            if _scope not in WORKFLOW_SCOPES:
+                self.warn(
+                    "W-WORKFLOW-SCOPE",
+                    "workflowMeta.scope",
+                    "scope '%s' not in %s; the map is read as project and does not ship" % (_scope, sorted(WORKFLOW_SCOPES)),
                 )
 
         lanes = self._as_list(doc.get("lanes"))
@@ -1286,6 +1301,14 @@ class XmlValidator:
                     "E-XML-WORKFLOW-KIND",
                     "<aef:workflowMeta id='%s'>" % (_wm_el.get("id") or "?"),
                     "kind '%s' not in %s" % (_kind, sorted(WORKFLOW_KINDS)),
+                )
+            # T-1528: the scope marker, XML form; the same module-scope WORKFLOW_SCOPES as the YAML form.
+            _scope = _wm_el.get("scope")
+            if _scope is not None and _scope not in WORKFLOW_SCOPES:
+                self.warn(
+                    "W-XML-WORKFLOW-SCOPE",
+                    "<aef:workflowMeta id='%s'>" % (_wm_el.get("id") or "?"),
+                    "scope '%s' not in %s; the map is read as project and does not ship" % (_scope, sorted(WORKFLOW_SCOPES)),
                 )
         # T-972: the document that carries NO workflowMeta at all. An absent `kind`
         # stays legal and silent (T-875, above) — this fires on the absent ELEMENT,

@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.49.0"
-sha256: "bc6830534a9b9ac8168f6ae251ed218ecc3fe53f8704cfdf7a1f35fe58c1253a"
-bytes: 1472593
+version: "0.52.0"
+sha256: "3de8ff55d109b6b491c3c1cb8fee0c206b9d5e5aec3f59bb2f1948dbd85eedf2"
+bytes: 1499756
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.49.0.html"
-source_tag: "designer-v0.49.0"
+source_artifact: "dist/aef-workflow-designer-0.52.0.html"
+source_tag: "designer-v0.52.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -228,19 +228,19 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   byte-identically to 0.42.0. Validator CHANGED: `source:` is a known documentation prefix, so a cited step
 #   (mixed prefixes, or any under --strict) no longer draws W-XML-DOC-PREFIX. Kit: new exemplar, no callActivity
 #   advice yet (832 T-1252). Pulled with `fw designer sync --from-tag`.
-vendored_path: "vendor/designer/aef-workflow-designer-0.49.0.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.52.0.html"
 
 # T-4830 (T-4737 GO): 832's validator, pinned beside the build. POST /api/validate runs its run_xml()
 # in-process and adds no rules. Released as part of 832's authoring kit at the SAME tag; fw designer
 # sync --from-tag verifies it against the kit's SHA256SUMS at the tag (itself checked against the
 # MANIFEST kit_sha256) and against validator_sha256 here, then installs it read-only. Bump these with
 # the build above, from the same announce.
-validator_source: "dist/aef-authoring-kit-0.49.0/validate-workflow.py"
-validator_sums: "dist/aef-authoring-kit-0.49.0/SHA256SUMS"
-validator_kit_sha256: "7ad136dd84bcea33b585169820be4cb91f960147d6923e08c368da35e06688e4"
-validator_sha256: "98e199b617d37e82730583fdb40822f9b5ac70f9df0a5548e7781088b30dc943"
-validator_bytes: 138795
-validator_path: "vendor/designer/validate-workflow-0.49.0.py"
+validator_source: "dist/aef-authoring-kit-0.52.0/validate-workflow.py"
+validator_sums: "dist/aef-authoring-kit-0.52.0/SHA256SUMS"
+validator_kit_sha256: "2e64c22c90c2491392f5abf90a7e5b972d9ecafd045450a1bdc1e731a31b5e11"
+validator_sha256: "68dad58456356f0b40bd2a17b47d0dc6aa2740f73e22d52e5a896a5de0939535"
+validator_bytes: 140288
+validator_path: "vendor/designer/validate-workflow-0.52.0.py"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
@@ -257,4 +257,4 @@ cdn_fonts: false
 # ever regresses this capability, flip back to false — the dual-form emit and
 # the lint gate reactivate automatically (T-2612 guard).
 resolves_workflow_ref: true
-notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows; 0.26.0: ?browse=1, legibility; 0.27.0: io panel shows producer ref + dataType; 0.28.0: io attributes editable; 0.29.0: io field editing, whole io names; 0.30.0: field-catalog ref picker, add-field order; 0.31.0: mapping v1.1 io lint (match missing, prefix undeclared, match unresolved), req/x legible; 0.32.0: foreign files keep unmodelled content, ids, geometry and order (x832:origin); 0.33.0: foreign files keep subprocess structure (nodes/flows stay inside subProcess/transaction/adHocSubProcess); designer-written maps unchanged; 0.34.0: foreign boundary events drawn where the file drew them, hosts sized to hold them; designer-written maps unchanged (validator identical to 0.33.0); 0.35.0: validator accepts sendTask/receiveTask/manualTask/businessRuleTask like <task>; 0.36.0: conditional/signal event markers, read-only value rules from the field catalog, conditional/signal node ids renamed on first save; 0.37.0: documents in lanes, validator --field-catalog; 0.38.0: six validator warnings, kit SKILL.md, import notice; 0.39.0: data stores drawn as cylinders under their task, kit gate exit 2 (validator identical to 0.38.0); 0.40.0: advisory banners on map open merged into one card, compact under 700px (validator identical to 0.38.0); 0.41.0: no invented lanes or participant for files that declare none (provenance markers instead), validator: no laneSet is no longer E-XML-LANES-EMPTY; 0.42.0+0.43.0 (taken together): page changes only APP_VERSION (maps save byte-identically to 0.42.0); validator: source: is a known documentation prefix (no W-XML-DOC-PREFIX on cited steps); 0.44.0+0.45.0 (taken together, T-5273): import/export menus (BPMN/Camunda, SVG/PNG/PDF, Mermaid, CSV, .xlsx), PDF A3/A4, imported annotations drawn, instance counts per step (/api/instances), routing fixes; re-save moves waypoints of 14 edges on 5 corpus maps (no element/id/name/attribute change); /api/validate unchanged; 0.46.0 (T-5350): Save on the first toolbar row at 1920 (T-1471), starter map readable at 1024 (T-1472), no flow/label on the add-lane strip (T-1465), straight associations between aligned steps (T-1470), kit calibration maps one line per quote (T-1477); no stored-format change, validator identical to 0.45.0; 0.47.0 (T-5380): phases drawn read-only, io badge clear of step names, flow labels stable across zoom, starter maps get starter-derived uids; stored maps without phases byte-identical, /api/validate unchanged, validator identical to 0.46.0; 0.48.0+0.48.1 (taken together, T-5390): lane bpmn:documentation kept on save (T-1500), documentation shown read-only (T-1492), phase rows named (T-1498), phases survive save and reopen (T-1510); stored maps unchanged, /api/validate unchanged, validator identical to 0.47.0; 0.49.0 (T-5408): phases editable on maps that carry them (832 T-1502) and shown or hidden per row (T-1503); stored maps unchanged, validator identical to 0.48.1"
+notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows; 0.26.0: ?browse=1, legibility; 0.27.0: io panel shows producer ref + dataType; 0.28.0: io attributes editable; 0.29.0: io field editing, whole io names; 0.30.0: field-catalog ref picker, add-field order; 0.31.0: mapping v1.1 io lint (match missing, prefix undeclared, match unresolved), req/x legible; 0.32.0: foreign files keep unmodelled content, ids, geometry and order (x832:origin); 0.33.0: foreign files keep subprocess structure (nodes/flows stay inside subProcess/transaction/adHocSubProcess); designer-written maps unchanged; 0.34.0: foreign boundary events drawn where the file drew them, hosts sized to hold them; designer-written maps unchanged (validator identical to 0.33.0); 0.35.0: validator accepts sendTask/receiveTask/manualTask/businessRuleTask like <task>; 0.36.0: conditional/signal event markers, read-only value rules from the field catalog, conditional/signal node ids renamed on first save; 0.37.0: documents in lanes, validator --field-catalog; 0.38.0: six validator warnings, kit SKILL.md, import notice; 0.39.0: data stores drawn as cylinders under their task, kit gate exit 2 (validator identical to 0.38.0); 0.40.0: advisory banners on map open merged into one card, compact under 700px (validator identical to 0.38.0); 0.41.0: no invented lanes or participant for files that declare none (provenance markers instead), validator: no laneSet is no longer E-XML-LANES-EMPTY; 0.42.0+0.43.0 (taken together): page changes only APP_VERSION (maps save byte-identically to 0.42.0); validator: source: is a known documentation prefix (no W-XML-DOC-PREFIX on cited steps); 0.44.0+0.45.0 (taken together, T-5273): import/export menus (BPMN/Camunda, SVG/PNG/PDF, Mermaid, CSV, .xlsx), PDF A3/A4, imported annotations drawn, instance counts per step (/api/instances), routing fixes; re-save moves waypoints of 14 edges on 5 corpus maps (no element/id/name/attribute change); /api/validate unchanged; 0.46.0 (T-5350): Save on the first toolbar row at 1920 (T-1471), starter map readable at 1024 (T-1472), no flow/label on the add-lane strip (T-1465), straight associations between aligned steps (T-1470), kit calibration maps one line per quote (T-1477); no stored-format change, validator identical to 0.45.0; 0.47.0 (T-5380): phases drawn read-only, io badge clear of step names, flow labels stable across zoom, starter maps get starter-derived uids; stored maps without phases byte-identical, /api/validate unchanged, validator identical to 0.46.0; 0.48.0+0.48.1 (taken together, T-5390): lane bpmn:documentation kept on save (T-1500), documentation shown read-only (T-1492), phase rows named (T-1498), phases survive save and reopen (T-1510); stored maps unchanged, /api/validate unchanged, validator identical to 0.47.0; 0.49.0 (T-5408): phases editable on maps that carry them (832 T-1502) and shown or hidden per row (T-1503); stored maps unchanged, validator identical to 0.48.1; 0.50.0+0.51.0+0.52.0 (taken together, T-5419): add phase row/phase and drag shared edges (0.50.0), lanes can be added after phases, lane add/delete/resize one undo step, deleting a phase gives its range to its neighbour (0.51.0), map scope aef:workflowMeta/@scope = framework | project with a Scope select, 0.51.0 and older drop it on save, validator warns W-XML-WORKFLOW-SCOPE / W-WORKFLOW-SCOPE (0.52.0, 832 T-1528, agreed in AEF T-5415), deep links open the version they name; stored maps change only when phases/lanes are edited or a scope is set"
