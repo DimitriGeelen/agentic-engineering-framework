@@ -209,6 +209,19 @@ validator_codes:
     inferred: false
     note: 'The map is then judged as an executable process (the default reading is defined), so nothing is left for the runtime to refuse; the finding is identity falling back to the process id and an undeclared
       kind (832 review, msg afe9ff0c, T-5191).'
+  W-WORKFLOW-SCOPE:
+    rule: workflow scope is not in {framework, project} (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+    note: 'T-1528 (T-1519, agreed with AEF msg ab4c1d03). A value outside the set is read as project, so the map does not
+      ship; nothing is left for the runtime to refuse. The finding is a mark the vendoring step cannot use.'
+  W-XML-WORKFLOW-SCOPE:
+    rule: workflow scope is not in {framework, project} (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+    note: 'T-1528, the XML twin of W-WORKFLOW-SCOPE: aef:workflowMeta/@scope outside the set, read as project.'
   E-LANES-EMPTY:
     rule: no lane declared (YAML)
     prevents: []
