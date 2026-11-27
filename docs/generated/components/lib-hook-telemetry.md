@@ -15,7 +15,7 @@ breakage is invisible — see T-1626 inception (witness: ring20-dashboard
 not found` flowed past while every framework health surface reported clean).
 Files (in $PROJECT_ROOT/.context/working/):
 .hook-counter            — per-hook fire count, one `<hookname>=<count>` line
-.hook-failure-counter    — per-hook non-zero-exit count, same format
+.hook-failure-counter    — per-hook failing-exit count (non-zero, not 2), same format
 
 ## Used By (4)
 
