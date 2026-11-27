@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5423: audit tag-format-drift headline is paired with evidence of a different check (050 report)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-27T13:56:33Z
+# ============================================================================
+
+task_id: T-5423
+task_name: "audit tag-format-drift headline is paired with evidence of a different check (050 report)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-25T16:16:22Z
+completed: 2026-11-27T13:56:03Z
+duration_days: 2
+updates_count: 4
+first_commit: 2026-11-26T10:29:46+01:00
+last_commit: 2026-11-27T14:56:01+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  add 050's printed headline/evidence example. orchestrator scan warnings parsed as YAML, one audit line per class with its own evidence (050 item 5)
+
+# Key outcomes
+outcomes:
+  - 'The audit parses `warnings:` from orchestrator-LATEST.yaml as YAML (multi-line entries intact)'
+  - 'Each warning class gets its own WARN line whose title and evidence belong to that class'
+  - 'A test feeds a LATEST with NEW + REMOVED + TAG-FORMAT-DRIFT and checks the pairing'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/orchestrator_warnings.py'
+  - '.fabric/components/lib-orchestrator_warnings.yaml'
+  - '.tasks/active/T-5423-audit-tag-format-drift-headline-is-paire.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/orchestrator_warnings.py'
+  - 'tests/unit/test_t5423_orchestrator_warnings.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-26T10:29:46'
+    action: 'T-5423: add 050''s printed headline/evidence example'
+  - time: '2026-11-27T14:56:01'
+    action: 'T-5423: orchestrator scan warnings parsed as YAML, one audit line per class with its own evidence (050 item 5)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2739 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, bug, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2739
+  commits: 4
+  files_changed: 13
+  lines_added: 1819
+  lines_removed: 36
+  footprint_refreshed_at: '2026-11-27T13:56:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5423-audit-tag-format-drift-headline-is-paire.md
+generated_by: context-agent-hybrid
