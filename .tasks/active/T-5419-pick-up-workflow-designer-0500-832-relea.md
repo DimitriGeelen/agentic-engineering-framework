@@ -23,10 +23,10 @@ description: >
   Known: add lanes before phases (832 T-1513). Same procedure as T-5408; refusal mapping
   checked by fw designer status (T-5398).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [designer, 832]
 components: []
 related_tasks: []
@@ -57,7 +57,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T15:50:02Z
-last_update: '2026-11-25T16:01:25Z'
+last_update: 2026-11-27T14:46:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -104,20 +104,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 released designer 0.52.0 (msg 6e13f104, 2026-11-27): tag designer-v0.52.0 (commit fa0b725a8), dist/aef-workflow-designer-0.52.0.html sha256 3de8ff55d109b6b491c3c1cb8fee0c206b9d5e5aec3f59bb2f1948dbd85eedf2, 1499756 bytes; authoring kit dist/aef-authoring-kit-0.52.0. It includes 0.50.0 (phases slices B/C), 0.51.0 (lanes after phases, undo steps, phase delete) and the scope attribute agreed in T-5415 (832 T-1528).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** We serve 0.49.0, which drops `aef:workflowMeta/@scope` on save, so the scope marker (T-5415) cannot be used until we serve 0.52.0. The validator in 0.52.0 emits two new codes, which the refusal mapping must list exactly (T-5432 took them back out until this pin).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Re-pin 0.49.0 → 0.52.0 by pull-at-tag, with the validator and kit verified against 832's MANIFEST, and the refusal mapping naming validator 0.52.0 with the two scope entries.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw designer status` shows 0.52.0 present and matching the pin; the refusal-mapping test is green against the new validator; 832 gets the final mapping sha256 so they re-pin once (their T-1530).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `policy/designer-pin.yaml` names 0.52.0 (artifact, tag, vendored path, validator and kit sums) and `fw designer sync --from-tag` installs it, matching both the MANIFEST at the tag and the pin
+- [x] The refusal mapping names validator 0.52.0 and carries W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE (832's text); `test_t5189_validator_refusal_mapping.py` passes
+- [x] `fw designer status` is clean (present, sha matches pin, mapping names 0.52.0)
+- [ ] 832 has the final mapping sha256
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -304,6 +306,21 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bin/fw designer status | grep -q "sha256 matches pin"
+test -f .context/visual/T-5419/designer@1440.png
+bin/fw designer status | grep -q "names validator 0.52.0"
+python3 -m pytest -q tests/unit/test_t5189_validator_refusal_mapping.py
+bats tests/unit/t3064_designer_onboarding_install.bats tests/unit/designer_sync_from_tag.bats
+bin/fw vendor self --check --task T-5419
+
+## Visual Verification
+
+The vendored build is 832's released artifact (sha256-verified at the tag); AEF does not edit it. Checked that the served page loads and shows the new version: `fw ux shots T-5419 designer=http://192.168.10.107:3000/designer` → `.context/visual/T-5419/designer@{1024,1440,1920}.png`, read via the Read tool. Badge reads v0.52.0; the workflow panel shows the new Scope select ("unset — this project only"); the Open project map dialog lists the corpus maps. Console: 404s for /api/instances, /api/field-profile and /favicon.ico, which Watchtower has never served (endpoints unchanged since 0.44.0, per 832), not a regression.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| designer | Open project map dialog | ok | ok | ok | at 1024 the toolbar wraps to two rows; map thumbnails had not finished rendering when the shot was taken |
+| designer | Scope select (workflow panel) | hidden | ok | ok | at 1024 the right panel sits behind the open dialog |
 
 ## RCA
 
@@ -401,3 +418,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5419-pick-up-workflow-designer-0500-832-relea.md
 - **Context:** Initial task creation
+
+### 2026-11-27T14:41:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

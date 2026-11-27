@@ -542,6 +542,8 @@ font-family: 'Outfit';
     cursor: default;
   }
   #canvas.mode-create { cursor: crosshair; }
+  #canvas.mode-phase-split, #canvas.mode-phase-split * { cursor: col-resize; }
+  .phase-split-preview { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 5 3; pointer-events: none; }
   #canvas.mode-connect { cursor: crosshair; }
   #canvas.drag-endpoint-snap { cursor: alias; }
   #canvas.drag-endpoint-float { cursor: no-drop; }
@@ -760,10 +762,15 @@ font-family: 'Outfit';
   .phase-label { fill: var(--text); font-size: 11px; font-weight: 600; text-rendering: geometricPrecision; }
   /* T-1498: a phase row's own name (its category), at the row's left: quieter than a phase name, so it reads as the row */
   .phase-row-label { fill: var(--text-dim); font-size: 11px; font-weight: 500; font-style: italic; text-rendering: geometricPrecision; }
+  /* T-1499: a halo in the canvas colour behind phase names and row labels, so a note's line crossing a bracket does not
+     cross out the text (Greenfield msg ee60b420) */
+  .phase-label, .phase-row-label { paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
   /* T-1502: a read-only value in a panel field (a phase's row) */
   .field-static { font-size: 13px; color: var(--text); padding: 4px 0; }
   /* T-1502: phases are selectable through their hit areas only; the rest of the layer stays click-through */
   #g-phases .phase-hit { fill: transparent; pointer-events: all; cursor: pointer; }
+  #g-phases .phase-boundary { fill: transparent; pointer-events: all; cursor: col-resize; }
+  #g-phases .phase-boundary:hover { fill: var(--accent); fill-opacity: 0.6; }
   #g-phases .phase-hit:hover + .phase-bracket, #g-phases g:hover > .phase-bracket { stroke: var(--accent); }
   #g-phases .phase-selected > .phase-bracket { stroke: var(--accent); stroke-width: 2; }
   #g-phases .phase-selected > .phase-label, #g-phases text.phase-selected { fill: var(--accent); }
@@ -1830,6 +1837,37 @@ font-family: 'Outfit';
           <div class="palette-text">
             <div class="palette-name">Add Lane</div>
             <div class="palette-meta">swimlane · authority</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-1504 (T-1491 GO, slice B): add a phase row, and add a phase by splitting one at a gap between steps -->
+      <div class="palette-section" id="palette-phases">
+        <div class="palette-label">Phases</div>
+        <div class="palette-item" id="palette-add-phase-row" title="Add a row of phases above the pool: one phase across the whole map, to rename and split">
+          <div class="palette-glyph">
+            <svg viewBox="0 0 28 28">
+              <path d="M4 12 V8 H24 V12" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+              <rect x="3" y="15" width="22" height="9" rx="2" fill="none" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2 2"/>
+              <text x="14" y="7" fill="var(--accent)" font-family="monospace" font-size="9" font-weight="700" text-anchor="middle">+</text>
+            </svg>
+          </div>
+          <div class="palette-text">
+            <div class="palette-name">Add phase row</div>
+            <div class="palette-meta">one phase across the map</div>
+          </div>
+        </div>
+        <div class="palette-item" id="palette-add-phase" title="Then click the map where the new phase should start: it is split at the nearest gap between steps">
+          <div class="palette-glyph">
+            <svg viewBox="0 0 28 28">
+              <path d="M3 13 V9 H13 V13 M15 13 V9 H25 V13" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+              <line x1="14" y1="15" x2="14" y2="25" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="2 2"/>
+              <text x="14" y="7" fill="var(--accent)" font-family="monospace" font-size="9" font-weight="700" text-anchor="middle">+</text>
+            </svg>
+          </div>
+          <div class="palette-text">
+            <div class="palette-name">Add phase</div>
+            <div class="palette-meta">click where it starts</div>
           </div>
         </div>
       </div>
@@ -8404,6 +8442,21 @@ function _renderPropsInto(props, details) {
       // it. Three words in option order, so each still maps to the entry beside it, and the full
       // gloss lives on the canvas badge where there is room for it.
     }, 'unset · illustrative · actionable'));
+    // T-1528 (T-1519 GO): whose map it is. framework = ships to every project that vendors the framework; project =
+    // stays in this repository. Unset is read as project (fail safe), and the leading '' keeps a way back to unset, as
+    // for Kind. Unlike the other panel selects this one is an undo step: it changes what AEF's vendoring ships.
+    // A value outside the set (from a hand-edited file) is shown as is rather than silently replaced.
+    // Each option says what it does (T-1528 review: "unset = project · framework ships" did not tell a person who does
+    // not know T-1519 what the choice changes); the hint is the question the choice answers.
+    const scopeOpts = [{ value: '', label: 'unset — this project only' },
+                       { value: 'framework', label: 'framework — ships to every project' },
+                       { value: 'project', label: 'project — this project only' }];
+    if (wm.scope && !scopeOpts.some(o => o.value === wm.scope)) scopeOpts.push({ value: wm.scope, label: `${wm.scope} — not a scope; read as this project only` });
+    sMeta.appendChild(selectField('Scope', wm.scope || '', scopeOpts, v => {
+      if ((v || null) === (wm.scope || null)) return;
+      pushHistory();
+      wm.scope = v || null;
+    }, 'which projects get this map'));
     props.appendChild(sMeta);
     const sMap = wfV11Section(state);   // T-1249: mappingVersion + aef:prefixes, read-only
     if (sMap) props.appendChild(sMap);
@@ -10119,6 +10172,9 @@ function setMode(m) {
   document.querySelectorAll('.palette-item').forEach(el => el.classList.toggle('active', 'create:' + el.dataset.create === m));
   svg.classList.toggle('mode-create', m.startsWith('create:'));
   svg.classList.toggle('mode-connect', m === 'connect');
+  svg.classList.toggle('mode-phase-split', m === 'phase-split');   // T-1504
+  { const pa = $('palette-add-phase'); if (pa) pa.classList.toggle('active', m === 'phase-split'); }
+  if (m === 'phase-split') $('status-mode').textContent = 'add phase: click where it starts';
   connectFrom = null;
   connectFromPort = null;
   connectPreviewSnap = null;
@@ -10465,6 +10521,44 @@ svg.addEventListener('mousedown', e => {
   rubberBand = { startX: pt.x, startY: pt.y, x: pt.x, y: pt.y, additive: e.shiftKey };
 });
 
+// T-1504: in Add phase mode a click anywhere on the map (a step, a phase, a lane) splits the phase under it; captured
+// first, so the step or phase under the pointer is not selected or dragged instead.
+// T-1505: drag a phase boundary (select mode): the handle under the pointer starts it; the snapped place is previewed
+// while moving; the release moves it there. Captured first, so the phase or step under the handle is not dragged.
+svg.addEventListener('mousedown', e => {
+  if (mode !== 'select' || e.button !== 0) return;
+  const h = e.target.closest && e.target.closest('.phase-boundary');
+  if (!h) return;
+  e.stopPropagation(); e.preventDefault();
+  const R = phaseFind(h.getAttribute('data-phase-right'));
+  phaseBoundaryDrag = { left: h.getAttribute('data-phase-left'), right: h.getAttribute('data-phase-right'), from: R ? R.phase.x : null, to: null };
+}, true);
+window.addEventListener('mousemove', e => {
+  if (!phaseBoundaryDrag) return;
+  const pt = clientToSvg(e.clientX, e.clientY);
+  phaseBoundaryDrag.to = phaseBoundaryTarget(phaseBoundaryDrag.left, phaseBoundaryDrag.right, pt.x);
+  _phaseBoundaryPreview(phaseBoundaryDrag.to);
+});
+window.addEventListener('mouseup', e => {
+  if (!phaseBoundaryDrag) return;
+  const d = phaseBoundaryDrag; phaseBoundaryDrag = null;
+  gPreview.innerHTML = '';
+  if (d.to != null) phaseBoundaryMove(d.left, d.right, d.to);
+});
+for (const evName of ['mousedown', 'click']) svg.addEventListener(evName, e => {
+  if (mode !== 'phase-split') return;
+  e.stopPropagation(); e.preventDefault();
+  if (evName !== 'click') return;
+  const pt = clientToSvg(e.clientX, e.clientY);
+  const id = phaseSplitAt(pt.x, pt.y);
+  if (!id) { showToast('No gap between steps inside that phase: click inside a phase, between two steps.'); return; }
+  setMode('select');
+}, true);
+svg.addEventListener('mousemove', e => {
+  if (mode !== 'phase-split') return;
+  const pt = clientToSvg(e.clientX, e.clientY);
+  _phaseSplitPreview(pt.x, pt.y);
+});
 svg.addEventListener('click', e => {
   if (drag || groupDrag || rubberBand) return;
   // canvas click
@@ -10833,6 +10927,8 @@ window.addEventListener('mouseup', e => {
   }
   if (laneResizeDrag) {
     document.querySelectorAll('.lane-resize-handle.dragging').forEach(el => el.classList.remove('dragging'));
+    const ln = findLane(laneResizeDrag.laneId);   // T-1525: one undo step per gesture that changed a height
+    if (ln && ln.height !== laneResizeDrag.startHeight) commitHistory(laneResizeDrag.before);
   }
   if (poolResizeDrag) {
     poolResizeDrag = null; // clear BEFORE renderAll so the handle re-renders without .dragging
@@ -10866,7 +10962,8 @@ function onLaneResizeMouseDown(ev, laneId) {
   const lane = findLane(laneId);
   if (!lane) return;
   const pt = clientToSvg(ev.clientX, ev.clientY);
-  laneResizeDrag = { laneId, startY: pt.y, startHeight: lane.height };
+  // T-1525: the map before the gesture, recorded at the release only when a lane's height changed (no dead undo step)
+  laneResizeDrag = { laneId, startY: pt.y, startHeight: lane.height, before: snapshotState() };
   // visual feedback while dragging
   ev.currentTarget.classList.add('dragging');
 }
@@ -12534,6 +12631,7 @@ function deleteEdge(id) {
 
 // ----- Lane CRUD -----
 function addLane() {
+  pushHistory();   // T-1525: one undo step (before, Ctrl+Z undid the previous recorded action as well)
   if (!state.lanes) state.lanes = defaultLanes();
   // generate a fresh id that doesn't collide with existing ones
   let suffix = state.lanes.length + 1;
@@ -12560,6 +12658,7 @@ function addLane() {
 
 function deleteLane(id) {
   if (!state.lanes || state.lanes.length <= 1) return;
+  pushHistory();   // T-1525: one undo step
   const remaining = state.lanes.filter(l => l.id !== id);
   // reassign nodes from deleted lane to the first remaining lane
   const fallbackId = remaining[0].id;
@@ -12598,6 +12697,20 @@ function moveLane(id, newIdx) {
 // ============================================================================
 $('btn-add-lane').onclick = () => { addLane(); };
 $('palette-add-lane').onclick = () => { addLane(); };
+// T-1504: Add phase row adds a row at once; Add phase waits for a click on the map (Esc or a second click on it cancels).
+// With no phases yet, Add phase adds the first row instead: there is nothing to split.
+$('palette-add-phase-row').onclick = () => { setMode('select'); phaseRowAdd(); };
+$('palette-add-phase').onclick = () => {
+  if (mode === 'phase-split') { setMode('select'); return; }
+  const pk = state && state.procKept;
+  if (!pk || !(pk.categories || []).length || !phasesParse(pk).length) {
+    phaseRowAdd();
+    showToast('Added a phase row. Click "Add phase", then the map where the next phase starts.');
+    return;
+  }
+  const v = phaseView(); if (v.hideAll) { v.hideAll = false; setPhaseView(v); }
+  setMode('phase-split');
+};
 $('btn-clean').onclick = () => {
   const btn = $('btn-clean');
   const before = snapshotState();   // B5: record only if the op actually moves nodes
@@ -14812,7 +14925,7 @@ document.addEventListener('mousedown', e => {
 // not a `let`: this handler starts running before the script's later `let` bindings exist.
 window._deepLinkSettled = null;
 // T-1109 (aef-greenfield-test's 0.16.0 re-test): a portal that opens a project's map through the
-// project API — ?load=/api/version?id=X[&v=N] — is opening project X, exactly like Versions -> open,
+// project API — ?load=/api/version?id=X[&v=N], encoded or not (T-1521) — is opening project X, exactly like Versions -> open,
 // so it gets the same T-1089 treatment (a file that declares no workflow id takes X; a declared id
 // still wins, T-263). Same origin only, and only that endpoint: any other ?load stays a plain import.
 function projectIdFromLoadSrc(src) {
@@ -14824,7 +14937,7 @@ function projectIdFromLoadSrc(src) {
   } catch (_) { return null; }   // not a URL at all: not a project load (a plain import follows)
 }
 (async () => {
-  const src = new URLSearchParams(location.search).get('load');
+  const src = currentLoadSrc();   // T-1521: an unencoded &v= is carried into an /api/version load
   // T-884: ?instance=T-XXX pre-selects an instance once the map (and its snapshot) is in.
   instanceView.pending = new URLSearchParams(location.search).get('instance');
   if (!src) { loadInstanceSnapshot(); window._deepLinkSettled = 'none'; return; }
@@ -15353,7 +15466,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.49.0';
+const APP_VERSION = '0.52.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -15547,6 +15660,10 @@ function buildBpmnXml(s) {
   // and pageWidth — absent when unset, so every map that does not carry it
   // exports byte-identically and the UNSET default stays genuinely inert.
   if (wm.kind) wmAttrs.push(`kind="${escAttr(wm.kind)}"`);
+  // T-1528 (T-1519 GO, agreed with AEF): whose map it is, framework | project. Same additive pattern as kind: written
+  // only when set, so an unmarked map exports byte-identically. Before this the attribute was not read, so a scope
+  // AEF wrote was dropped by the next save here.
+  if (wm.scope) wmAttrs.push(`scope="${escAttr(wm.scope)}"`);
   // T-358 (AB): a map with no lanes says how it came to have none, so the next import (ours or a peer's) does not have
   // to guess. Written ONLY while there are no lanes: once a person adds one the map is authored and the marker goes.
   // Inert to other tools: an attribute of our own aef:workflowMeta inside bpmn:extensionElements.
@@ -16641,11 +16758,33 @@ function noteLines(n) {
   const max = Math.max(4, Math.floor((n.w - 2 * NOTE_PAD) / NOTE_CHAR_W));
   return String(n.text).split(/\r?\n/).flatMap(p => p.trim() ? wrapText(p.trim().replace(/\s+/g, ' '), max) : ['']);
 }
+// T-1499 (Greenfield msg ee60b420): the band the phase rows take above the pool, as renderPhases draws them (rows shown
+// in this view, T-1503): from the topmost row's names down to the pool's top edge, across the pool. null when no
+// phases are drawn. Computed, not read off the phase layer, so the notes can be placed before it is drawn.
+function phaseBand(s) {
+  const pk = s && s.procKept;
+  if (!pk || !(pk.categories || []).length) return null;
+  const view = phaseView();
+  if (view.hideAll) return null;
+  const rows = phasesParse(pk).filter(r => !view.hiddenRows.includes(r.id));
+  const pb = typeof gPool !== 'undefined' && gPool.querySelector('.pool-border');
+  if (!rows.length || !pb) return null;
+  const px = parseFloat(pb.getAttribute('x')), py = parseFloat(pb.getAttribute('y')), pw = parseFloat(pb.getAttribute('width'));
+  const top = py - 8 - (rows.length - 1) * PHASE_ROW_H - 18;   // the topmost row's names (11 px, baseline 4 above its bracket)
+  return { top, bottom: py, left: px, right: px + pw };
+}
 function notesLayout(s) {
   const pk = s && s.procKept;
   if (!pk || !(pk.artifacts || []).length) return null;
-  const { notes, links } = notesParse(pk);
+  let { notes, links } = notesParse(pk);
   if (!notes.length && !links.length) return null;
+  // T-1499: a note the author placed just above the pool sits where the phase rows are drawn now; drawn (not saved)
+  // higher, so its box clears the band by 6 px. Its links are then routed from where it is shown (a file waypoint that
+  // no longer touches the shown box is not used). Notes inside the pool, or clear of the band, are drawn as before;
+  // with phases hidden (T-1503) every note is where the file has it. Saved bytes never change (the DI is kept).
+  const band = phaseBand(s);
+  if (band) notes = notes.map(n => (n.y < band.bottom && n.y + n.h > band.top - 6 && n.x < band.right && n.x + n.w > band.left
+    && n.y + n.h / 2 < band.bottom) ? { ...n, y: band.top - 6 - n.h, shownAbovePhases: true } : n);
   const byNote = new Map(notes.map(n => [n.id, n]));
   const byUid = new Map(s.nodes.map(n => [n.uid, n]));
   const rectOf = end => {
@@ -16759,16 +16898,49 @@ function phasesParse(pk) {
   _phasesParsed.set(pk, out);
   return out;
 }
+// T-1513: a phase that spans the pool keeps spanning it. When an edit makes the pool taller than it was at the last
+// render (a lane added below, a lane made taller), each drawn phase whose shape reached the old pool bottom is stretched
+// to the new one (only its Bounds `height`), and the session band (pk.poolBand) grows with it. Before, a step placed
+// in the new space put the saved file's step band (T-1510) below the groups, and after a reopen every phase vanished.
+// Never on the first render of a map (that only records the pool), nor when the pool did not grow by more than 2 px,
+// so a map nobody edits is not changed. The stretch belongs to the edit that grew the pool (its undo step).
+function _phasesFollowPool(pk, poolBottom) {
+  const prev = pk._poolSeenBottom;
+  pk._poolSeenBottom = poolBottom;
+  if (prev == null || !(poolBottom > prev + 2)) return false;
+  const rows = phasesParse(pk);
+  let changed = false;
+  for (const r of rows) for (const p of r.phases) {
+    const i = (pk.di || []).findIndex(d => d.ref === p.id); if (i < 0) continue;
+    const xml = pk.di[i].xml, m = /<(?:[\w.-]+:)?Bounds\b[^>]*>/.exec(xml); if (!m) continue;
+    const a = k => { const v = new RegExp(`\\s${k}="([^"]*)"`).exec(m[0]); return v ? parseFloat(v[1]) : NaN; };
+    const y = a('y'), h = a('height');
+    if (!Number.isFinite(y) || !Number.isFinite(h)) continue;
+    if (y + h < prev - 2 || y + h >= poolBottom - 2) continue;   // did not reach the old bottom, or already reaches the new
+    const tag = m[0].replace(/(\sheight=")[^"]*(")/, `$1${_r1(poolBottom - y)}$2`);
+    pk.di[i] = { ...pk.di[i], xml: xml.slice(0, m.index) + tag + xml.slice(m.index + m[0].length) };
+    changed = true;
+  }
+  if (changed) {
+    const b = pk.poolBand;
+    if (b && b.y + b.h < poolBottom) pk.poolBand = { ...b, h: poolBottom - b.y };
+    _phasesChanged(pk);
+    if (typeof scheduleAutosave === 'function') scheduleAutosave();
+  }
+  return changed;
+}
 function renderPhases() {
   const g = $('g-phases'); if (!g) return;
   g.innerHTML = '';
   const pk = state && state.procKept;
   if (!pk || !(pk.categories || []).length) return;
-  const rows = phasesParse(pk);
   const pb = gPool.querySelector('.pool-border');
-  if (!rows.length || !pb) return;
+  if (!pb) return;
   const px = parseFloat(pb.getAttribute('x')), py = parseFloat(pb.getAttribute('y'));
   const pw = parseFloat(pb.getAttribute('width')), ph = parseFloat(pb.getAttribute('height'));
+  _phasesFollowPool(pk, py + ph);   // T-1513: before the parse, so the stretched shapes are what is drawn
+  const rows = phasesParse(pk);
+  if (!rows.length) return;
   const left = px + LANE_HEADER, right = px + pw, top = py + POOL_HEADER, bottom = py + ph;
   // T-1503: the view this map asked for — all phases off, or some rows off. A hidden row takes no space (the rows above
   // it move down); the dividers belong to the file's first row only, so they go when that row is hidden.
@@ -16807,6 +16979,18 @@ function renderPhases() {
       while (s.length > 1 && t.getComputedTextLength() > maxW) { s = s.slice(0, -1); t.textContent = s + '…'; }
       if (s !== p.name) pg.appendChild(el('title', {}, [text(p.name)]));
     });
+    // T-1505 (T-1491 GO, slice C): a handle on each edge two neighbouring phases share (their shapes meet within 2 px),
+    // over the bracket band and, in row 1, along the divider through the lanes; dragged, it moves the boundary to the
+    // nearest gap between steps. Added after the brackets, so it is on top of their hit areas.
+    for (let i = 1; i < r.phases.length; i++) {
+      const a = r.phases[i - 1], b = r.phases[i];
+      const bx = b.x;
+      if (Math.abs(a.x + a.w - bx) > 2 || bx <= left + 8 || bx >= right - 8) continue;
+      // (not data-phase-row-id: the layer's click handler would select the row when a drag ends)
+      const attrs = { class: 'phase-boundary', 'data-phase-left': a.id, 'data-phase-right': b.id, 'data-boundary-row': r.id };
+      g.appendChild(el('rect', { ...attrs, x: bx - 3, y: by - 16, width: 6, height: 16 + PHASE_TICK }));
+      if (r.first) g.appendChild(el('rect', { ...attrs, x: bx - 3, y: top, width: 6, height: bottom - top }));
+    }
   });
 }
 // T-1502 (T-1491 GO, slice A): edit a phase in the kept XML. Each edit rewrites only the element it concerns, as a string
@@ -16880,6 +17064,22 @@ function _dropGroups(pk, groupIds) {
 function phaseDelete(id) {
   const f = phaseFind(id), pk = phaseKept(); if (!f || !pk) return;
   pushHistory();
+  // T-1515 (T-1491 walkthrough step 7): the neighbour that shares an edge with the deleted phase takes its range — the
+  // left one widens to its end; else (a row's first phase, or no left one touching) the right one starts where it
+  // started. Only that neighbour's
+  // Bounds x/width change. A phase that touches no neighbour leaves its stretch empty, as before.
+  const ps = f.row.phases, i = ps.findIndex(p => p.id === id), p = f.phase;
+  const L = i > 0 ? ps[i - 1] : null, R = i < ps.length - 1 ? ps[i + 1] : null;
+  const touches = (a, b) => Math.abs(a.x + a.w - b.x) <= 2;
+  const setB = (gid, attrs) => {
+    const k = (pk.di || []).findIndex(d => d.ref === gid); if (k < 0) return;
+    const xml = pk.di[k].xml, m = /<(?:[\w.-]+:)?Bounds\b[^>]*>/.exec(xml); if (!m) return;
+    let tag = m[0];
+    for (const [a, v] of Object.entries(attrs)) tag = tag.replace(new RegExp(`(\\s${a}=")[^"]*(")`), `$1${_r1(v)}$2`);
+    pk.di[k] = { ...pk.di[k], xml: xml.slice(0, m.index) + tag + xml.slice(m.index + m[0].length) };
+  };
+  if (L && touches(L, p)) setB(L.id, { width: p.x + p.w - L.x });
+  else if (R && touches(p, R)) setB(R.id, { x: p.x, width: R.x + R.w - p.x });   // the first phase, or no left one touching
   _dropGroups(pk, [id]);
   const vid = f.phase.valueId;
   pk.categories = pk.categories.map(x => {
@@ -16900,6 +17100,196 @@ function phaseRowDelete(rowId) {
   _dropGroups(pk, gids);
   pk.categories = pk.categories.filter(x => !_openTag(x, 'category', rowId));
   selection = null; _phasesChanged(pk); renderAll();
+}
+// T-1504 (T-1491 GO, slice B): add phases in the designer. Written as standard BPMN, Greenfield's encoding (report
+// §IW-5): a root bpmn:category per row, a bpmn:categoryValue per phase, a bpmn:group per phase naming its value, and the
+// group's BPMNShape spanning the pool's full height (T-1461 F3), its x range the phase's. Appended to the kept XML
+// (T-1326), so the save writes them where it writes a file's own phases and nothing else changes; a map nobody adds a
+// phase to saves exactly as before. New elements use the bpmn:/bpmndi:/dc: prefixes every designer save declares.
+function _phaseIdsInUse() {
+  const ids = new Set(), pk = phaseKept() || {};
+  for (const x of [...(pk.categories || []), ...(pk.artifacts || []).map(a => a.xml), ...(pk.di || []).map(d => d.xml)])
+    for (const m of String(x).matchAll(/\bid="([^"]+)"/g)) ids.add(m[1]);
+  for (const n of state.nodes || []) { ids.add(n.uid); ids.add(displayIdOf(n)); }
+  for (const e of state.edges || []) { ids.add(e.uid); ids.add(displayIdOf(e)); }
+  for (const l of state.lanes || []) ids.add(l.id);
+  if (state.pool && state.pool.id) ids.add(state.pool.id);
+  return ids;
+}
+function _phaseFreshId(ids, stem) {
+  let n = 1; while (ids.has(`${stem}_${n}`) || ids.has(`${stem}_${n}_di`)) n++;
+  const id = `${stem}_${n}`; ids.add(id); return id;
+}
+// The rectangle a new phase's shape spans: the pool as drawn, joined with the band the file's phases are judged against
+// (pk.poolBand, when the file gave one), so the new group counts as a phase now, and after a save and reopen, where the
+// band is the one the steps occupy (T-1510), which lies inside the pool.
+function _phaseSpanRect() {
+  const pb = gPool && gPool.querySelector('.pool-border'); if (!pb) return null;
+  const px = +pb.getAttribute('x'), py = +pb.getAttribute('y'), pw = +pb.getAttribute('width'), ph = +pb.getAttribute('height');
+  const band = (phaseKept() || {}).poolBand;
+  const y0 = band ? Math.min(py, band.y) : py, y1 = band ? Math.max(py + ph, band.y + band.h) : py + ph;
+  return { left: px + LANE_HEADER, right: px + pw, y: Math.floor(y0), h: Math.ceil(y1) - Math.floor(y0), py, ph };
+}
+const _r1 = v => String(Math.round(v * 10) / 10);
+function _phaseGroupXml(gid, vid) { return `<bpmn:group id="${_attrEsc(gid)}" categoryValueRef="${_attrEsc(vid)}" />`; }
+function _phaseShapeXml(gid, x, y, w, h) {
+  return `<bpmndi:BPMNShape id="${_attrEsc(gid)}_di" bpmnElement="${_attrEsc(gid)}"><dc:Bounds x="${_r1(x)}" y="${_r1(y)}" width="${_r1(w)}" height="${_r1(h)}" /></bpmndi:BPMNShape>`;
+}
+// Add a row: a new category with one phase across the whole pool. Returns the new phase's id (selected).
+function phaseRowAdd() {
+  if (!state) return null;
+  const R = _phaseSpanRect(); if (!R) return null;
+  pushHistory();
+  const pk = state.procKept || (state.procKept = {});
+  pk.categories = pk.categories || []; pk.artifacts = pk.artifacts || []; pk.di = pk.di || [];
+  // the band the new groups are judged against in this session (view data, never written; T-1473)
+  if (!pk.poolBand) pk.poolBand = { y: R.py, h: R.ph, from: 'designer' };
+  const ids = _phaseIdsInUse();
+  const cid = _phaseFreshId(ids, 'Category'), vid = _phaseFreshId(ids, 'CategoryValue'), gid = _phaseFreshId(ids, 'Group');
+  const nRows = phasesParse(pk).length;
+  const rowName = nRows ? `Phases ${nRows + 1}` : 'Phases';
+  pk.categories.push(`<bpmn:category id="${_attrEsc(cid)}" name="${_attrEsc(rowName)}"><bpmn:categoryValue id="${_attrEsc(vid)}" value="Phase 1" /></bpmn:category>`);
+  pk.artifacts.push({ xml: _phaseGroupXml(gid, vid) });
+  pk.di.push({ ref: gid, xml: _phaseShapeXml(gid, R.left, R.y, R.right - R.left, R.h) });
+  // a row added while phases are switched off (T-1503) is shown: the author has to see what they added
+  const v = phaseView(); if (v.hideAll) { v.hideAll = false; setPhaseView(v); }
+  _phasesChanged(pk);
+  selection = { kind: 'phase', id: gid }; multiSelect = new Set();
+  renderAll(); scheduleAutosave();
+  return gid;
+}
+// The x positions between the steps' columns: steps are joined into columns where their x ranges overlap, and a gap is
+// the middle of the space between one column's right edge and the next one's left edge.
+function phaseStepGaps(s) {
+  const iv = (s.nodes || []).filter(n => typeof n.x === 'number').map(n => { const d = dims(n) || { w: 120 }; return [n.x, n.x + d.w]; })
+    .sort((a, b) => a[0] - b[0]);
+  const cols = [];
+  for (const r of iv) { const c = cols[cols.length - 1]; if (c && r[0] < c[1]) c[1] = Math.max(c[1], r[1]); else cols.push([r[0], r[1]]); }
+  const gaps = [];
+  for (let i = 1; i < cols.length; i++) gaps.push((cols[i - 1][1] + cols[i][0]) / 2);
+  return gaps;
+}
+// Where a click at (x, y) would split: the row (the one whose names band the click is in, else the selected phase's or
+// row's, else the first shown), the phase in that row under x, and the step gap nearest x strictly inside it (at least
+// 12 px from its ends). null when the click is outside every phase or the phase has no gap inside it.
+function phaseSplitTarget(x, y) {
+  const pk = phaseKept(); if (!pk || !(pk.categories || []).length) return null;
+  const view = phaseView(); if (view.hideAll) return null;
+  const shown = phasesParse(pk).filter(r => !view.hiddenRows.includes(r.id));
+  if (!shown.length) return null;
+  const pb = gPool && gPool.querySelector('.pool-border'); if (!pb) return null;
+  const py = +pb.getAttribute('y');
+  let row = null;
+  shown.forEach((r, ri) => { const by = py - 8 - ri * PHASE_ROW_H; if (y >= by - 18 && y <= by + PHASE_TICK + 2) row = r; });
+  if (!row && selection && selection.kind === 'phase') { const f = phaseFind(selection.id); if (f && shown.some(r => r.id === f.row.id)) row = shown.find(r => r.id === f.row.id); }
+  if (!row && selection && selection.kind === 'phaseRow') row = shown.find(r => r.id === selection.id) || null;
+  if (!row) row = shown[0];
+  const phase = row.phases.find(p => x >= p.x && x <= p.x + p.w);
+  if (!phase) return null;
+  const inside = phaseStepGaps(state).filter(g => g > phase.x + 12 && g < phase.x + phase.w - 12);
+  if (!inside.length) return { row, phase, at: null };
+  const at = inside.reduce((a, b) => Math.abs(b - x) < Math.abs(a - x) ? b : a);
+  return { row, phase, at };
+}
+// Split the phase under a click at the nearest step gap: the phase keeps its left part, a new phase (a new value in the
+// same row, a new group and shape) takes the right part. Returns the new phase's id (selected), or null.
+function phaseSplitAt(x, y) {
+  const t = phaseSplitTarget(x, y), pk = phaseKept();
+  if (!t || t.at == null || !pk) return null;
+  const { row, phase, at } = t;
+  const shapeIdx = (pk.di || []).findIndex(d => d.ref === phase.id);
+  if (shapeIdx < 0) return null;
+  const sxml = pk.di[shapeIdx].xml;
+  const bm = /<(?:[\w.-]+:)?Bounds\b[^>]*>/.exec(sxml); if (!bm) return null;
+  const battr = a => { const m = new RegExp(`\\s${a}="([^"]*)"`).exec(bm[0]); return m ? parseFloat(m[1]) : NaN; };
+  const by = battr('y'), bh = battr('height');
+  if (!Number.isFinite(by) || !Number.isFinite(bh)) return null;
+  pushHistory();
+  const ids = _phaseIdsInUse();
+  const vid = _phaseFreshId(ids, 'CategoryValue'), gid = _phaseFreshId(ids, 'Group');
+  // the left part: the same shape, its width cut at the gap (only that attribute changes)
+  const tag2 = bm[0].replace(/(\swidth=")[^"]*(")/, `$1${_r1(at - phase.x)}$2`);
+  pk.di[shapeIdx] = { ...pk.di[shapeIdx], xml: sxml.slice(0, bm.index) + tag2 + sxml.slice(bm.index + bm[0].length) };
+  // the new value, right after the split one in its category (the row's order reads left to right)
+  const n = row.phases.length + 1;
+  const used = new Set(row.phases.map(p => p.name));
+  let k = n; while (used.has(`Phase ${k}`)) k++;
+  pk.categories = pk.categories.map(c => {
+    if (!_openTag(c, 'category', row.id)) return c;
+    const pfx = (/^<([\w.-]+:)?category\b/.exec(c) || [])[1] || '';
+    const val = `<${pfx}categoryValue id="${_attrEsc(vid)}" value="Phase ${k}" />`;
+    const vre = new RegExp(`<(?:[\\w.-]+:)?categoryValue\\b[^>]*\\bid="${_reEsc(phase.valueId)}"[^>]*?(?:/>|>[\\s\\S]*?</(?:[\\w.-]+:)?categoryValue>)`);
+    const m = vre.exec(c);
+    if (m) return c.slice(0, m.index + m[0].length) + val + c.slice(m.index + m[0].length);
+    return c.replace(new RegExp(`</${_reEsc(pfx)}category>\\s*$`), `${val}</${pfx}category>`);
+  });
+  // the new group right after the split one, its shape after the split one's
+  const ai = pk.artifacts.findIndex(a => { const o = _openTag(a.xml, 'group', phase.id); return o && o[1] === 0; });
+  pk.artifacts.splice(ai < 0 ? pk.artifacts.length : ai + 1, 0, { xml: _phaseGroupXml(gid, vid) });
+  pk.di.splice(shapeIdx + 1, 0, { ref: gid, xml: _phaseShapeXml(gid, at, by, phase.x + phase.w - at, bh) });
+  _phasesChanged(pk);
+  selection = { kind: 'phase', id: gid }; multiSelect = new Set();
+  renderAll(); scheduleAutosave();
+  return gid;
+}
+// T-1505 (T-1491 GO, slice C): where a dragged boundary between two neighbouring phases lands — the step gap nearest
+// x strictly inside the pair (at least 12 px from the left phase's start and the right phase's end), so a boundary
+// never cuts a step and neither phase vanishes. null when the pair holds no gap.
+function phaseBoundaryTarget(leftId, rightId, x) {
+  const L = phaseFind(leftId), R = phaseFind(rightId);
+  if (!L || !R) return null;
+  const lo = L.phase.x + 12, hi = R.phase.x + R.phase.w - 12;
+  const inside = phaseStepGaps(state).filter(g => g > lo && g < hi);
+  if (!inside.length) return null;
+  return inside.reduce((a, b) => Math.abs(b - x) < Math.abs(a - x) ? b : a);
+}
+// Move the boundary between two neighbouring phases to x: the left group's shape width and the right group's shape x
+// and width are rewritten (only those attributes of their Bounds); one undo step; steps never move. A move to where
+// the boundary already is changes nothing.
+function phaseBoundaryMove(leftId, rightId, x) {
+  const pk = phaseKept(), L = phaseFind(leftId), R = phaseFind(rightId);
+  if (!pk || !L || !R || !Number.isFinite(x)) return false;
+  if (Math.abs(R.phase.x - x) < 0.05 && Math.abs(L.phase.x + L.phase.w - x) < 0.05) return false;
+  const iL = (pk.di || []).findIndex(d => d.ref === leftId), iR = (pk.di || []).findIndex(d => d.ref === rightId);
+  if (iL < 0 || iR < 0) return false;
+  const setBounds = (xml, attrs) => {
+    const m = /<(?:[\w.-]+:)?Bounds\b[^>]*>/.exec(xml); if (!m) return null;
+    let tag = m[0];
+    for (const [k, v] of Object.entries(attrs)) {
+      const re = new RegExp(`(\\s${k}=")[^"]*(")`);
+      if (!re.test(tag)) return null;
+      tag = tag.replace(re, `$1${_r1(v)}$2`);
+    }
+    return xml.slice(0, m.index) + tag + xml.slice(m.index + m[0].length);
+  };
+  const lx = setBounds(pk.di[iL].xml, { width: x - L.phase.x });
+  const rx = setBounds(pk.di[iR].xml, { x, width: R.phase.x + R.phase.w - x });
+  if (lx == null || rx == null) return false;
+  pushHistory();
+  pk.di[iL] = { ...pk.di[iL], xml: lx };
+  pk.di[iR] = { ...pk.di[iR], xml: rx };
+  _phasesChanged(pk);
+  renderAll(); scheduleAutosave();
+  return true;
+}
+let phaseBoundaryDrag = null;   // { left, right, from } while a boundary is dragged
+function _phaseBoundaryPreview(x) {
+  gPreview.innerHTML = '';
+  const pb = gPool && gPool.querySelector('.pool-border');
+  if (x == null || !pb) return;
+  const py = +pb.getAttribute('y'), ph = +pb.getAttribute('height');
+  const rows = phasesParse(phaseKept()).filter(r => !phaseView().hiddenRows.includes(r.id));
+  gPreview.appendChild(el('line', { x1: x, y1: py - 8 - Math.max(0, rows.length - 1) * PHASE_ROW_H - 14, x2: x, y2: py + ph,
+    class: 'phase-split-preview', 'data-phase-boundary-preview': '' }));
+}
+function _phaseSplitPreview(x, y) {
+  gPreview.innerHTML = '';
+  const t = phaseSplitTarget(x, y);
+  const pb = gPool && gPool.querySelector('.pool-border');
+  if (!t || t.at == null || !pb) return;
+  const ri = Math.max(0, phasesParse(phaseKept()).filter(r => !phaseView().hiddenRows.includes(r.id)).findIndex(r => r.id === t.row.id));
+  const py = +pb.getAttribute('y'), ph = +pb.getAttribute('height');
+  gPreview.appendChild(el('line', { x1: t.at, y1: py - 8 - ri * PHASE_ROW_H - 14, x2: t.at, y2: py + ph, class: 'phase-split-preview', 'data-phase-split-preview': '' }));
 }
 function renderNotes() {
   const g = $('g-notes'); if (!g) return;
@@ -17207,6 +17597,8 @@ function parseBpmnXml(text) {
     // not emit is dropped on the first save — which would make the marker worse
     // than absent, since it would survive review and vanish in use.
     kind: aefMetaEl?.getAttribute('kind') || null,
+    // T-1528: the scope marker (framework | project), read so a save keeps it; null = unset, read as project.
+    scope: aefMetaEl?.getAttribute('scope') || null,
   };
 
   // ---- lanes ----
@@ -18053,8 +18445,22 @@ try { _autosaveRestore = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || 'null'
 // The ?load deep-link src this session was opened with (stable — we never rewrite
 // the URL). Recorded in the autosave so a reload of the SAME deep-link restores the
 // in-progress edits, while a deep-link to a DIFFERENT map is respected instead.
+// T-1521: written unencoded, ?load=/api/version?id=X&v=N gives the PAGE the `v` (the `load` value ends at the `&`), and
+// the latest version was fetched without a word. When `load` is this server's /api/version without a `v` of its own and
+// the page carries one, the author meant that version: it is carried into `load`. One definition, so the fetch and the
+// autosave's deep-link identity (T-234) agree. An encoded link, a `load` with its own `v`, and any other `load` are as
+// they were.
 function currentLoadSrc() {
-  try { return new URLSearchParams(location.search).get('load') || null; } catch (_) { return null; }
+  try {
+    const qs = new URLSearchParams(location.search);
+    const src = qs.get('load') || null;
+    const pageV = qs.get('v');
+    if (!src || !pageV || !projectIdFromLoadSrc(src)) return src;
+    const u = new URL(src, location.href);
+    if (u.searchParams.has('v')) return src;
+    u.searchParams.set('v', pageV);
+    return /^[a-z][a-z0-9+.-]*:/i.test(src) ? u.href : u.pathname + u.search;
+  } catch (e) { aefRecordFault('load-src', e); return null; }   // a malformed page URL: recorded, then no deep link
 }
 
 // T-264: canonical map-name stem of a ?load src path, for comparing the load source
