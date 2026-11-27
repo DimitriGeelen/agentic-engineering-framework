@@ -329,16 +329,6 @@ def _subagent_evidence(name: str, runner) -> str | None:
     return None
 
 
-def _project_inbox_read(own: str, name: str, runner) -> bool:
-    """Does `inbox:<own>/<name>` exist on our hub, read since its last write (T-4529)?"""
-    topic = circuit.topic_for_circuit(f"{own}/{name}")
-    try:
-        rows = hub_inbox_topics(own, None, runner) or []
-    except Exception:
-        return False
-    return any(r.get("name") == topic and topic_is_read(r) for r in rows)
-
-
 def _project_inboxes_on(hub: str, hub_id: str, runner) -> list[str] | None:
     """Project names with an inbox on a remote hub (`inbox:<hub_id>/<project>`,
     no deeper segment), or None when the hub could not be asked (T-3899)."""
@@ -477,16 +467,18 @@ def resolve(to: str, *, hub: str | None = None, level: str = "auto",
     why = _subagent_evidence(name, runner)
     if why:
         return out(f"{own}/{circuit.project_id()}/{name}", hub_arg, f"sub-agent: {why}")
-    if level == "auto" and _project_inbox_read(own, name, runner):
-        # T-4529: a project outside the numbering, registered on this hub —
-        # its inbox exists and something fetched it after its last write. A
-        # topic nobody reads (a nickname, T-4418) is not evidence.
-        return out(f"{own}/{name}", hub_arg, "project address on this hub, its inbox is read")
+    # T-5427 (AEF-ontology-agent RCA): the T-4529 route that accepted a bare name
+    # here because `inbox:<own>/<name>` had been fetched after its last write is
+    # gone. The hub counts any fetch as a read, a peek or a host-wide scan included
+    # (T-5149), so a nickname nobody reads passed: three consults to
+    # `proxmox-ring20-management` were stored on our own hub, reported delivered,
+    # and never read. An unnumbered project on this hub is now a deliberate choice.
     raise AddressError(
         f"recipient {name!r} is not resolvable: not a project id on this hub, not in "
         f"the peer directory ({peers_path()}), and not a sub-agent of this agent "
         f"(no inbox:{own}/{circuit.project_id()}/{name} on this hub). Address it as "
-        f"--to <hubid>/{name}, or --hub <profile> for a peer on another hub, or "
+        f"--to <hubid>/{name}, or --hub <profile> for a peer on another hub, "
+        f"--level project if it IS a project on this hub outside the numbering, or "
         f"--level agent if it IS your sub-agent" + _close_peers_hint(name))
 
 

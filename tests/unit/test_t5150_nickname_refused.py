@@ -24,10 +24,7 @@ def addr(monkeypatch):
     monkeypatch.setattr(a, "load_peers", lambda: {"peers": PEERS})
     monkeypatch.setattr(a, "own_hub_id", lambda: "h0")
     monkeypatch.setattr(a, "_subagent_evidence", lambda name, runner: None)
-    calls = []
-    # the weak evidence would accept the nickname: it must not even be asked
-    monkeypatch.setattr(a, "_project_inbox_read", lambda own, name, runner: calls.append(name) or True)
-    a._inbox_calls = calls
+    a._inbox_calls = []   # T-5427: the weak hub-fetch route is gone; kept so asserts read the same
     return a
 
 
@@ -49,9 +46,12 @@ def test_a_known_peer_still_resolves(addr):
     assert got["circuit"] == "h0/ring20-dashboard"
 
 
-def test_a_name_with_no_candidate_keeps_the_t4529_route(addr):
-    got = addr.resolve("someproject")
-    assert got["circuit"] == "h0/someproject" and addr._inbox_calls == ["someproject"]
+def test_a_name_with_no_candidate_needs_level_project(addr):
+    """T-5427: the T-4529 hub-fetch route is gone; an unnumbered project is a deliberate choice."""
+    with pytest.raises(addr.AddressError) as e:
+        addr.resolve("someproject")
+    assert "--level project" in str(e.value)
+    assert addr.resolve("someproject", level="project")["circuit"] == "h0/someproject"
 
 
 def test_a_sibling_checkout_named_like_the_nickname_is_still_refused(addr, monkeypatch):
@@ -68,7 +68,6 @@ def test_a_numbered_project_id_keeps_its_meaning(addr):
 
 
 def test_the_general_refusal_names_close_peers(addr, monkeypatch):
-    monkeypatch.setattr(addr, "_project_inbox_read", lambda own, name, runner: False)
     with pytest.raises(addr.AddressError) as e:
         addr.resolve("ring20-dashbord", level="auto")
     assert "Closest peers: ring20-dashboard" in str(e.value)

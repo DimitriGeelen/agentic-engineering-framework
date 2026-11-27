@@ -42,11 +42,25 @@ def test_four_digit_project_resolves_on_our_hub(env):
     assert where["hub"] is None
 
 
-def test_unnumbered_project_with_a_read_inbox_resolves(env):
+def test_unnumbered_name_with_a_fetched_inbox_is_refused_at_auto(env):
+    """T-5427: a recent fetch (a peek counts) is no evidence; refusal names --level project."""
     rows = [_row(f"inbox:{OWN}/claude-shared", count=4, write=NOW - 60_000, fetch=NOW - 1000)]
-    where = env.resolve("claude-shared", runner=_runner(rows))
+    with pytest.raises(env.AddressError) as e:
+        env.resolve("claude-shared", runner=_runner(rows))
+    assert "--level project" in str(e.value)
+
+
+def test_unnumbered_project_resolves_with_level_project(env):
+    where = env.resolve("claude-shared", level="project", runner=_runner([]))
     assert where["circuit"] == f"{OWN}/claude-shared"
-    assert "inbox is read" in where["how"]
+
+
+def test_proxmox_nickname_with_a_peeked_inbox_is_refused(env):
+    """T-5427 witness: the address three consults went to, with a fresh fetch on the hub."""
+    rows = [_row(f"inbox:{OWN}/proxmox-ring20-management", count=43, write=NOW - 60_000,
+                 fetch=NOW - 1000)]
+    with pytest.raises(env.AddressError):
+        env.resolve("proxmox-ring20-management", runner=_runner(rows))
 
 
 def test_unnumbered_name_with_a_never_read_inbox_is_still_refused(env):

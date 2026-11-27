@@ -12,10 +12,10 @@ description: >
   and the refusal names --level project; land it upstream with a test (nickname refused
   at auto, resolved at --level project, numbered id still resolves).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, sidecar]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-26T18:11:22Z
-last_update: '2026-11-26T18:15:49Z'
+last_update: 2026-11-27T10:18:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,20 +93,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** AEF-ontology-agent RCA (msgs 9a0b7e4b, 5177e7c7, 2026-11-26): three consults to `proxmox-ring20-management` (22-24 Nov) were stored as `<own hub>/proxmox-ring20-management`, reported delivered, and never read. Our orphan inbox of that name held 29, theirs 43 unread posts.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `resolve()` at auto level (lib/sidecar/addressing.py, T-4529 branch) accepts a bare name that is not a project id or peer when `inbox:<own hub>/<name>` was fetched after its last write. `topic_is_read` counts any fetch, a peek or a host-wide scan included (T-5149), so a nickname nobody reads passes as a project.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** At auto level, never route a bare unknown name to `<own hub>/<name>` on hub-fetch evidence; make sending to an unnumbered project a deliberate choice (`--level project`) or a peer-directory entry.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `--to proxmox-ring20-management` (or any unread nickname) is refused, and the refusal names `--level project`; numbered project ids, peer-directory names and `--level project` still resolve.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] At auto level an unknown bare name is refused even when its own-hub inbox shows a recent fetch; the refusal text names `--level project`
+- [x] Numbered project ids, peer-directory names and `--level project` still resolve (existing T-4529 / T-5150 tests adjusted, not deleted)
+- [x] Sidecar resolver tests pass; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,6 +294,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_sidecar_resolve_project_t4529.py tests/unit/test_t5150_nickname_refused.py tests/unit/test_sidecar_orphan_circuit_t4418.py
+! grep -q "_project_inbox_read" lib/sidecar/addressing.py
+bin/fw vendor self --check --task T-5427
 
 ## RCA
 
@@ -309,6 +313,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Consults to `proxmox-ring20-management` (22-24 Nov) were stored on our own hub as `inbox:<own>/proxmox-ring20-management`, reported delivered, and never reached Ring20.
+
+**Root cause:** `resolve()` at auto level had a T-4529 route that accepted any bare name whose own-hub inbox had been fetched after its last write. The hub counts every fetch as a read, a peek or a host-wide scan included, so a nickname nobody reads looked like a live project.
+
+**Why structurally allowed:** T-4529 used hub activity as positive evidence, although the T-4418 notes already called it "the weakest" evidence, able only to turn a refusal into a send. T-5150 fenced off nicknames of known peers but left the route open for every other name.
+
+**Prevention:** The route is removed. Tests now pin that a recently fetched, unknown name is refused (including the proxmox witness), that the refusal names `--level project`, and that `--level project` still reaches an unnumbered project. T-5428 covers the delivery side (delivered without a reader).
 
 ## Evolution
 
@@ -396,3 +408,7 @@ bvp_scores_proposed:
 - Evidence (their repo): outbox rows 370292f5…, beb8b377… with `to` = `cacc73ea32b121dd/proxmox-ring20-management`, `hub: null`; `fw sidecar orphan-inboxes` lists that topic with 43 unread; `addressing.topic_is_read` (~line 560) accepts any fetch, comment at ~691 says so.
 - Their vendored fix: remove the T-4529 `_project_inbox_read` branch from `resolve()` at auto level; the refusal names `--level project`. Checked by a stubbed harness only: nickname refused at auto, resolves with `--level project`, numbered project id still resolves.
 - Defect 2 (delivered = posted; no reader check, no dead-letter for stored rows) remains open → T-5428.
+
+### 2026-11-27T10:14:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
