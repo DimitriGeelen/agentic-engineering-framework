@@ -123,9 +123,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] For each of the 9 tests, the doctor/audit FAIL line that makes it red on a runner-like environment is recorded in this task (reproduced locally, not guessed), with its cause (check vs test assumption).
-- [ ] Each cause is fixed: a check no longer FAILs on an absent optional component (WARN or skip with a reason), or the test isolates its host assumption; no check is weakened for a real defect.
-- [ ] The 9 tests pass locally AND in the runner-like reproduction; the affected tests print the doctor/audit output on failure.
+- [x] For each of the 9 tests, the doctor/audit FAIL line that makes it red on a runner-like environment is recorded in this task (reproduced locally, not guessed), with its cause (check vs test assumption).
+- [x] Each cause is fixed: a check no longer FAILs on an absent optional component (WARN or skip with a reason), or the test isolates its host assumption; no check is weakened for a real defect.
+- [x] The 9 tests pass locally AND in the runner-like reproduction; the affected tests print the doctor/audit output on failure.
 - [ ] Pushed and checked on a GitHub run: the 9 tests are green in the bats job (or any still red are named with their new cause).
 
 ### Human
