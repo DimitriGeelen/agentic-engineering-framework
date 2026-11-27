@@ -59784,3 +59784,21 @@ scan_id: R-224c5d68
 task_id: T-5425
 payload:
   task_file: .tasks/active/T-5425-hook-telemetry-counts-a-gates-deliberate.md
+---
+kind: scan_emitted
+timestamp: '2026-11-27T10:19:05Z'
+scan_id: R-bf06b221
+task_id: T-5427
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-27T10:19:05Z'
+scan_id: R-bf06b221
+task_id: T-5427
+payload:
+  task_file: .tasks/active/T-5427-sidecar-resolve-at-auto-level-accepts-a-.md

@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5427: sidecar resolve() at auto level accepts a nickname on our own hub because any fetch (a peek) counts as read
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-27T10:19:28Z
+# ============================================================================
+
+task_id: T-5427
+task_name: "sidecar resolve() at auto level accepts a nickname on our own hub because any fetch (a peek) counts as read"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-26T18:11:22Z
+completed: 2026-11-27T10:18:50Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-11-26T19:11:57+01:00
+last_commit: 2026-11-27T11:18:48+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  attach AEF-ontology-agent full RCA as evidence. resolver no longer routes an unknown bare name to our own hub on hub-fetch evidence (AEF-ontology-agent RCA)
+
+# Key outcomes
+outcomes:
+  - 'At auto level an unknown bare name is refused even when its own-hub inbox shows a recent fetch; the refusal text names `--level project`'
+  - 'Numbered project ids, peer-directory names and `--level project` still resolve (existing T-4529 / T-5150 tests adjusted, not deleted)'
+  - 'Sidecar resolver tests pass; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/addressing.py'
+  - '.tasks/active/T-5427-sidecar-resolve-at-auto-level-accepts-a-.md'
+  - 'lib/sidecar/addressing.py'
+  - 'tests/unit/test_sidecar_resolve_project_t4529.py'
+  - 'tests/unit/test_t5150_nickname_refused.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-26T19:11:57'
+    action: 'T-5427: attach AEF-ontology-agent full RCA as evidence'
+  - time: '2026-11-27T11:18:48'
+    action: 'T-5427: resolver no longer routes an unknown bare name to our own hub on hub-fetch evidence (AEF-ontology-agent RCA)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 967 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 967
+  commits: 3
+  files_changed: 8
+  lines_added: 191
+  lines_removed: 57
+  footprint_refreshed_at: '2026-11-27T10:19:46Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5427-sidecar-resolve-at-auto-level-accepts-a-.md
+generated_by: context-agent-hybrid
