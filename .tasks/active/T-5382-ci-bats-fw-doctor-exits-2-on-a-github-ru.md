@@ -437,6 +437,8 @@ Reproduction: a fresh clone of bleeding-edge, run under `env -i` with HOME in sc
 
 The doctor exit tests now print the FAIL lines when they fail. In the reproduction all 38 affected tests pass (one honest skip). Still to confirm on a GitHub run (last criterion).
 
+**GitHub run 46076763169 (2026-11-27/28):** the targeted reds are green on the runner: both "fw doctor exits cleanly", T-1406, T-4259 (c), cron registry in sync (skips with its reason), greenfield PROJECT-SCOPE, plus F6 --quick and T-4617. Two side effects of my change, fixed in the next commit: (1) the workflow-wide `FW_SEMANTIC_RECALL=0` turned 35 tests red in t3783_vector_index_health, t5064_doctor_embed_endpoint and test_index_doctor_rail, which test the recall check itself; they now clear the opt-out in setup (all 63 pass with it set). (2) PR checks ran the touched test_t5303 file, whose template tests need jinja2, which that job did not install; it now installs web/requirements.txt like the bats and pytest jobs. Still red, with a real cause: T-3062 measured the structure audit at 158 s against 150 s on the runner, filed as T-5436 (find the cost before raising the budget).
+
 ## Updates
 
 ### 2026-11-24T10:21:22Z — task-created [task-create-agent]
