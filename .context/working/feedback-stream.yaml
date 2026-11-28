@@ -60054,3 +60054,21 @@ scan_id: R-06b8678e
 task_id: T-5437
 payload:
   task_file: .tasks/active/T-5437-t-5379-misses-task-notification-prompts-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-28T09:21:43Z'
+scan_id: R-a3b5b586
+task_id: T-5434
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-28T09:21:43Z'
+scan_id: R-a3b5b586
+task_id: T-5434
+payload:
+  task_file: .tasks/active/T-5434-consumer-doctor-with-an-inherited-framew.md
