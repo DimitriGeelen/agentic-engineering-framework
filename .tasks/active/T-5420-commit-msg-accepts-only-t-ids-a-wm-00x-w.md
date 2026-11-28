@@ -313,6 +313,14 @@ bin/fw vendor self --check --task T-5420
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** A commit made under a workflow mode (e.g. a WM-003 run handback at 050, every AEF handover) could not name that mode; it had to borrow an unrelated task id (AEF uses T-4648 for all handovers).
+
+**Root cause:** The commit-msg hook accepts only `T-[0-9]+`. Workflow modes (WM-001..003) were added as focus targets for selection, close-out and session work, but the commit gate was never taught about them; T-4230 recorded this and left the pattern unchanged.
+
+**Why structurally allowed:** Focus and commit enforcement evolved separately: the focus gate learned WM-00x, the commit-msg template did not, and no test asked whether a WM-mode commit could be made honestly.
+
+**Prevention:** commit-msg accepts `WM-00N:` only when every staged path is under `.context/` and refuses otherwise, naming the paths; post-commit treats it as not a bypass. tests/unit/t5420_wm_commit_subject.bats exercises the installed hook in a scratch repo (accepted, refused with paths, WM not at the start does not qualify).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
