@@ -93,14 +93,9 @@ tests/unit/test_upgrade_template_sync_t3955.py
 tests/unit/test_t5193_runtime_projection_v2.py
 tests/unit/test_cockpit_activity.py
 
-# T-5426: reads this checkout's installed framework git hooks (a bundle clone has none;
-# all six pass once `bin/fw git install-hooks` has run in the clone)
-tests/unit/pre_push_version_monotonicity.bats
-tests/unit/t2240_pre_push_self_vendor_gate.bats
-tests/unit/t2294_pre_push_mcp_drift.bats
-tests/unit/test_pre_push_monotonic_ancestor.bats
-tests/unit/test_secret_scan.bats
-tests/unit/test_index_doctor_rail.bats
+# T-5426 excluded six files that read this checkout's installed framework git hooks.
+# T-5445: sent again, because the node1 job now runs `bin/fw git install-hooks` after the
+# clone (Ring20 T-2895, 2026-11-28). Re-add any that still fail on node1, with the cause.
 
 # T-5426: individual causes
 # needs the local vector index (.context/working/fw-vec-index.db), which the bundle leaves out
