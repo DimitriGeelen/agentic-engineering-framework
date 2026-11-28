@@ -12,7 +12,7 @@ description: >
   Logs are not kept in the report, so re-run single files with --only once node1's
   canary is healthy again.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-26T15:47:57Z
-last_update: '2026-11-26T16:00:58Z'
+last_update: 2026-11-28T09:31:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,20 +93,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The first complete node1 nightly (run 202611260233, commit deff203f7) ran 1770 test files: 1737 passed, 32 failed, 1 timed out; the 2026-11-27 run gave 34 failed, 1 timeout. All are "new" because there is no node1 baseline. The report keeps no per-file logs, and node1 has been reported unhealthy since 2026-11-26, so re-running files there is on hold.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The reds cluster on version/tag checks, upgrade/vendor simulations and a few gates. The bundle node1 runs (lib/test-bundle.sh) is ONE commit with no history and no tags, and no .context state. Tests that read git tags, history or local state fail there for reasons that say nothing about the code.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Classify each red by reproducing it locally inside a clone of the same bundle: fix the test (host or history assumption), fix the bundle (if many tests legitimately need something it drops), or list the file in scripts/node1/node1-incompatible.txt with a reason.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Every red from the latest node1 report has a recorded cause and disposition; the next nightly's reds are only real failures.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The bundle-clone reproduction is recorded: which of the node1 reds fail there, and the cause class of each (no tags/history, missing state, host tool, real failure)
+- [ ] Each red has a disposition recorded in this task: test fixed, bundle changed, or excluded in node1-incompatible.txt with its reason
+- [ ] The dispositions are applied and the affected files pass in the bundle clone (or are excluded with a reason)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -384,9 +385,22 @@ bvp_scores_proposed:
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Reproduction (2026-11-28)
+
+Bundle built exactly as node1 gets it (`bin/fw test bundle --ref HEAD`), cloned (1 commit, 0 tags), and the 35 files from the latest node1 report (run 202611270233) run inside it with a 300 s cap each. Result: 28 fail here too, 7 pass (doctor_hook_counters, hook_version_marker_parity, t5032_grant_links, t5403_hook_wiring, test_t5198_handoff_blockers, test_t5236_profile_remediation, upgrade_fresh_machine_simulation: node1-only, recheck once node1 is healthy), t4705 times out as on node1. Repo history is 510 MB against node1's 64 MB bundle cap, so shipping history is not an option.
+
+| Class | Files | First failure | Disposition |
+|---|---|---|---|
+| A. needs git history/tags (the bundle is one commit) | fw_version_output, version_relation, t2762, t3453, t3454, t3457, t3965, t4232, t4568, t4678, t4705, t5217, test_testhost_controller, test_upgrade_template_sync_t3955 (+ confirm test_tier0_origin, test_t5193) | `HEAD~5`, `git show <old ref>`, `git archive <tag>`, ancestry → exit 128 | node1-incompatible.txt, reason "needs git history" (they run in the local nightly and CI with full history) |
+| B. reads this checkout's installed git hooks | pre_push_version_monotonicity, t2240, t2294, test_pre_push_monotonic_ancestor, test_secret_scan | `cp "$FRAMEWORK_ROOT/.git/hooks/pre-push"` fails: a bundle checkout has no framework hooks | install hooks in the node1 run setup if possible, else exclude with reason |
+| C. individual | t5221 (timing < 3 s), t4259 (teardown rm race), t4813 (remedy wording), test_index_doctor_rail, t3768, test_cockpit_activity | see logs | investigate each: fix the test or exclude with reason |
+
 ## Updates
 
 ### 2026-11-26T15:47:57Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5426-triage-the-first-full-node1-nightly-32-f.md
 - **Context:** Initial task creation
+
+### 2026-11-28T09:31:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
