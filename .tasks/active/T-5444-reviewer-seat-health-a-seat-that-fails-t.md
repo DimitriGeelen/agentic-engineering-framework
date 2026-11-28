@@ -1,8 +1,10 @@
 ---
 id: T-5444
-name: "Reviewer seat health: a seat that fails the same way on every dispatch blocks every rung-5 panel it is seated on"
+name: "Reviewer seat health: a seat that fails the same way on every dispatch blocks
+  every rung-5 panel it is seated on"
 description: >
-  Inception: Reviewer seat health: a seat that fails the same way on every dispatch blocks every rung-5 panel it is seated on
+  Inception: Reviewer seat health: a seat that fails the same way on every dispatch
+  blocks every rung-5 panel it is seated on
 
 status: captured
 workflow_type: inception
@@ -14,8 +16,8 @@ related_tasks: []
 waiting_on: agent
 revisit_at: 2026-12-05
 created: 2026-11-28T10:33:28Z
-last_update: 2026-11-28T10:33:28Z
-date_finished: null
+last_update: '2026-11-28T10:45:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -24,6 +26,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-11-28T10:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=120,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5444: Reviewer seat health: a seat that fails the same way on every dispatch blocks every rung-5 panel it is seated on

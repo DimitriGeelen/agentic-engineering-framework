@@ -1,8 +1,15 @@
 ---
 id: T-5442
-name: "antigravity reviewer seat prints no verdict headless on agy 1.5.x (command permission auto-denied; registry still describes 1.1.15)"
+name: "antigravity reviewer seat prints no verdict headless on agy 1.5.x (command
+  permission auto-denied; registry still describes 1.1.15)"
 description: >
-  150-skills-manager msg 028d73f6 (2026-11-28, their T-515): agy 1.5.18 prints no verdict on every headless dispatch; stderr: a tool required the 'command' permission, which headless mode cannot prompt for, so it was auto-denied; add an allow-rule under permissions.allow in settings.json. policy/review-backends.yaml still describes agy 1.1.15, so argv/settings were never updated for 1.5.x. Evidence on .122: /tmp/tl-dispatch/judge-t-443-r5-antigravity-95324ee1fb6e/stderr.log. Fix the registry entry and worker settings for 1.5.x without widening what the seat may do beyond the review brief.
+  150-skills-manager msg 028d73f6 (2026-11-28, their T-515): agy 1.5.18 prints no
+  verdict on every headless dispatch; stderr: a tool required the 'command' permission,
+  which headless mode cannot prompt for, so it was auto-denied; add an allow-rule
+  under permissions.allow in settings.json. policy/review-backends.yaml still describes
+  agy 1.1.15, so argv/settings were never updated for 1.5.x. Evidence on .122: /tmp/tl-dispatch/judge-t-443-r5-antigravity-95324ee1fb6e/stderr.log.
+  Fix the registry entry and worker settings for 1.5.x without widening what the seat
+  may do beyond the review brief.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-28T10:33:27Z
-last_update: 2026-11-28T10:33:27Z
-date_finished: null
+last_update: '2026-11-28T10:45:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-28T10:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5442: antigravity reviewer seat prints no verdict headless on agy 1.5.x (command permission auto-denied; registry still describes 1.1.15)
