@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5443: mistral-vibe reviewer seat's green verdict refused: location carries a note after <path>:<line>
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-28T10:50:27Z
+# ============================================================================
+
+task_id: T-5443
+task_name: "mistral-vibe reviewer seat's green verdict refused: location carries a note after <path>:<line>"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-28T10:33:27Z
+completed: 2026-11-28T10:49:35Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-28T11:47:52+01:00
+last_commit: 2026-11-28T11:47:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verdict/1 Location accepts a trailing note after <path>:<line> ((note) or — note), stores the bare path:line; malformed paths/lines still refused (150 msg 028d73f6)
+
+# Key outcomes
+outcomes:
+  - '`parse_vote` accepts a file:line Location followed by ` (note)` or ` — note` and stores the bare `path:line` in the criterion''s `location`'
+  - 'A note is stripped only from a well-formed `path:line[-line]`; anything else (spaces in path, non-numeric line, note without separator) is still refused by the form check'
+  - '`vote_checker` still reports a missing file / out-of-range line for a noted location (test)'
+  - 'The brief text tells seats a trailing note is allowed and ignored'
+  - 'Existing verdict_format / vote_checker unit tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-28 — accept-and-strip vs forbid-in-brief'
+    chose: '(a) the reader accepts `<path>:<line>[-<line>] (<note>)` and `… — <note>` (also en dash), stores the bare `path:line`, and vote_checker validates it unchanged.'
+    rationale: 'T-5301 documented no contract forbidding notes (it reordered seats instead), and two different vendors'' seats annotate citations, so a brief-only rule would keep refusing substantively valid votes. Stripping only after a well-formed `\S+:\d+(-\d+)?` plus whitespace and an explicit separator keeps every existing refusal for a bad path or line (tests).'
+    alternatives_rejected: ['(b) brief-only prohibition — depends on seat compliance, which two seats have already shown they do not give.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_format.py'
+  - '.tasks/active/T-5443-mistral-vibe-reviewer-seats-green-verdic.md'
+  - 'lib/verdict_format.py'
+  - 'tests/unit/test_t5443_location_note.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-28T11:47:52'
+    action: 'T-5443: verdict/1 Location accepts a trailing note after <path>:<line> ((note) or — note), stores the bare path:line; malformed paths/lines still refused (150 msg 028d73f6)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, reviewer, ledger]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 3
+  files_changed: 8
+  lines_added: 310
+  lines_removed: 25
+  footprint_refreshed_at: '2026-11-28T10:50:49Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5443-mistral-vibe-reviewer-seats-green-verdic.md
+generated_by: context-agent-hybrid
