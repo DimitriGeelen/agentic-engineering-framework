@@ -12,6 +12,9 @@ ROOT="${BATS_TEST_DIRNAME}/../.."
 CHECK="$ROOT/lib/vector_index_health.py"
 
 setup() {
+    # T-5382: these tests exercise the recall-health check itself, so they must not
+    # inherit a host's FW_SEMANTIC_RECALL=0 opt-out (set on the CI runner).
+    unset FW_SEMANTIC_RECALL
     TMPD="$(mktemp -d)"
     P="$TMPD/proj"; F="$TMPD/fw"
     mkdir -p "$P/.tasks/active" "$P/.tasks/completed" "$P/.context/working" "$P/.context/project" "$F/web"

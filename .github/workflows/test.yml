@@ -38,6 +38,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install pyyaml pytest pillow  # T-5363: lib/vote_checker.py and its tests import PIL
+          # T-5382: a changed test file runs here; some import the web stack (jinja2 via
+          # flask), which the bats and pytest jobs already install the same way.
+          if [ -f web/requirements.txt ]; then
+            pip install -r web/requirements.txt
+          fi
           git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats
           sudo /tmp/bats/install.sh /usr/local
           git config --global user.email "ci@example.invalid"

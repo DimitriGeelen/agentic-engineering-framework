@@ -11,6 +11,9 @@
 load ../test_helper
 
 setup() {
+    # T-5382: these tests exercise the recall-health check itself, so they must not
+    # inherit a host's FW_SEMANTIC_RECALL=0 opt-out (set on the CI runner).
+    unset FW_SEMANTIC_RECALL
     TEST_TEMP_DIR="$(mktemp -d)"
     PROJ="$TEST_TEMP_DIR/proj"
     mkdir -p "$PROJ/.tasks/active" "$PROJ/.tasks/completed" "$PROJ/.context/working"

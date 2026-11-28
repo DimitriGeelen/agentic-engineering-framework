@@ -10,6 +10,9 @@
 # So: stale is proven against fresh, fresh against stale, unknown against both.
 
 setup() {
+    # T-5382: these tests exercise the recall-health check itself, so they must not
+    # inherit a host's FW_SEMANTIC_RECALL=0 opt-out (set on the CI runner).
+    unset FW_SEMANTIC_RECALL
     PROJECT_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
     export PROJECT_ROOT
     cd "$PROJECT_ROOT"
