@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5441: Pick up Workflow Designer 0.53.0 (832 release; pin 0.52.0 -> 0.53.0)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-28T10:32:52Z
+# ============================================================================
+
+task_id: T-5441
+task_name: "Pick up Workflow Designer 0.53.0 (832 release; pin 0.52.0 -> 0.53.0)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-28T10:16:34Z
+completed: 2026-11-28T10:32:20Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-28T11:16:35+01:00
+last_commit: 2026-11-28T11:32:11+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — designer 0.53.0 pickup (832 msg bf380700). re-pin Workflow Designer 0.52.0 -> 0.53.0 via pull-at-tag (832 msg bf380700, tag designer-v0.53.0 dc04bb677): artifact 9e7ef904, 1505839 B; validator 68dad584 unchanged; kit SHA256SUMS a4034135 per MANIFEST; mapping names validator 0.53.0
+
+# Key outcomes
+outcomes:
+  - 'Pin names 0.53.0 and `fw designer sync --from-tag` installs it, verified against the MANIFEST at the tag and the pin'
+  - 'Refusal mapping names validator 0.53.0; mapping and designer tests pass; vendored copies in sync'
+  - 'Served page shows v0.53.0 (screenshots); 832 has the mapping sha256'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.53.0.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.53.0.py'
+  - '.tasks/active/T-5441-pick-up-workflow-designer-0530-832-relea.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.yaml'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.53.0.html'
+  - 'vendor/designer/validate-workflow-0.53.0.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-28T11:16:35'
+    action: 'T-5441: filed — designer 0.53.0 pickup (832 msg bf380700)'
+  - time: '2026-11-28T11:32:11'
+    action: 'T-5441: re-pin Workflow Designer 0.52.0 -> 0.53.0 via pull-at-tag (832 msg bf380700, tag designer-v0.53.0 dc04bb677): artifact 9e7ef904, 1505839 B; validator 68dad584 unchanged; kit SHA256SUMS a4034135 per MANIFEST; mapping names validator 0.53.0'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15
+  commits: 3
+  files_changed: 12
+  lines_added: 768
+  lines_removed: 51
+  footprint_refreshed_at: '2026-11-28T10:33:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5441-pick-up-workflow-designer-0530-832-relea.md
+generated_by: context-agent-hybrid
