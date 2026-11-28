@@ -174,3 +174,6 @@ bvp_scores_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-28 — further evidence from 150 (msg 07614ded)
+With antigravity and mistral-vibe skipped, opencode took seat 3 on 150's T-443 and its vote was refused on format too: "AC1: text that is not a Label: value line: Counter-search entry moved to its own section below." and "Evidence (no output) is neither a verbatim quote nor image:...". claude-code and codex were green. So at 150, 3 of the 4 non-Anthropic/OpenAI seats currently cannot land a counted vote; two of the three failures are format refusals (T-5443, this opencode case, earlier T-5301), one is a harness failure (T-5442). Evidence on .122: /tmp/tl-dispatch/judge-t-443-r5-opencode-87a62d6ac1d0. Question for the inception: is the fix seat health (re-seating), or making the verdict format easier to meet, or both?
