@@ -8,8 +8,8 @@ This file sits beside contracts v2 but is **not part of the frozen set**: it is 
 
 ## What the relation is
 
-The designer's validator (`vendor/designer/validate-workflow-0.52.0.py`, 832's, pinned at
-0.52.0 — T-5419; 0.49.0 was byte-identical to 0.48.1 and 0.47.0 — T-5408, T-5398; first mapped against 0.43.0, whose 80 codes 0.52.0 still emits, plus W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE added in 0.52.0 — T-5363, T-5419) checks a **map** at design time. The runtime refuses a **proposal** against a live
+The designer's validator (`vendor/designer/validate-workflow-0.53.0.py`, 832's, pinned at
+0.53.0, byte-identical to 0.52.0 — T-5441, T-5419; 0.49.0 was byte-identical to 0.48.1 and 0.47.0 — T-5408, T-5398; first mapped against 0.43.0, whose 80 codes 0.52.0 still emits, plus W-WORKFLOW-SCOPE and W-XML-WORKFLOW-SCOPE added in 0.52.0 — T-5363, T-5419) checks a **map** at design time. The runtime refuses a **proposal** against a live
 instance and writes a refusal record (`refusal.schema.json`, v2). The two never meet as
 records: a validator finding has no instance, no requester and no ledger position, so it can
 never be a refusal record, and a refusal record can never be produced by the validator.

@@ -2,12 +2,18 @@
 id: T-5441
 name: "Pick up Workflow Designer 0.53.0 (832 release; pin 0.52.0 -> 0.53.0)"
 description: >
-  832 msg bf380700 (2026-11-28): tag designer-v0.53.0 (commit dc04bb677), dist/aef-workflow-designer-0.53.0.html sha256 9e7ef904796429375bc24448ff3efed7a3ce715d67c33e586227a158f284db85, 1505839 bytes; authoring kit dist/aef-authoring-kit-0.53.0. Phase boundaries follow moved steps (T-1514). Validator and kit content unchanged since 0.52.0 (validator sha should stay 68dad584); the refusal mapping only re-names the version, which changes its sha, so send 832 the new sha. Same procedure as T-5419 (pull-at-tag, visual check, pin + mapping + vendored copies in one commit).
+  832 msg bf380700 (2026-11-28): tag designer-v0.53.0 (commit dc04bb677), dist/aef-workflow-designer-0.53.0.html
+  sha256 9e7ef904796429375bc24448ff3efed7a3ce715d67c33e586227a158f284db85, 1505839
+  bytes; authoring kit dist/aef-authoring-kit-0.53.0. Phase boundaries follow moved
+  steps (T-1514). Validator and kit content unchanged since 0.52.0 (validator sha
+  should stay 68dad584); the refusal mapping only re-names the version, which changes
+  its sha, so send 832 the new sha. Same procedure as T-5419 (pull-at-tag, visual
+  check, pin + mapping + vendored copies in one commit).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [designer]
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-28T10:16:34Z
-last_update: 2026-11-28T10:16:34Z
-date_finished: null
+last_update: 2026-11-28T10:32:11Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-28T10:29:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5441: Pick up Workflow Designer 0.53.0 (832 release; pin 0.52.0 -> 0.53.0)
@@ -57,20 +80,21 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 released designer 0.53.0 (msg bf380700, 2026-11-28): tag designer-v0.53.0 (commit dc04bb677), artifact sha256 9e7ef904…, 1505839 bytes; phase boundaries follow moved steps (832 T-1514). Validator and kit content unchanged since 0.52.0.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** We serve 0.52.0. The pickup is a re-pin by pull-at-tag; the refusal mapping only re-names the validator version, which changes its sha, so 832 needs the new one to stay byte-equal.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Pin, install and serve 0.53.0 with artifact, validator and kit verified against 832's MANIFEST at the tag; mapping names validator 0.53.0.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw designer status` clean at 0.53.0; mapping and designer tests green; served page shows v0.53.0; 832 has the mapping sha.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Pin names 0.53.0 and `fw designer sync --from-tag` installs it, verified against the MANIFEST at the tag and the pin
+- [x] Refusal mapping names validator 0.53.0; mapping and designer tests pass; vendored copies in sync
+- [x] Served page shows v0.53.0 (screenshots); 832 has the mapping sha256
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +281,20 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+out=$(bin/fw designer status 2>&1); echo "$out" | grep -q "sha256 matches pin"
+out=$(bin/fw designer status 2>&1); echo "$out" | grep -q "names validator 0.53.0"
+python3 -m pytest -q tests/unit/test_t5189_validator_refusal_mapping.py
+bats tests/unit/t3064_designer_onboarding_install.bats tests/unit/designer_sync_from_tag.bats
+test -f .context/visual/T-5441/designer@1440.png
+bin/fw vendor self --check --task T-5441
+
+## Visual Verification
+
+832's released artifact (sha256-verified at the tag); AEF does not edit it. `fw ux shots T-5441 designer=http://192.168.10.107:3000/designer` → `.context/visual/T-5441/designer@{1024,1440,1920}.png`, read via the Read tool: badge v0.53.0, the investigate map renders with lanes and steps, the Scope select is present in the workflow panel.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| designer | map canvas and workflow panel | ok | ok | ok | badge v0.53.0; Scope select present |
 
 ## RCA
 
@@ -354,3 +392,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5441-pick-up-workflow-designer-0530-832-relea.md
 - **Context:** Initial task creation
+
+### 2026-11-28T10:29:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

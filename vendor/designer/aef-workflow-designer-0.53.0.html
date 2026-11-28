@@ -10631,7 +10631,7 @@ svg.addEventListener('mousemove', e => {
     // mouseup re-render detaches the pressed element before its click event
     // fires, so selection never happens (T-069).
     if (drag.moved || Math.hypot(pt.x - drag.startX, pt.y - drag.startY) > 3) {
-      if (!drag.moved) pushHistory();   // B5: one undo entry per drag, captured pre-move
+      if (!drag.moved) { pushHistory(); drag.phaseBefore = phaseMembership(); }   // B5: one undo entry per drag, captured pre-move; T-1514
       drag.moved = true;
       lastTidy = null; // manual move supersedes the pending tidy revert (T-079)
       const n = findNode(drag.id);
@@ -10654,7 +10654,7 @@ svg.addEventListener('mousemove', e => {
     const dy = pt.y - groupDrag.startY;
     // Same dead-zone as single-node drag (T-069)
     if (groupDrag.moved || Math.hypot(dx, dy) > 3) {
-      if (!groupDrag.moved) pushHistory();   // B5: one undo entry per group drag, captured pre-move
+      if (!groupDrag.moved) { pushHistory(); groupDrag.phaseBefore = phaseMembership(); }   // B5; T-1514
       groupDrag.moved = true;
       lastTidy = null; // manual move supersedes the pending tidy revert (T-079)
       for (const [id, orig] of groupDrag.originalPositions) {
@@ -10947,7 +10947,10 @@ window.addEventListener('mouseup', e => {
   // move — re-rendering on a stationary press swallows the click (T-069).
   if ((drag && drag.moved) || (groupDrag && groupDrag.moved)) {
     refreshDisplayIds();
-    renderNodes();
+    // T-1514: the dropped steps join the phase under them; the boundaries follow (same undo step as the drag)
+    const moved = drag ? new Set([drag.id]) : new Set(groupDrag.originalPositions.keys());
+    if (_phasesFollowSteps(drag ? drag.phaseBefore : groupDrag.phaseBefore, moved)) renderAll();
+    else renderNodes();
   }
   if (drag && drag.moved) gPreview.innerHTML = ''; // snap guides end with the drag (T-074)
   drag = null;
@@ -11529,6 +11532,7 @@ function compactLanesFit() {
 }
 
 function cleanLayout() {
+  const phaseBefore = phaseMembership();   // T-1514: the phases' steps before the layout moves them
   const beforeY = new Map(state.nodes.map(n => [n.id, n.y]));
   const beforeH = new Map(state.lanes.map(l => [l.id, l.height]));
   for (const l of state.lanes) {
@@ -11558,6 +11562,7 @@ function cleanLayout() {
   } else {
     lastTidy = null; // nothing changed — don't leave a stale per-lane record from the inner calls
   }
+  if (positions.length) _phasesFollowSteps(phaseBefore, null);   // T-1514: inside Clean's undo step (snapshot before)
   renderAll();
   return positions.length;
 }
@@ -15466,7 +15471,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.52.0';
+const APP_VERSION = '0.53.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -17271,6 +17276,101 @@ function phaseBoundaryMove(leftId, rightId, x) {
   _phasesChanged(pk);
   renderAll(); scheduleAutosave();
   return true;
+}
+// T-1514 (T-1491 IW-2): boundaries follow the steps. A phase is a range of steps (T-1461 F4), so an edit that moves steps
+// (a drag, Clean layout) recomputes each row's boundaries from the steps each phase held BEFORE the edit:
+// - membership: a step belongs to the phase of a row whose x range holds its centre; a DRAGGED step takes the phase under
+//   its centre where it is dropped (the old boundaries), the others keep theirs;
+// - a shared edge (two phases touching within 2 px) keeps its relative place in the gap between the left phase's
+//   rightmost step and the right phase's leftmost step (a boundary made by a split sits in the middle and stays there; an
+//   authored one off-centre keeps its proportion), so an edge whose two steps did not move does not move;
+// - an edge that is not shared keeps its distance to the phase's nearest step; an edge at the pool's edge stays there;
+// - nothing is guessed: a row whose steps are no longer in phase order, or whose result would overlap or leave a phase
+//   under 20 px, is left as it was, and so is a phase with no steps (and the edges it shares).
+// Only `dc:Bounds` x/width of the group shapes change, inside the edit's own undo step. Called only by the edits, never
+// by a render, so a map nobody edits is not changed.
+function phaseMembership() {
+  const pk = phaseKept(); if (!pk || !(pk.categories || []).length || !state) return null;
+  const rows = phasesParse(pk); if (!rows.length) return null;
+  const pos = new Map(), byRow = new Map();
+  for (const n of state.nodes || []) {
+    if (typeof n.x !== 'number') continue;
+    const d = dims(n) || { w: 120 };
+    pos.set(n.id, { x: n.x, w: d.w });
+  }
+  for (const r of rows) {
+    const m = new Map();
+    for (const [id, q] of pos) { const c = q.x + q.w / 2, p = r.phases.find(p => c >= p.x && c <= p.x + p.w); if (p) m.set(id, p.id); }
+    byRow.set(r.id, m);
+  }
+  return { pos, byRow };
+}
+function _phasesFollowSteps(before, dragged) {
+  const pk = phaseKept(); if (!before || !pk || !state) return false;
+  const rect = _phaseSpanRect(); if (!rect) return false;
+  const TOL = 2;
+  const now = new Map();
+  for (const n of state.nodes || []) { if (typeof n.x !== 'number') continue; const d = dims(n) || { w: 120 }; now.set(n.id, { x: n.x, w: d.w }); }
+  const setB = (xml, x, w) => {
+    const m = /<(?:[\w.-]+:)?Bounds\b[^>]*>/.exec(xml); if (!m) return null;
+    let tag = m[0];
+    for (const [k, v] of [['x', x], ['width', w]]) { const re = new RegExp(`(\\s${k}=")[^"]*(")`); if (!re.test(tag)) return null; tag = tag.replace(re, `$1${_r1(v)}$2`); }
+    return xml.slice(0, m.index) + tag + xml.slice(m.index + m[0].length);
+  };
+  let changed = false;
+  for (const r of phasesParse(pk)) {
+    const was = before.byRow.get(r.id); if (!was) continue;
+    const P = r.phases;   // sorted by x
+    // old extremes: the phase's steps before the edit, where they were; new: its steps after, where they are
+    const ext = P.map(() => ({ oldL: Infinity, oldR: -Infinity, newL: Infinity, newR: -Infinity, n: 0, o: 0 }));
+    for (const [id, o] of before.pos) {
+      const i = P.findIndex(p => p.id === was.get(id)); if (i < 0) continue;
+      const e = ext[i]; e.o++; e.oldL = Math.min(e.oldL, o.x); e.oldR = Math.max(e.oldR, o.x + o.w);
+    }
+    for (const [id, q] of now) {
+      let pid;
+      if (dragged && dragged.has(id)) { const c = q.x + q.w / 2, p = P.find(p => c >= p.x && c <= p.x + p.w); pid = p && p.id; }
+      else pid = was.get(id);
+      const i = P.findIndex(p => p.id === pid); if (i < 0) continue;
+      const e = ext[i]; e.n++; e.newL = Math.min(e.newL, q.x); e.newR = Math.max(e.newR, q.x + q.w);
+    }
+    // the steps must still be in phase order (only phases that hold steps are compared)
+    const held = P.map((p, i) => i).filter(i => ext[i].n);
+    if (held.some((i, k) => k > 0 && ext[held[k - 1]].newR > ext[i].newL)) continue;
+    const L = P.map(p => p.x), R = P.map(p => p.x + p.w);
+    for (let i = 0; i < P.length; i++) {
+      const e = ext[i]; if (!e.n || !e.o) continue;
+      const sharedL = i > 0 && Math.abs(P[i - 1].x + P[i - 1].w - P[i].x) <= TOL;
+      const sharedR = i < P.length - 1 && Math.abs(P[i].x + P[i].w - P[i + 1].x) <= TOL;
+      if (sharedL) {
+        const a = ext[i - 1];
+        if (a.n && a.o) {
+          const g0 = e.oldL - a.oldR, t = g0 > 0.5 ? (P[i].x - a.oldR) / g0 : 0.5;
+          const at = a.newR + Math.min(1, Math.max(0, t)) * (e.newL - a.newR);
+          L[i] = at; R[i - 1] = at;
+        }
+      }
+      else if (P[i].x > rect.left + TOL) {   // at the pool's left edge (or the lane headers) it stays there
+        L[i] = Math.max(rect.left, e.newL - (e.oldL - P[i].x));
+      }
+      if (!sharedR && P[i].x + P[i].w < rect.right - TOL) R[i] = Math.min(rect.right, e.newR + (P[i].x + P[i].w - e.oldR));
+    }
+    let ok = true;
+    for (let i = 0; i < P.length; i++) {
+      if (R[i] - L[i] < 20) ok = false;
+      if (i > 0 && L[i] < R[i - 1] - 0.05) ok = false;
+    }
+    if (!ok) continue;
+    for (let i = 0; i < P.length; i++) {
+      if (Math.abs(L[i] - P[i].x) < 0.05 && Math.abs(R[i] - (P[i].x + P[i].w)) < 0.05) continue;
+      const k = (pk.di || []).findIndex(d => d.ref === P[i].id); if (k < 0) continue;
+      const xml = setB(pk.di[k].xml, L[i], R[i] - L[i]); if (xml == null) continue;
+      pk.di[k] = { ...pk.di[k], xml };
+      changed = true;
+    }
+  }
+  if (changed) { _phasesChanged(pk); if (typeof scheduleAutosave === 'function') scheduleAutosave(); }
+  return changed;
 }
 let phaseBoundaryDrag = null;   // { left, right, from } while a boundary is dragged
 function _phaseBoundaryPreview(x) {
