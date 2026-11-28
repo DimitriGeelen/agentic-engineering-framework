@@ -1,13 +1,18 @@
 ---
 id: T-5443
-name: "mistral-vibe reviewer seat's green verdict refused: location carries a note after <path>:<line>"
+name: "mistral-vibe reviewer seat's green verdict refused: location carries a note
+  after <path>:<line>"
 description: >
-  150-skills-manager msg 028d73f6 (2026-11-28): the mistral-vibe seat wrote a full green review of their T-443, but the verdict ledger refused it: Location '...t1405.bak:140 (pre-chan...' is not <path>:<line>. Same class as opencode T-5301. Decide: the brief forbids the trailing note, or the ledger accepts '<path>:<line> (note)' and strips the note (keeping path:line validation strict). Evidence on .122: /tmp/tl-dispatch/judge-t-443-r5-mistral-vibe-a8dc7ffecd82/recorded.json.
+  150-skills-manager msg 028d73f6 (2026-11-28): the mistral-vibe seat wrote a full
+  green review of their T-443, but the verdict ledger refused it: Location '...t1405.bak:140
+  (pre-chan...' is not <path>:<line>. Same class as opencode T-5301. Decide: the brief
+  forbids the trailing note, or the ledger accepts '<path>:<line> (note)' and strips
+  the note (keeping path:line validation strict). Evidence on .122: /tmp/tl-dispatch/judge-t-443-r5-mistral-vibe-a8dc7ffecd82/recorded.json.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, reviewer, ledger]
 components: []
 related_tasks: []
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-28T10:33:27Z
-last_update: 2026-11-28T10:33:27Z
-date_finished: null
+last_update: '2026-11-28T10:43:42Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-28T10:43:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5443: mistral-vibe reviewer seat's green verdict refused: location carries a note after <path>:<line>
@@ -57,20 +79,22 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 150-skills-manager (msg 028d73f6, 2026-11-28) reported that the mistral-vibe seat's green verdict/1 review of their T-443 was refused by the ledger: `Location '...t1405.bak:140 (pre-chan...' is not <path>:<line>`. opencode hit the same class on T-5301 (refused three times on citation format; T-5301 routed around it by reordering seats, it did not fix the reader).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/verdict_format.py` `_FILE_LINE_RE` is `^\S+:\d+(?:-\d+)?$`, so any trailing note after a valid `path:line` (`(note)` or `— note`) fails the form check, and a substantively valid vote is thrown away.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** accept `<path>:<line> (<note>)` and `<path>:<line> — <note>`, strip the note, and keep the path:line part validated exactly as strictly as today (vote_checker still checks file exists at the reviewed revision and the line is in range).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** seats that annotate a citation are no longer refused; the stored location is the bare `path:line`; a bad path or line with a note is still refused by the same check that refuses it without one.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `parse_vote` accepts a file:line Location followed by ` (note)` or ` — note` and stores the bare `path:line` in the criterion's `location`
+- [ ] A note is stripped only from a well-formed `path:line[-line]`; anything else (spaces in path, non-numeric line, note without separator) is still refused by the form check
+- [ ] `vote_checker` still reports a missing file / out-of-range line for a noted location (test)
+- [ ] The brief text tells seats a trailing note is allowed and ignored
+- [ ] Existing verdict_format / vote_checker unit tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +281,9 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5443_location_note.py -q > /tmp/.t5443a 2>&1 && grep -q passed /tmp/.t5443a
+python3 -m pytest tests/unit/test_t5292_structured_verdict.py tests/unit/test_t5293_vote_checker.py -q > /tmp/.t5443b 2>&1 && grep -q passed /tmp/.t5443b
+bin/fw vendor self --check --task T-5443
 
 ## RCA
 
@@ -273,6 +300,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** mistral-vibe's green verdict/1 vote on 150's T-443 was refused: `Location '...t1405.bak:140 (pre-chan...' is not <path>:<line>`; opencode was refused three times the same way on T-5301.
+
+**Root cause:** `_FILE_LINE_RE` (`^\S+:\d+(?:-\d+)?$`) in `lib/verdict_format.py` is anchored at the end, so any annotation after a valid citation failed the form check. The brief never said whether a note was allowed, and seats naturally annotate citations.
+
+**Why structurally allowed:** T-5292's tests only used bare locations; T-5301 hit the class but routed around it (moved antigravity ahead of opencode) instead of filing it, so the reader/brief mismatch stayed.
+
+**Prevention:** `tests/unit/test_t5443_location_note.py` pins both sides (noted locations accepted and stored bare; malformed ones still refused; vote_checker still catches a bad line/missing file behind a note), and the brief now states the note rule explicitly.
 
 ## Evolution
 
@@ -337,6 +371,10 @@ date_finished: null
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+### 2026-11-28 — accept-and-strip vs forbid-in-brief
+- **Chose:** (a) the reader accepts `<path>:<line>[-<line>] (<note>)` and `… — <note>` (also en dash), stores the bare `path:line`, and vote_checker validates it unchanged.
+- **Why:** T-5301 documented no contract forbidding notes (it reordered seats instead), and two different vendors' seats annotate citations, so a brief-only rule would keep refusing substantively valid votes. Stripping only after a well-formed `\S+:\d+(-\d+)?` plus whitespace and an explicit separator keeps every existing refusal for a bad path or line (tests).
+- **Rejected:** (b) brief-only prohibition — depends on seat compliance, which two seats have already shown they do not give.
 
 ## Decision
 
@@ -354,3 +392,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5443-mistral-vibe-reviewer-seats-green-verdic.md
 - **Context:** Initial task creation
+
+### 2026-11-28T10:43:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

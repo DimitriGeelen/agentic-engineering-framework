@@ -73,6 +73,11 @@ _SELECTOR = r"selector[ \t]+\S.*"
 _IMG_REF_RE = re.compile(rf"^(\S+)[ \t]+(?:{_REGION}|{_SELECTOR})[ \t]*$", re.S)
 _IMG_EVIDENCE_RE = re.compile(rf"^image:[ \t]*(\S+)[ \t]+(?:{_REGION}|{_SELECTOR})[ \t]*$", re.S)
 _FILE_LINE_RE = re.compile(r"^\S+:\d+(?:-\d+)?$")
+#: T-5443: a seat may annotate a file:line citation — `a.py:12 (before the change)` or
+#: `a.py:12 — the guard`. The note is stripped and only the bare `path:line` is kept, so every
+#: later check (file at the reviewed revision, line in range) sees exactly what it saw before.
+#: The note needs a separator after whitespace; `a.py:12foo` or a spaced path is still refused.
+_FILE_LINE_NOTE_RE = re.compile(r"^(\S+:\d+(?:-\d+)?)[ \t]+(?:\(.*\S.*\)|[—–][ \t]*\S.*)$", re.S)
 _COMMAND_RE = re.compile(r"^command:[ \t]*\S.*$", re.S)
 _FAILED_RE = re.compile(r"^\[\s*((?:AC\s*#?)?\d+(?:\s*,\s*(?:AC\s*#?)?\d+)*)?\s*\]$|^none$", re.I)
 
@@ -144,7 +149,16 @@ def _evidence_ok(v: str) -> bool:
     return bool(_QUOTE_RE.match(v) or _IMG_EVIDENCE_RE.match(v))
 
 
+def bare_location(v: str) -> str:
+    """`v` with a trailing note after a well-formed `<path>:<line>` removed (T-5443); any other
+    value is returned unchanged (stripped)."""
+    v = v.strip()
+    m = _FILE_LINE_NOTE_RE.match(v)
+    return m.group(1) if m else v
+
+
 def _location_ok(v: str) -> bool:
+    v = bare_location(v)
     return bool(_FILE_LINE_RE.match(v) or _IMG_REF_RE.match(v) or _COMMAND_RE.match(v))
 
 
@@ -264,6 +278,7 @@ def parse_vote(text: str, *, task: str = "", expected_acs=None) -> tuple[dict, d
             guidance = ((got.get("Guidance") or [""])[0]).strip()
             if vote in OUTCOMES and vote != GREEN and not guidance:
                 crit_fault(ac, f"a {vote} vote needs `Guidance:` (what is needed next)")
+            loc = [bare_location(v) if v.strip() else v for v in loc]
             c.update(vote=vote, evidence=ev, location=loc,
                      rule=((got.get("Rule") or [""])[0]).strip(),
                      conclusion=((got.get("Conclusion") or [""])[0]).strip(), guidance=guidance,
@@ -379,7 +394,8 @@ def brief_lines(task_id: str, acs: list[int], *, printed: bool) -> list[str]:
         "`image: <file> selector <css>`.",
         "- Location says where that evidence is: `<path>:<line>` (or `<path>:<from>-<to>`), "
         "`<image file> region x,y,w,h`, `<image file> selector <css>`, or `command: <cmd>` "
-        "for a quote of a command's output. Evidence and Location come in pairs and may repeat.",
+        "for a quote of a command's output. Evidence and Location come in pairs and may repeat. "
+        "A note after `<path>:<line>`, as ` (note)` or ` — note`, is allowed and ignored.",
         "- Rule is the requirement you applied (the criterion's clause, quoted or named); "
         "Conclusion is ONE sentence joining the evidence to the rule.",
         "- Overall `vote` is green only when every criterion is green; otherwise it is one of the "
