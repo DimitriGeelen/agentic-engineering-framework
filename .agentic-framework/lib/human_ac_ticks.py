@@ -214,12 +214,20 @@ class VerdictBacking:
     Whether the verdict row is itself genuine (signed review dispatch, non-producer commit)
     is `verdict_ledger.py audit`'s FAIL to raise."""
 
-    def __init__(self, root: Path, task_id: str):
+    def __init__(self, root: Path, task_id: str, cache: dict | None = None):
+        # T-5436: `cache` (one dict per scan) holds each ledger parsed once; a scan builds one
+        # backing per task it meets (~2,400 here) and both ledgers are read-only meanwhile.
+        def rows(rel: str) -> list[dict]:
+            if cache is None:
+                return _jsonl(root, rel)
+            if rel not in cache:
+                cache[rel] = _jsonl(root, rel)
+            return cache[rel]
         self.digest = {str(r["id"]): str(r.get("ac_digest") or "")
-                       for r in _jsonl(root, ".context/reviews/verdicts.jsonl")
+                       for r in rows(".context/reviews/verdicts.jsonl")
                        if r.get("task") == task_id and r.get("outcome") == "green" and r.get("id")}
         self.budget = Counter()
-        for r in _jsonl(root, ".context/reviews/applied.jsonl"):
+        for r in rows(".context/reviews/applied.jsonl"):
             if r.get("task") == task_id:
                 for t in r.get("ticked") or []:
                     if isinstance(t, dict) and t.get("verdict_id"):
@@ -618,6 +626,7 @@ def _unticked_at(root: Path, rev: str, blobs: "_BlobReader", tids: set) -> set:
 def _scan(root, commits, diffs, blobs, budget, checkers, findings,
           committed: Counter | None = None, pending: list | None = None) -> list[dict]:
     grants = delegation_grants(root)
+    ledgers: dict = {}  # T-5436: review ledgers parsed once per scan (VerdictBacking)
     cited: Counter = Counter()  # (grant id, verdict id) already spent: one cite, one tick
     for sha, parents, who, aemail, cemail, cdate, msg in commits:
         parents = parents.split() or [None]
@@ -646,7 +655,12 @@ def _scan(root, commits, diffs, blobs, budget, checkers, findings,
                     continue
                 old = "" if (status.startswith("A") or not parent) else blobs.show(parent, old_path)
                 tid = _task_id(new_path)
-                backing = checkers.setdefault(tid, VerdictBacking(root, tid))
+                # T-5436: build only on a miss. `setdefault(tid, VerdictBacking(...))` built
+                # (and re-parsed both review ledgers) for every changed task file of every
+                # commit, ~9,700 times and ~100 s per audit, then threw the result away.
+                backing = checkers.get(tid)
+                if backing is None:
+                    backing = checkers[tid] = VerdictBacking(root, tid, ledgers)
                 new = blobs.show(sha, new_path)
                 got[new_path] = (tid, unprovenanced_ticks(old, new, backing), new)
             per_parent.append(got)

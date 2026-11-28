@@ -1984,7 +1984,35 @@ def _completions_for(root: Path, dispatch_id: str) -> list[dict]:
             if c.get("dispatch_id") == dispatch_id and c.get("kind", "completion") == "completion"]
 
 
+# T-5436: `history_fault(root, COMPLETIONS)` is asked once per verdict row (~290 on this repo)
+# and each call replayed every commit of the file — ~0.45 s apiece, ~125 s of the pre-push
+# structure audit. The answer is a pure function of the git state (the same token that keys the
+# git memo above) and the working file's bytes, so it is computed once per (root, rel) for a
+# given pair of those. No token (a worktree `.git` file, unreadable refs) means no memo.
+_HISTORY_MEMO: dict[tuple, str] = {}
+
+
 def history_fault(root: Path, rel: Path) -> str:
+    tok = _git_state_token(root)
+    if tok is None:
+        return _history_fault_walk(root, rel)
+    p = root / rel
+    try:
+        digest = hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else None
+    except OSError:
+        return _history_fault_walk(root, rel)
+    key = (str(root), str(rel), tok, digest)
+    hit = _HISTORY_MEMO.get(key)
+    if hit is None:
+        hit = _history_fault_walk(root, rel)
+        if _git_state_token(root) == tok:
+            if len(_HISTORY_MEMO) >= 256:
+                _HISTORY_MEMO.clear()
+            _HISTORY_MEMO[key] = hit
+    return hit
+
+
+def _history_fault_walk(root: Path, rel: Path) -> str:
     """'' when `rel` is append-only against git history: every commit that touched it keeps the
     previous committed lines as an exact prefix, and the working file keeps the last committed
     lines as its prefix. Uncommitted lines beyond that are allowed (T-3580 round 5 — the same

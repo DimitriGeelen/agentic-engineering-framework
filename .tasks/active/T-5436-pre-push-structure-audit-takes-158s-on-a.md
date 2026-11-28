@@ -8,10 +8,10 @@ description: >
   2026-11-27 (pre-push audit plus lock waits). Per T-3062: find the cost before raising
   the budget (time each check, move any whole-tree scan to --section tree).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [performance, audit, pre-push]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-28T08:35:38Z
-last_update: '2026-11-28T08:45:50Z'
+last_update: 2026-11-28T09:07:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** CI run 46076763169 (T-5382, 2026-11-27): `tests/unit/t3062_prepush_runtime.bats` measured `audit.sh --section structure` at 158 s on ubuntu-latest against its 150 s budget. Local pushes on 2026-11-27 ran close to 10 minutes (pre-push audit plus lock waits). Related open task T-3844.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** One or a few checks in the structure section dominate its runtime — likely whole-tree scans or repeated expensive commands that are not about committed structure and belong in `--section tree`.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Find the per-check cost, then cut the dominant costs without weakening any verdict and without raising the 150 s budget.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The structure section runs clearly under 150 s on this host; every moved check still runs in the full `fw audit`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Per-check cost table (top 10 by seconds) of the structure section recorded in this task, from at least two runs
+- [x] Dominant costs reduced (moved to tree section, cached, or de-duplicated) with every moved check still running in a full no-section audit
+- [x] Structure section total time before and after recorded; after is clearly under 150 s on this host
+- [x] `tests/unit/t3062_prepush_runtime.bats` and tests of touched checks pass; vendored copies in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +292,43 @@ bvp_scores_proposed:
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
 
+bash -c 'cd /opt/999-Agentic-Engineering-Framework && timeout 600 bats tests/unit/t3062_prepush_runtime.bats > /tmp/.t5436-t3062.out 2>&1; rc=$?; grep -q "holds the lock" /tmp/.t5436-t3062.out || { [ $rc -eq 0 ] && ! grep -q "^not ok" /tmp/.t5436-t3062.out; }'
+timeout 900 bats tests/unit/audit_trend_window.bats tests/unit/t3695_human_ac_tick_bash.bats > /tmp/.t5436-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5436-b.out
+timeout 1200 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/t3580_round5_test.py tests/unit/test_t4824_human_tick_untick.py > /tmp/.t5436-p.out 2>&1 && grep -q passed /tmp/.t5436-p.out
+grep -q "T-5436: one grep + awk" agents/audit/audit.sh && grep -q "_HISTORY_MEMO" lib/verdict_ledger.py && grep -q "VerdictBacking(root, tid, ledgers)" lib/human_ac_ticks.py
+bin/fw vendor self --check --task T-5436
+
+## Measurements (this host, 2026-11-28)
+
+Method: `audit.sh --section structure` with per-line timestamps; a check's cost = time between its output line and the previous one. Runs use `FW_PREPUSH_RANGE_TEST_BUDGET=0`, which matches what t3062 measures (inside bats the T-5342 range-test leg is skipped).
+
+| Run | Code | Structure section total |
+|---|---|---|
+| run1 | HEAD, range leg on (56 s of it), host contended by a cron audit | 341.7 s |
+| run0 | HEAD, range leg off | **369.9 s** |
+| run3 | this fix, range leg off | **100.6 s** |
+| run4 | this fix, range leg off | **111.8 s** |
+| bats t3062 | this fix | 101 s for the whole file (3 tests), pass |
+
+Top costs, run0 (HEAD) → run3 (fix), seconds:
+
+| # | Check (output line ending the gap) | HEAD | fix |
+|---|---|---:|---:|
+| 1 | Reviewer-verdict ledger collect (wait for prefetched `verdict_ledger.py audit` + `human_ac_ticks.py audit`) | 207.0 | 25.8 |
+| 2 | Trend analysis (end of every audit run) | 82.3 | 9.4 |
+| 3 | Invariant suite (tests/lint) | 12.8 | 10.7 |
+| 4 | Branch hygiene | 8.8 | 5.4 |
+| 5 | Fabric orphaned cards | 6.3 | 4.9 |
+| 6 | Project YAML parse | 5.2 | 5.3 |
+| 7 | Inline arc tag-only scans | 4.8 | 3.8 |
+| 8 | Fabric cards without edges | 3.4 | <2.8 |
+| 9 | GO'd inception build links | 3.4 | 3.1 |
+| 10 | Fabric drift (unregistered sources) | 3.3 | <2.8 |
+
+Standalone on this host: `verdict_ledger.py audit` 133 s → 37 s; `human_ac_ticks.py audit` 100 s → 11 s; the trend counting loop over 400 audit files 28 s → 2 s. Outputs compared byte-for-byte before/after: identical in all three.
+
+Not changed, reported: on a real push the T-5342 range-test leg adds up to `PREPUSH_RANGE_TEST_BUDGET` (120 s) on top of the section, so a push can still spend ~220 s in the gate; t3062 does not measure that leg.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -305,6 +344,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the pre-push structure audit took 158 s on a GitHub runner (budget 150 s) and ~370 s on this host.
+
+**Root cause:** three cases of repeated work, none a whole-tree scan. (1) `verdict_ledger.py audit` called `history_fault(COMPLETIONS)` once per verdict row (291), and every call replayed all commits of `review-completions.jsonl`. `_git_out` does not memoise outputs over 256 KB, so each replay re-read every version (~0.45 s × 291). (2) `human_ac_ticks.py` called `checkers.setdefault(tid, VerdictBacking(root, tid))`, which builds the argument before the lookup, so the 1.6 MB `verdicts.jsonl` was parsed ~9,700 times. Even counting misses only, each of ~2,400 tasks parsed it again. (3) Trend analysis forked two `sed`s per WARN/FAIL line of every audit file in the 14-day window (~490 files).
+
+**Why structurally allowed:** each cost grows with corpus size (rows, commits, audit files), not with code changes. No single commit made it slow, and the shape lint (prepush-gate-budget) cannot see it. Only t3062 measures, and it measures the total, not which check.
+
+**Prevention:** the work is now done once per distinct input, not rows × history. The per-check timing method in §Measurements is recorded for the next breach.
 
 ## Evolution
 
@@ -370,6 +417,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-28 — cache in place instead of moving checks to `--section tree`
+- **Chose:** memoise / build once inside the same check; nothing moved between sections, so the full daily audit runs exactly the same checks.
+- **Why:** none of the dominant costs is a whole-tree scan. They are committed-structure checks (ledger provenance, Human-AC tick provenance) that belong at pre-push. Moving them would weaken the gate; caching keeps every verdict (outputs compared byte-for-byte).
+- **Rejected:** moving `verdict_ledger` / `human_ac_ticks` audits to tree (weakens pre-push); raising the 150 s budget (ruled out by T-3062 and the brief).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -386,3 +438,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5436-pre-push-structure-audit-takes-158s-on-a.md
 - **Context:** Initial task creation
+
+### 2026-11-28T09:07:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

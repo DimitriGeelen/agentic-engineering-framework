@@ -9998,14 +9998,13 @@ else
     # Count how many times each warning/failure has appeared (temp file, POSIX-safe — no declare -A)
     ISSUE_COUNTS_FILE=$(mktemp)
 
+    # T-5436: one grep + awk per audit file. The old loop forked two seds for every
+    # WARN/FAIL check line of every audit in the window (~490 files, ~70 s of every
+    # audit, the pre-push one included). Same selection, same stripping.
     for audit_file in "${past_audits[@]}"; do
-        while IFS= read -r line; do
-            if [[ "$line" =~ ^[[:space:]]+check:[[:space:]]* ]]; then
-                check_name=$(echo "$line" | sed 's/.*check: "//' | sed 's/"$//')
-                echo "$check_name" >> "$ISSUE_COUNTS_FILE"
-            fi
-        done < <(grep -A1 "level: WARN\|level: FAIL" "$audit_file" 2>/dev/null)
-    done
+        grep -A1 "level: WARN\|level: FAIL" "$audit_file" 2>/dev/null \
+            | awk '/^[[:space:]]+check:/ { sub(/.*check: "/, ""); sub(/"$/, ""); print }'
+    done >> "$ISSUE_COUNTS_FILE"
 
     # Find repeated issues (appeared 3+ times)
     repeated_issues=()
