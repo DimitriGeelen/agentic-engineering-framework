@@ -185,9 +185,50 @@ def _reread_total() -> float:
         return REREAD_TOTAL_S
 
 
+#: T-5437: the newest user record the last scan saw, (promptId, origin kind), for the log.
+_LAST_NEWEST: list = [None, None]
+
+
+#: T-5437: a prompt record written this long before the lookup is "the prompt this hook
+#: fires for" when the hook's prompt_id matches no record (task-notification turns).
+FRESH_PROMPT_S = 5.0
+
+
+def _is_tool_result(rec: dict) -> bool:
+    """A tool result is stored as a user record carrying the turn's promptId; it is
+    never the prompt itself and carries none of the origin marks (T-5437)."""
+    c = (rec.get("message") or {}).get("content")
+    return (isinstance(c, list) and bool(c) and isinstance(c[0], dict)
+            and c[0].get("type") == "tool_result") or "toolUseResult" in rec
+
+
+def _mark_of(rec: dict) -> str:
+    kind = (rec.get("origin") or {}).get("kind")
+    if (kind in _GENERATED_KINDS or rec.get("turnOrigin") in _GENERATED_TURNS
+            or rec.get("scheduledTaskId") or rec.get("promptSource") == "system"):
+        return "generated"
+    return "unmarked"
+
+
+def _record_age_s(rec: dict, now: float | None) -> float | None:
+    try:
+        ts = datetime.fromisoformat(str(rec.get("timestamp")).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    return (now if now is not None else time.time()) - ts.timestamp()
+
+
 def _scan_transcript(transcript_path: str, want: str, prompt_id: str | None,
-                     tail_bytes: int) -> tuple[str | None, str]:
-    """One read: (mark, matched_by). matched_by is 'id', 'text' or 'none'."""
+                     tail_bytes: int, now: float | None = None) -> tuple[str | None, str]:
+    """One read: (mark, matched_by). matched_by is 'id', 'text', 'newest' or 'none'.
+
+    Only PROMPT records count: tool results share the turn's promptId but carry no
+    marks, so matching them answered "unmarked" for any turn (T-5437). With a
+    prompt_id, the prompt record carrying it decides. When none does (010 msg
+    6a450593: a task-notification turn's hook prompt_id appears in no record), the
+    newest prompt record decides if it was written within FRESH_PROMPT_S: a hook fires
+    for the newest prompt, and its record is written before the hook runs."""
+    _LAST_NEWEST[0] = _LAST_NEWEST[1] = None
     try:
         with open(transcript_path, "rb") as fh:
             fh.seek(0, os.SEEK_END)
@@ -195,28 +236,28 @@ def _scan_transcript(transcript_path: str, want: str, prompt_id: str | None,
             lines = fh.read().decode("utf-8", "ignore").splitlines()
     except OSError:
         return None, "none"
+    newest = None
     for line in reversed(lines):
         try:
             rec = json.loads(line)
         except ValueError:
             continue
-        if rec.get("type") != "user" or "promptId" not in rec:
+        if rec.get("type") != "user" or "promptId" not in rec or _is_tool_result(rec):
             continue
+        if newest is None:
+            newest = rec
+            _LAST_NEWEST[0] = str(rec.get("promptId") or "")
+            _LAST_NEWEST[1] = (rec.get("origin") or {}).get("kind") or rec.get("promptSource") or "-"
         if prompt_id:
-            # T-5379: the hook's prompt_id IS the record's promptId; text may differ
-            # (a task-notification record is not the hook's prompt string verbatim).
-            if rec.get("promptId") != prompt_id:
-                continue
-            by = "id"
-        else:
-            if _record_text(rec).strip() != want:
-                continue
-            by = "text"
-        kind = (rec.get("origin") or {}).get("kind")
-        if (kind in _GENERATED_KINDS or rec.get("turnOrigin") in _GENERATED_TURNS
-                or rec.get("scheduledTaskId") or rec.get("promptSource") == "system"):
-            return "generated", by
-        return "unmarked", by
+            if rec.get("promptId") == prompt_id:
+                return _mark_of(rec), "id"
+            continue
+        if _record_text(rec).strip() == want:
+            return _mark_of(rec), "text"
+    if prompt_id and newest is not None:
+        age = _record_age_s(newest, now)
+        if age is not None and -1.0 <= age <= FRESH_PROMPT_S:
+            return _mark_of(newest), "newest"
     return None, "none"
 
 
@@ -241,11 +282,12 @@ def transcript_mark(transcript_path: str | None, prompt: str, tail_bytes: int = 
         sleep(REREAD_STEP_S)
         mark, by = _scan_transcript(transcript_path, want, prompt_id, tail_bytes)
         reads += 1
-    _log_origin_lookup(mark, by, bool(prompt_id), reads, clock() - start)
+    _log_origin_lookup(mark, by, bool(prompt_id), reads, clock() - start, prompt_id)
     return mark
 
 
-def _log_origin_lookup(mark, by: str, had_id: bool, reads: int, waited: float) -> None:
+def _log_origin_lookup(mark, by: str, had_id: bool, reads: int, waited: float,
+                       prompt_id: str | None = None) -> None:
     """T-5379: one line per lookup, so a human/inferred verdict can be traced to its
     branch (none / unmarked / generated, matched by id or text). Never raises."""
     try:
@@ -254,7 +296,11 @@ def _log_origin_lookup(mark, by: str, had_id: bool, reads: int, waited: float) -
         with open(d / "origin-lookup.log", "a", encoding="utf-8") as fh:
             fh.write(f"{datetime.now(timezone.utc).isoformat()} mark={mark or 'none'} by={by} "
                      f"prompt_id={'yes' if had_id else 'no'} reads={reads} "
-                     f"waited_ms={int(waited * 1000)}\n")
+                     f"waited_ms={int(waited * 1000)} "
+                     # T-5437 (010 msg 6a450593): ids, so a miss shows whether the hook's
+                     # prompt_id differs from the record's promptId or the record was late.
+                     f"hook_id={(prompt_id or '-')[:8]} newest_id={(_LAST_NEWEST[0] or '-')[:8]} "
+                     f"newest_kind={_LAST_NEWEST[1] or '-'}\n")
     except Exception:
         pass
 
