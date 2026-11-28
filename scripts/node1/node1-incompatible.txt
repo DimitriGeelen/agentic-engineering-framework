@@ -74,3 +74,38 @@ tests/unit/t3580_round8_test.py
 
 # §9 — pipe/signal setup (expects SIGPIPE exit 141)
 tests/unit/verification_pipe_buffer.bats
+
+# T-5426: needs git history or tags (the node1 bundle is one commit; repo history 510 MB vs 64 MB cap)
+tests/unit/fw_version_output.bats
+tests/unit/version_relation.bats
+tests/unit/t2762_upgrade_foreign_source_sha.bats
+tests/unit/t3453_doctor_smoke_inverted_alarm.bats
+tests/unit/t3454_gate_contract_collision.bats
+tests/unit/t3457_act_in_the_world_credentials.bats
+tests/unit/t3965_upgrade_task_templates.bats
+tests/unit/t4232_claudemd_governance_consumer_edits.bats
+tests/unit/t4568_stock_hook_upgrade.bats
+tests/unit/t4678_old_hook_project_block.bats
+tests/unit/t4705_upgrade_commit_list_vendored_external.bats
+tests/unit/t5217_id_allocator.bats
+tests/unit/test_testhost_controller.py
+tests/unit/test_upgrade_template_sync_t3955.py
+tests/unit/test_t5193_runtime_projection_v2.py
+tests/unit/test_cockpit_activity.py
+
+# T-5426: reads this checkout's installed framework git hooks (a bundle clone has none;
+# all six pass once `bin/fw git install-hooks` has run in the clone)
+tests/unit/pre_push_version_monotonicity.bats
+tests/unit/t2240_pre_push_self_vendor_gate.bats
+tests/unit/t2294_pre_push_mcp_drift.bats
+tests/unit/test_pre_push_monotonic_ancestor.bats
+tests/unit/test_secret_scan.bats
+tests/unit/test_index_doctor_rail.bats
+
+# T-5426: individual causes
+# needs the local vector index (.context/working/fw-vec-index.db), which the bundle leaves out
+tests/unit/t1719_ask_routing.bats
+# checkout lives under a temp dir, which is_sandbox() treats as a sandbox (the fixture precondition)
+tests/unit/test_tier0_origin.py
+# CPU speed: 3 s wall-clock budget; 1.9-3.4 s in a bundle clone here under load ~22
+tests/unit/t5221_create_batch.bats

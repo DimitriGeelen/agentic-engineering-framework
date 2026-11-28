@@ -59,7 +59,11 @@ assert_allowed() {
 }
 
 @test "probe: relative outside read blocks, resolved against the hook cwd" {
-    assert_blocked "cat ../../${R#/}/.t3768-probe"
+    # Climb exactly to / from the checkout, however deep it is (T-5426: `../../`
+    # assumed /opt/<repo>; from a clone under /tmp it resolved to an allowed /tmp path).
+    local up="" d="$CWD"
+    while [ "$d" != "/" ]; do up="../$up"; d="$(dirname "$d")"; done
+    assert_blocked "cat ${up}${R#/}/.t3768-probe"
 }
 
 @test "probe: here-string command substitution reading outside blocks" {

@@ -63,12 +63,13 @@ BASH_INLINE='"bash -c '"'"'[ -n \"$(find /tmp -maxdepth 0 -newer /etc/hostname 2
     run_doctor
     echo "$OUT" | grep -q "Hook path validation: 1/2 hooks have broken paths"
     echo "$OUT" | grep -q "missing: $PROJ/scripts/gone.sh"
-    ! echo "$OUT" | grep -q "Run: fw upgrade (regenerates hooks" || false
+    ! echo "$OUT" | grep -q "fw upgrade (regenerates hooks" || false
 }
 
 @test "T-4813: a missing vendored fw binary still advises fw upgrade" {
     write_settings '"${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw hook check-tier0"'
     run_doctor
     echo "$OUT" | grep -q "Hook path validation: 1/1 hooks have broken paths"
-    echo "$OUT" | grep -q "Run: fw upgrade (regenerates hooks"
+    # T-5302: the advice is a full copy-pasteable line, never a bare `fw` (T-5426).
+    echo "$OUT" | grep -qF "Run: cd $PROJ && .agentic-framework/bin/fw upgrade (regenerates hooks"
 }

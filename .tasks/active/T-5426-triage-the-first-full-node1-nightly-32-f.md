@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-26T15:47:57Z
-last_update: 2026-11-28T09:31:50Z
+last_update: 2026-11-28T10:25:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,9 +105,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The bundle-clone reproduction is recorded: which of the node1 reds fail there, and the cause class of each (no tags/history, missing state, host tool, real failure)
-- [ ] Each red has a disposition recorded in this task: test fixed, bundle changed, or excluded in node1-incompatible.txt with its reason
-- [ ] The dispositions are applied and the affected files pass in the bundle clone (or are excluded with a reason)
+- [x] The bundle-clone reproduction is recorded: which of the node1 reds fail there, and the cause class of each (no tags/history, missing state, host tool, real failure)
+- [x] Each red has a disposition recorded in this task: test fixed, bundle changed, or excluded in node1-incompatible.txt with its reason
+- [x] The dispositions are applied and the affected files pass in the bundle clone (or are excluded with a reason)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -156,6 +156,13 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -c "import os; ls=[l.strip() for l in open('scripts/node1/node1-incompatible.txt') if l.strip() and not l.startswith('#')]; assert ls and all(os.path.isfile(l) for l in ls), [l for l in ls if not os.path.isfile(l)]; assert len(ls)==len(set(ls))"
+python3 scripts/node1/node1_nightly.py --dry-run > /tmp/.t5426_dry 2>&1 && grep -q "excluded=" /tmp/.t5426_dry
+timeout 300 bats tests/unit/t4813_doctor_hook_paths.bats > /tmp/.t5426_a 2>&1 && ! grep -q "^not ok" /tmp/.t5426_a
+test "$(grep -c '# skip' /tmp/.t5426_a)" -eq 0
+timeout 300 bats tests/unit/t3768_boundary_quoted_read_paths.bats > /tmp/.t5426_b 2>&1 && ! grep -q "^not ok" /tmp/.t5426_b
+test "$(grep -c '# skip' /tmp/.t5426_b)" -eq 0
 
 <!-- T-4906: guidance is an HTML comment so GitHub does not render its `#` lines as
      headings; the completion gate strips HTML comments before running anything.
@@ -311,6 +318,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** the first full node1 nightlies reported 32-35 red files, all "new", none red in the local nightly.
+
+**Root cause:** node1 runs a one-commit bundle clone (no history, no tags, no installed git hooks, no .context state such as the vector index) in a temp dir on a shared, loaded host. 16 files read git history or tags, 6 copy or grep this checkout's installed hooks, 3 have individual environment causes (vector index, temp-dir checkout, a 3 s wall-clock budget). One was a real stale test: t4813 test 5, red on this repo too since T-5302 changed doctor's advice to a full `cd <root> && .agentic-framework/bin/fw upgrade` line; its sibling negative check (test 4) had gone vacuous for the same reason. t3768 test 5 assumed the checkout sits two levels deep (`../../`).
+
+**Why structurally allowed:** node1-incompatible.txt was built from the earlier partial batches; the first complete run is the first time every file met the bundle. The local nightly runs in the full checkout, so history, hook and depth assumptions are invisible there.
+
+**Prevention:** every exclusion carries its class and reason, so a file can be re-admitted when its cause goes (class B by one setup step, see Dispositions). The two fixed tests no longer depend on the host path or the old advice wording. t4259's intermittent teardown race is tracked as T-5440 instead of excluded, so node1 keeps seeing it.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -394,6 +409,26 @@ Bundle built exactly as node1 gets it (`bin/fw test bundle --ref HEAD`), cloned 
 | A. needs git history/tags (the bundle is one commit) | fw_version_output, version_relation, t2762, t3453, t3454, t3457, t3965, t4232, t4568, t4678, t4705, t5217, test_testhost_controller, test_upgrade_template_sync_t3955 (+ confirm test_tier0_origin, test_t5193) | `HEAD~5`, `git show <old ref>`, `git archive <tag>`, ancestry → exit 128 | node1-incompatible.txt, reason "needs git history" (they run in the local nightly and CI with full history) |
 | B. reads this checkout's installed git hooks | pre_push_version_monotonicity, t2240, t2294, test_pre_push_monotonic_ancestor, test_secret_scan | `cp "$FRAMEWORK_ROOT/.git/hooks/pre-push"` fails: a bundle checkout has no framework hooks | install hooks in the node1 run setup if possible, else exclude with reason |
 | C. individual | t5221 (timing < 3 s), t4259 (teardown rm race), t4813 (remedy wording), test_index_doctor_rail, t3768, test_cockpit_activity | see logs | investigate each: fix the test or exclude with reason |
+
+### Dispositions (2026-11-28, worker w-t5426)
+
+All 35 files re-run in a fresh bundle clone with `env -u CLAUDECODE -u FRAMEWORK_ROOT -u PROJECT_ROOT` (the spec's clean-env rule; the first run above inherited them). Same reds, except t4259 and t5221 passed.
+
+| File(s) | Cause (verified) | Disposition |
+|---|---|---|
+| fw_version_output, version_relation, t2762, t3453, t3454, t3457, t3965, t4232, t4568, t4678, t4705, t5217, test_testhost_controller, test_upgrade_template_sync_t3955, test_t5193_runtime_projection_v2, test_cockpit_activity | `git show <old sha>`, tag `v1.8.15-be.11`, `HEAD~1`, `git log` of a path, commits that reference tasks: none exist in a one-commit bundle | excluded, class A (16) |
+| pre_push_version_monotonicity, t2240, t2294, test_pre_push_monotonic_ancestor, test_secret_scan, test_index_doctor_rail | copy or grep `$FRAMEWORK_ROOT/.git/hooks/*`; all 6 pass after `bin/fw git install-hooks` in the clone (offline, no root, exit 0) | excluded, class B (6) |
+| t1719_ask_routing (test 11) | fails "no vector index at .context/working/fw-vec-index.db" before the ollama path it pins | excluded |
+| test_tier0_origin | precondition `is_sandbox(root) is False`; a checkout under a temp dir is a sandbox by design (node1's clone is in one too) | excluded |
+| t5221_create_batch (test 13) | 3 s wall-clock budget: 3404 ms in the first bundle run, 1912-2373 ms in five reruns (bundle and repo), host load ~22 on 24 cores; nothing bundle-specific | excluded (CPU speed) |
+| t4813_doctor_hook_paths (test 5) | stale test, red on this repo too: since T-5302 the advice is `Run: cd <root> && .agentic-framework/bin/fw upgrade (regenerates hooks…` | test fixed (also test 4's vacuous negative check) |
+| t3768_boundary_quoted_read_paths (test 5) | `../../root` assumed /opt/<repo>; from a deeper clone it resolved under /tmp (allowed) | test fixed: climbs to / from the real depth |
+| t4259_init_cron_generated | teardown `rm -rf` raced a writer under the fixture's .git; passed in the clean rerun and 4 more | kept; follow-up T-5440 |
+| doctor_hook_counters, hook_version_marker_parity, t5032, t5403, test_t5198, test_t5236, upgrade_fresh_machine_simulation | pass in the bundle clone | kept; node1-only, recheck once node1 is healthy |
+
+Final check: every kept file passes in a fresh bundle clone (fixed tests copied in), and the fixed tests pass on this repo.
+
+**Class B proposal (not applied):** the node1 entry could run `bin/fw git install-hooks` in `repo/` after the clone; it needs no network or root and makes all six pass, so they could come off the list.
 
 ## Updates
 
