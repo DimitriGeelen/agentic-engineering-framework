@@ -10,10 +10,10 @@ description: >
   subjects for commits whose paths stay inside what that workflow mode may write (.context/,
   handovers), and keep T-IDs for everything else.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [git, workflow-mode, bug]
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-25T16:16:21Z
-last_update: '2026-11-25T16:31:17Z'
+last_update: 2026-11-28T09:41:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 050-email-archive's seven-item report, item 7 (msg 398260cc, 2026-11-25): a run handback written under WM-003 (session lifecycle) cannot be committed with a `WM-003: …` subject. AEF itself borrows T-4648 for every handover commit. Operator ruling 2026-11-28: "yes to T-5420" (agent recommendation: allow it, limited to `.context/`).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The commit-msg hook (agents/git/lib/hooks.sh template) requires a `T-[0-9]+` reference, so work done under a workflow mode (WM-001 selection, WM-002 close-out, WM-003 session lifecycle) must name an unrelated task, which makes traceability worse, not better.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Accept a commit whose subject starts `WM-00N:` when every staged path is under `.context/`; anything else still needs a T-ID, so the "nothing gets done without a task" rule holds for real work.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `git commit -m "WM-003: handover"` with only `.context/` files passes; the same subject with any file outside `.context/` is refused with a message naming the offending paths; T-ID commits are unchanged; the post-commit "no task reference" warning does not fire for an accepted WM commit.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] commit-msg accepts a `WM-00N:` subject (no T-ID) when all staged paths are under `.context/`
+- [x] The same subject with any staged path outside `.context/` is refused, naming the paths and the T-ID route
+- [x] T-ID commits behave exactly as before; post-commit does not warn "bypass detected" for an accepted WM commit
+- [x] A bats test exercises the installed hook in a scratch repo for all three cases; this repo's hooks are reinstalled
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +293,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t5420_wm_commit_subject.bats tests/unit/hook_version_marker_parity.bats tests/unit/git_install_hooks_git_path.bats
+grep -q "T-5420" .git/hooks/commit-msg
+bin/fw vendor self --check --task T-5420
 
 ## RCA
 
@@ -388,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5420-commit-msg-accepts-only-t-ids-a-wm-00x-w.md
 - **Context:** Initial task creation
+
+### 2026-11-27T13:56:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

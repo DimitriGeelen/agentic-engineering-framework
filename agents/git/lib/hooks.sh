@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.23"
+COMMIT_MSG_HOOK_VERSION="1.24"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -305,7 +305,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.23
+# VERSION=1.24
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -318,6 +318,27 @@ fi
 # Allow rebase commits
 if [ -d ".git/rebase-merge" ] || [ -d ".git/rebase-apply" ]; then
     exit 0
+fi
+
+# T-5420 (050 item 7, operator ruling 2026-11-28): work done under a workflow mode
+# (WM-001 selection, WM-002 close-out, WM-003 session lifecycle) may name the mode
+# instead of borrowing an unrelated task, but only when every staged path is under
+# .context/ (handovers, working memory). Anything else still needs a T-ID.
+if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+" \
+        && echo "$COMMIT_MSG" | head -1 | grep -qE '^WM-00[0-9]: '; then
+    _wm_outside=$(git diff --cached --name-only | grep -v '^\.context/' || true)
+    if [ -z "$_wm_outside" ]; then
+        exit 0
+    fi
+    echo ""
+    echo "ERROR: a WM-00N commit may only change files under .context/"
+    echo ""
+    echo "Outside .context/:"
+    echo "$_wm_outside" | sed 's/^/  /' | head -20
+    echo ""
+    echo "Commit those under a task instead: git commit -m \"T-XXX: ...\""
+    echo ""
+    exit 1
 fi
 
 # Resolve the fw entry point for THIS project shape (T-2816, T-1257 class).
@@ -987,7 +1008,13 @@ fi
 COMMIT_MSG=$(git log -1 --format=%B HEAD)
 
 # --- Task reference check ---
-if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
+# T-5420: a WM-00N commit touching only .context/ was accepted by commit-msg; not a bypass.
+_wm_ok=""
+if echo "$COMMIT_MSG" | head -1 | grep -qE '^WM-00[0-9]: ' \
+        && [ -z "$(git diff-tree --no-commit-id --name-only -r HEAD | grep -v '^\.context/')" ]; then
+    _wm_ok=1
+fi
+if [ -z "$_wm_ok" ] && ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     echo ""
     echo "WARNING: Commit made without task reference (bypass detected)"
     echo ""
