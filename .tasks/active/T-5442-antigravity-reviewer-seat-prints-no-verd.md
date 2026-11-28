@@ -383,6 +383,15 @@ bvp_scores_proposed:
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Evidence from 150 (msg e09212dd, 2026-11-28)
+
+- stderr (verbatim): `jetski: no output produced — a tool required the "command" permission that headless mode cannot prompt for, so it was auto-denied. Add an allow-rule under permissions.allow in settings.json (e.g. command(<target>)). Alternatively, re-run with --dangerously-skip-permissions …` then `NO-VERDICT: the antigravity review seat exited 0 and left no verdict`.
+- Version 1.5.18 (recorded by our runtime, worker_version.txt). Launch: `sudo -n -u dimitri-mint-dev -H /usr/bin/env TMPDIR=… agy -p PROMPT --mode plan --sandbox --output-format stream-json`.
+- result.jsonl: permission_mode "request-review"; tools run_command, view_file, grep_search, list_dir, find_by_name. Step 2 run_command (`pwd && ls -la … git status … git show --stat …`) was denied; step 3 read_file succeeded. num_turns 1, response empty, denied_actions [{"action":"command","display_name":"Bash"}]. Only run_command is denied; reads work.
+- The dispatch's settings.json is the Claude review-worker one; nothing agy-specific is passed.
+
+**Agent recommendation (to confirm before building):** do not add a command allow-rule or `--dangerously-skip-permissions`; a review seat running as another user should not gain shell access. Instead give the antigravity seat a brief variant that says to use view_file, grep_search, list_dir and find_by_name only (no run_command), and update the registry entry from 1.1.15 to 1.5.x. Verify with one real dispatch that a verdict is printed.
+
 ## Updates
 
 ### 2026-11-28T10:33:27Z — task-created [task-create-agent]
