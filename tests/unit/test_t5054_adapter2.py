@@ -605,3 +605,11 @@ def test_t5439_the_envelope_must_open_the_prompt():
 def test_t5439_result_is_a_pair_the_receiver_accepts():
     o, b = a2.classify_origin({"prompt": "<task-notification>x"}, True)
     assert b in a2.VALID_ORIGIN[o]
+
+
+def test_t5439_pasted_envelope_counts_as_automated_by_choice():
+    """Pinned trade-off (010 msg 1949b542): text a human PASTES that opens with the
+    envelope is reported automated. It errs in the safe direction (no main lease is taken
+    on its strength); the hook payload carries nothing else that tells the two apart."""
+    hi = {"prompt": "<task-notification>\nthis was pasted by a person", "prompt_id": "pid-typed"}
+    assert a2.classify_origin(hi, True) == ("automated", "harness-mark")
