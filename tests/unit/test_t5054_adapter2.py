@@ -561,15 +561,15 @@ def test_t5437_tool_results_sharing_the_turn_id_never_decide(tmp_path):
     assert a2._scan_transcript(t, "", "pid-n", 262144, now=NOW_T) == ("generated", "id")
 
 
-def test_t5437_hook_id_in_no_record_uses_the_fresh_newest_prompt(tmp_path):
-    """010's sample: the hook's prompt_id appears nowhere; the notification record,
-    written 0.6 s before the lookup, is the prompt the hook fires for."""
+def test_t5439_hook_id_in_no_record_borrows_nothing(tmp_path):
+    """T-5439 (010 msg 2d00f766): the notification record is written AFTER the hook, so a
+    record on disk that does not carry the hook's id is a PREVIOUS prompt, never borrowed."""
     t = _transcript(tmp_path, [
         dict(_rec_id("typed earlier", "pid-a", promptSource="typed"), timestamp=_ts(-300)),
         _tool_result("pid-a", _ts(-200)),
         dict(_rec_id("<task-notification>", "pid-n", origin={"kind": "task-notification"},
                      promptSource="system", turnOrigin="task_notification"), timestamp=_ts(-0.6))])
-    assert a2._scan_transcript(t, "", "pid-unseen", 262144, now=NOW_T) == ("generated", "newest")
+    assert a2._scan_transcript(t, "", "pid-unseen", 262144, now=NOW_T) == (None, "none")
 
 
 def test_t5437_a_stale_newest_prompt_is_not_borrowed(tmp_path):
@@ -585,4 +585,23 @@ def test_t5437_a_typed_prompt_still_reads_human(tmp_path):
              timestamp=_ts(-0.2)),
         _tool_result("pid-t", _ts(-0.1))])
     assert a2._scan_transcript(t, "hello", "pid-t", 262144, now=NOW_T) == ("unmarked", "id")
-    assert a2._scan_transcript(t, "hello", "pid-unseen", 262144, now=NOW_T) == ("unmarked", "newest")
+    assert a2._scan_transcript(t, "hello", "pid-unseen", 262144, now=NOW_T) == (None, "none")
+
+
+# ── T-5439: classify a task-notification turn from the hook payload's envelope ──
+
+def test_t5439_task_notification_envelope_is_automated_without_a_transcript():
+    hi = {"prompt": "<task-notification>\n<task-id>b1</task-id>\n<status>completed</status>",
+          "prompt_id": "pid-not-yet-on-disk"}
+    assert a2.classify_origin(hi, True) == ("automated", "harness-mark")
+    assert a2.classify_origin(hi, None) == ("automated", "harness-mark")
+
+
+def test_t5439_the_envelope_must_open_the_prompt():
+    hi = {"prompt": "please explain what <task-notification> means"}
+    assert a2.classify_origin(hi, True) == ("human", "inferred")
+
+
+def test_t5439_result_is_a_pair_the_receiver_accepts():
+    o, b = a2.classify_origin({"prompt": "<task-notification>x"}, True)
+    assert b in a2.VALID_ORIGIN[o]

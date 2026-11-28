@@ -158,6 +158,17 @@ def _is_doorbell(prompt: str) -> bool:
 #: The text cannot tell the two apart, and TermLink's meter accepts basis "doorbell" for both.
 TERMLINK_DOORBELL_RE = re.compile(r"^sidecar: \d+ peer messages? waiting, ids [0-9a-f]{32}")
 
+#: T-5439 (010 msg 2d00f766): Claude Code writes a task-notification turn's transcript
+#: record AFTER the UserPromptSubmit hook, so the hook can never read its mark there.
+#: The payload carries the harness's own envelope instead: in this repo's transcript all
+#: 1236 task-notification records start with it, and no other record does.
+TASK_NOTIFICATION_ENVELOPE = "<task-notification>"
+
+
+def _is_task_notification(prompt: str) -> bool:
+    return str(prompt or "").lstrip().startswith(TASK_NOTIFICATION_ENVELOPE)
+
+
 _GENERATED_KINDS = {"task-notification", "peer"}
 _GENERATED_TURNS = {"task_notification", "scheduled"}
 
@@ -189,11 +200,6 @@ def _reread_total() -> float:
 _LAST_NEWEST: list = [None, None]
 
 
-#: T-5437: a prompt record written this long before the lookup is "the prompt this hook
-#: fires for" when the hook's prompt_id matches no record (task-notification turns).
-FRESH_PROMPT_S = 5.0
-
-
 def _is_tool_result(rec: dict) -> bool:
     """A tool result is stored as a user record carrying the turn's promptId; it is
     never the prompt itself and carries none of the origin marks (T-5437)."""
@@ -210,24 +216,15 @@ def _mark_of(rec: dict) -> str:
     return "unmarked"
 
 
-def _record_age_s(rec: dict, now: float | None) -> float | None:
-    try:
-        ts = datetime.fromisoformat(str(rec.get("timestamp")).replace("Z", "+00:00"))
-    except (TypeError, ValueError):
-        return None
-    return (now if now is not None else time.time()) - ts.timestamp()
-
-
 def _scan_transcript(transcript_path: str, want: str, prompt_id: str | None,
                      tail_bytes: int, now: float | None = None) -> tuple[str | None, str]:
-    """One read: (mark, matched_by). matched_by is 'id', 'text', 'newest' or 'none'.
+    """One read: (mark, matched_by). matched_by is 'id', 'text' or 'none'.
 
     Only PROMPT records count: tool results share the turn's promptId but carry no
     marks, so matching them answered "unmarked" for any turn (T-5437). With a
-    prompt_id, the prompt record carrying it decides. When none does (010 msg
-    6a450593: a task-notification turn's hook prompt_id appears in no record), the
-    newest prompt record decides if it was written within FRESH_PROMPT_S: a hook fires
-    for the newest prompt, and its record is written before the hook runs."""
+    prompt_id, the prompt record carrying it decides; nothing else is borrowed
+    (T-5439: a task-notification record is written AFTER the hook, so the newest
+    record on disk at hook time is the PREVIOUS prompt)."""
     _LAST_NEWEST[0] = _LAST_NEWEST[1] = None
     try:
         with open(transcript_path, "rb") as fh:
@@ -254,10 +251,6 @@ def _scan_transcript(transcript_path: str, want: str, prompt_id: str | None,
             continue
         if _record_text(rec).strip() == want:
             return _mark_of(rec), "text"
-    if prompt_id and newest is not None:
-        age = _record_age_s(newest, now)
-        if age is not None and -1.0 <= age <= FRESH_PROMPT_S:
-            return _mark_of(newest), "newest"
     return None, "none"
 
 
@@ -311,6 +304,8 @@ def classify_origin(hook_input: dict, interactive: bool | None) -> tuple[str, st
         prompt = str(hook_input.get("prompt") or "")
         if _is_doorbell(prompt):
             return "automated", "doorbell"
+        if _is_task_notification(prompt):
+            return "automated", "harness-mark"
         if interactive is False:
             return "automated", "non-interactive"
         if transcript_mark(hook_input.get("transcript_path"), prompt,
