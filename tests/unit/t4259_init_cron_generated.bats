@@ -49,7 +49,12 @@ teardown() {
     # an agent session). 2026-10-22 integration: doctor dry-ran with
     # $FRAMEWORK_ROOT/bin/fw while generate wrote .agentic-framework/bin/fw, so
     # this leg reported "edited but not generated" on a fresh init.
-    run bash -c "cd '$CONSUMER' && FRAMEWORK_ROOT='$FRAMEWORK_ROOT' timeout 300 '$CONSUMER/.agentic-framework/bin/fw' doctor 2>&1"
+    # T-5434: only FRAMEWORK_ROOT is inherited. An explicit PROJECT_ROOT wins by
+    # contract (test_resolve_project_root_env_wins_unconditionally), and an agent
+    # session or TermLink worker exports PROJECT_ROOT=<framework repo>, so leaving
+    # it in made this doctor check the framework repo instead of the consumer.
+    run bash -c "cd '$CONSUMER' && env -u PROJECT_ROOT -u _FW_PATHS_DERIVED_BY -u TASKS_DIR -u CONTEXT_DIR -u CLAUDE_PROJECT_DIR FRAMEWORK_ROOT='$FRAMEWORK_ROOT' timeout 300 '$CONSUMER/.agentic-framework/bin/fw' doctor 2>&1"
+    echo "$output" | grep -q "Cron generated but not installed at" || false
     ! echo "$output" | grep -q "Cron registry present but not generated" || false
     ! echo "$output" | grep -q "Cron registry edited but not generated" || false
     # T-5382: since T-5302 doctor never prints a bare `fw`; without fw on PATH the
@@ -71,6 +76,13 @@ teardown() {
     [ "$(cron_fw_path "$CONSUMER/.agentic-framework" "$CONSUMER")" = "$CONSUMER/.agentic-framework/bin/fw" ]
     # The framework repo itself keeps bin/fw.
     [ "$(cron_fw_path "$FRAMEWORK_ROOT" "$FRAMEWORK_ROOT")" = "$FRAMEWORK_ROOT/bin/fw" ]
+    # T-5434: ...also when its vendored self-copy is the fw running.
+    FWREPO="$TEST_TEMP_DIR/fwrepo"; mkdir -p "$FWREPO/bin" "$FWREPO/.agentic-framework/bin"
+    touch "$FWREPO/FRAMEWORK.md"
+    printf '#!/bin/sh\n' > "$FWREPO/bin/fw"; cp "$FWREPO/bin/fw" "$FWREPO/.agentic-framework/bin/fw"
+    chmod +x "$FWREPO/bin/fw" "$FWREPO/.agentic-framework/bin/fw"
+    [ "$(cron_fw_path "$FWREPO/.agentic-framework" "$FWREPO")" = "$FWREPO/bin/fw" ]
+    [ "$(cron_fw_path "$FWREPO" "$FWREPO")" = "$FWREPO/bin/fw" ]
     # No dry-run may render with a bare $FRAMEWORK_ROOT/bin/fw again.
     ! grep -n 'cron_dry_run.py.*"\$FRAMEWORK_ROOT/bin/fw"' "$FRAMEWORK_ROOT/bin/fw" "$FRAMEWORK_ROOT/agents/audit/audit.sh" || false
     grep -q 'cron_dry_run.py.*cron_fw_path' "$FRAMEWORK_ROOT/bin/fw"

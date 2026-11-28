@@ -14,10 +14,10 @@ description: >
   resolution so a consumer's doctor checks the consumer's registry; the test must
   pass on this host and on a runner.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, cron, doctor]
 components: []
 related_tasks: []
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-27T21:45:06Z
-last_update: '2026-11-27T22:00:58Z'
+last_update: 2026-11-28T09:07:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,20 +95,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Under T-5382 (2026-11-27) the test `tests/unit/t4259_init_cron_generated.bats` (c) failed on this host. After `fw init` into a fresh consumer, the consumer's own `.agentic-framework/bin/fw doctor`, run with the framework repo's `FRAMEWORK_ROOT` inherited, warned "Cron registry edited but not generated" and named the FRAMEWORK repo's registry and crontab, not the consumer's.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Doctor checked the wrong project's cron registry. Something in how the consumer's fw picks its project root (or how the cron check picks its registry) lets the inherited framework environment win over the consumer the operator is standing in. The framework's registry rendered with the consumer's fw path never matches the framework's crontab, so the check always looks stale.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A consumer's doctor checks the consumer's own cron registry, whatever framework variables are inherited. The framework repo's own doctor result stays as it is.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Test (c) passes on this host and on a runner; no false "edited but not generated" WARN on a freshly initialised consumer.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of the wrong-project resolution is identified and written in `## RCA`
+- [x] Consumer doctor with inherited FRAMEWORK_ROOT checks the consumer's registry: `tests/unit/t4259_init_cron_generated.bats` passes in full on this host
+- [x] `tests/unit/bvp_auto_promote_enable.bats` stays green
+- [x] Framework repo's own `bin/fw doctor` still reports "Cron registry in sync" (unchanged), and now also when run through its vendored self-copy `.agentic-framework/bin/fw`
+- [x] Vendored copies synced (`bin/fw vendor self --check --task T-5434` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -295,6 +298,12 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 1500 bats tests/unit/t4259_init_cron_generated.bats > /tmp/.t5434a 2>&1 && ! grep -q "^not ok" /tmp/.t5434a && grep -q "^ok 5 " /tmp/.t5434a
+test "$(grep -c '# skip' /tmp/.t5434a)" -eq 0
+timeout 1500 bats tests/unit/bvp_auto_promote_enable.bats > /tmp/.t5434b 2>&1 && ! grep -q "^not ok" /tmp/.t5434b
+test "$(grep -c '# skip' /tmp/.t5434b)" -eq 0
+bash -c 'source lib/cron-registry.sh; [ "$(cron_fw_path "$PWD/.agentic-framework" "$PWD")" = "$PWD/bin/fw" ]'
+bin/fw vendor self --check --task T-5434
 
 ## RCA
 
@@ -311,6 +320,17 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** Test (c) of `t4259_init_cron_generated.bats` failed on this host. The consumer's `.agentic-framework/bin/fw doctor` warned "Cron registry edited but not generated" and named the framework repo's registry and crontab.
+
+**Root cause:** There were two causes, and the WARN needed both.
+1. *Wrong project.* The test passed only `FRAMEWORK_ROOT` explicitly, but it inherited `PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework` from the session. Agent sessions have it, and TermLink workers export it (`agents/termlink/termlink.sh:1962`). A valid explicit `PROJECT_ROOT` with no `_FW_PATHS_DERIVED_BY` sentinel wins by design (the "env wins" contract, `test_resolve_project_root_env_wins_unconditionally`, T-3285). So doctor ran against the framework repo. That is the intended resolution, not a bin/fw bug. On a CI runner `PROJECT_ROOT` is unset, which is why the test passed there.
+2. *Wrong fw path for the framework repo.* Doctor then handed off to the framework repo's vendored self-copy (`.agentic-framework/`). `cron_fw_path` treated "FRAMEWORK_ROOT ≠ PROJECT_ROOT and `.agentic-framework/bin/fw` exists" as a consumer, so it rendered `.agentic-framework/bin/fw`, while `fw cron generate` in the repo writes `bin/fw`. The dry-run never matched. This bug is real on its own: `.agentic-framework/bin/fw doctor` in the framework repo would always WARN.
+
+**Fix:** `cron_fw_path` now returns `<root>/bin/fw` for a framework repo (FRAMEWORK.md + bin/fw at the root, the same rule as `lib/fw-command.sh`), whichever copy is running. Test (c) unsets `PROJECT_ROOT` and the path sentinels, so it models what it claims to model: an operator running the consumer's fw from inside the consumer.
+
+**Why structurally allowed:** The test asserted a property of "the consumer" but did not pin which project doctor resolved, so its result depended on the caller's environment. On CI it passed and on agent hosts it failed. `cron_fw_path` was only ever exercised with the framework repo's own `bin/fw`, never with its vendored self-copy.
+
+**Prevention:** Test (e) now pins `cron_fw_path(<repo>/.agentic-framework, <repo>) = <repo>/bin/fw`. Test (c) now also asserts the consumer-specific "Cron generated but not installed" line, so a doctor that checks the wrong project fails loudly instead of passing by accident.
 
 ## Evolution
 
@@ -392,3 +412,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5434-consumer-doctor-with-an-inherited-framew.md
 - **Context:** Initial task creation
+
+### 2026-11-28T09:07:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

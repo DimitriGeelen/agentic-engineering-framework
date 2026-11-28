@@ -121,9 +121,17 @@ cron_project_root() {
 # T-4822: a path inside a linked worktree is rebased onto the main checkout
 # (cron_project_root), so the line survives the worktree and does not change
 # with the checkout that regenerated it.
+#
+# T-5434: the framework repo keeps bin/fw whichever copy is running. It carries a
+# vendored self-copy (.agentic-framework/, `fw vendor self`), so its fw run from
+# that copy (FRAMEWORK_ROOT=<repo>/.agentic-framework) used to render
+# .agentic-framework/bin/fw and report the repo's own registry as "edited but not
+# generated". Framework repo = FRAMEWORK.md + bin/fw at the root (lib/fw-command.sh).
 cron_fw_path() {
     local fr="$1" pr="$2" fw main
-    if [ "$(cd "$fr" 2>/dev/null && pwd -P)" != "$(cd "$pr" 2>/dev/null && pwd -P)" ] \
+    if [ -f "$pr/FRAMEWORK.md" ] && [ -f "$pr/bin/fw" ]; then
+        fw="$pr/bin/fw"
+    elif [ "$(cd "$fr" 2>/dev/null && pwd -P)" != "$(cd "$pr" 2>/dev/null && pwd -P)" ] \
         && [ -x "$pr/.agentic-framework/bin/fw" ]; then
         fw="$pr/.agentic-framework/bin/fw"
     else
