@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5426: Triage the first full node1 nightly: 32 failed + 1 timeout not seen on the local fast tier
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-28T10:26:46Z
+# ============================================================================
+
+task_id: T-5426
+task_name: "Triage the first full node1 nightly: 32 failed + 1 timeout not seen on the local fast tier"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-26T15:47:57Z
+completed: 2026-11-28T10:25:33Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-11-26T16:48:01+01:00
+last_commit: 2026-11-28T11:25:26+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — triage first full node1 nightly (33 reds). reproduction in a bundle clone recorded (28/35 reds reproduced, three cause classes). node1 reds dispositioned — 25 excluded with reasons (16 git history/tags, 6 installed hooks, 3 individual), t4813 and t3768 tests fixed, t4259 race filed as T-5440
+
+# Key outcomes
+outcomes:
+  - 'The bundle-clone reproduction is recorded: which of the node1 reds fail there, and the cause class of each (no tags/history, missing state, host tool, real failure)'
+  - 'Each red has a disposition recorded in this task: test fixed, bundle changed, or excluded in node1-incompatible.txt with its reason'
+  - 'The dispositions are applied and the affected files pass in the bundle clone (or are excluded with a reason)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'node1 reds dispositioned — 25 excluded with reasons (16 git history/tags, 6 installed hooks, 3 individual), t4813 and t3768 tests fixed, t4259 race filed as T-5440'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5426-triage-the-first-full-node1-nightly-32-f.md'
+  - '.tasks/active/T-5440-t4259-teardown-rm--rf-of-the-init-fixtur.md'
+  - 'scripts/node1/node1-incompatible.txt'
+  - 'tests/unit/t3768_boundary_quoted_read_paths.bats'
+  - 'tests/unit/t4813_doctor_hook_paths.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-26T16:48:01'
+    action: 'T-5426: filed — triage first full node1 nightly (33 reds)'
+  - time: '2026-11-28T10:52:01'
+    action: 'T-5426: reproduction in a bundle clone recorded (28/35 reds reproduced, three cause classes)'
+  - time: '2026-11-28T11:25:26'
+    action: 'T-5426: node1 reds dispositioned — 25 excluded with reasons (16 git history/tags, 6 installed hooks, 3 individual), t4813 and t3768 tests fixed, t4259 race filed as T-5440'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2557 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [node1, unit-suite]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2557
+  commits: 4
+  files_changed: 8
+  lines_added: 938
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-28T10:26:56Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5426-triage-the-first-full-node1-nightly-32-f.md
+generated_by: context-agent-hybrid
