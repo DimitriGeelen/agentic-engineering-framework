@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5436: Pre-push structure audit takes 158s on a GitHub runner (budget 150s)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-28T09:51:17Z
+# ============================================================================
+
+task_id: T-5436
+task_name: "Pre-push structure audit takes 158s on a GitHub runner (budget 150s)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-28T08:35:38Z
+completed: 2026-11-28T09:47:26Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-28T10:47:18+01:00
+last_commit: 2026-11-28T10:47:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  structure audit 370s -> ~105s here — memoise verdict_ledger history_fault, parse review ledgers once per human_ac_ticks scan, one awk per file in trend analysis (outputs byte-identical)
+
+# Key outcomes
+outcomes:
+  - 'Per-check cost table (top 10 by seconds) of the structure section recorded in this task, from at least two runs'
+  - 'Dominant costs reduced (moved to tree section, cached, or de-duplicated) with every moved check still running in a full no-section audit'
+  - 'Structure section total time before and after recorded; after is clearly under 150 s on this host'
+  - '`tests/unit/t3062_prepush_runtime.bats` and tests of touched checks pass; vendored copies in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-28 — cache in place instead of moving checks to `--section tree`'
+    chose: 'memoise / build once inside the same check; nothing moved between sections, so the full daily audit runs exactly the same checks.'
+    rationale: 'none of the dominant costs is a whole-tree scan. They are committed-structure checks (ledger provenance, Human-AC tick provenance) that belong at pre-push. Moving them would weaken the gate; caching keeps every verdict (outputs compared byte-for-byte).'
+    alternatives_rejected: ['moving `verdict_ledger` / `human_ac_ticks` audits to tree (weakens pre-push); raising the 150 s budget (ruled out by T-3062 and the brief).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.tasks/active/T-5436-pre-push-structure-audit-takes-158s-on-a.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/human_ac_ticks.py'
+  - 'lib/verdict_ledger.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-28T10:47:18'
+    action: 'T-5436: structure audit 370s -> ~105s here — memoise verdict_ledger history_fault, parse review ledgers once per human_ac_ticks scan, one awk per file in trend analysis (outputs byte-identical)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 71 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [performance, audit, pre-push]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 71
+  commits: 2
+  files_changed: 10
+  lines_added: 293
+  lines_removed: 36
+  footprint_refreshed_at: '2026-11-28T09:51:28Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5436-pre-push-structure-audit-takes-158s-on-a.md
+generated_by: context-agent-hybrid

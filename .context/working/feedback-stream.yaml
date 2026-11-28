@@ -60090,3 +60090,21 @@ scan_id: R-08610a05
 task_id: T-5420
 payload:
   task_file: .tasks/active/T-5420-commit-msg-accepts-only-t-ids-a-wm-00x-w.md
+---
+kind: scan_emitted
+timestamp: '2026-11-28T09:51:00Z'
+scan_id: R-4b1dc794
+task_id: T-5436
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-28T09:51:00Z'
+scan_id: R-4b1dc794
+task_id: T-5436
+payload:
+  task_file: .tasks/active/T-5436-pre-push-structure-audit-takes-158s-on-a.md
