@@ -6,8 +6,6 @@
 
 ## What It Does
 
-the weak evidence would accept the nickname: it must not even be asked
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_t5150_nickname_refused.yaml`*
 *Last verified: 2026-11-15*
